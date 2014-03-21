@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# Configure /etc/jdktab containing java homes eg:
+# 7:/opt/dev/jdk1.7.0_45
+# 6:/opt/dev/jdk1.6.0_45
+#
+# Then configure the env eg
+# $ . jdkenv 6
+# or
+# . jdkenv
+# to get the java home selection prompt.
+#
+
+OUTPUT=""
+JDKTAB=""
+if [ -z "$1" ]; then
+    OUTPUT="y" 
+fi
+
+function msg() {
+    if [ -n "$OUTPUT" ]; then
+        echo $1
+    fi
+}
+
+if [ -e /etc/jdktab ]; then
+    JDKTAB=/etc/jdktab
+else
+    echo "No /etc/jdktab configured." 
+fi
+
+if [ -n "${JDKTAB}" ]; then
+
+    #Prompt for the java home if noone selected.
+    NEW_JDK=$1
+    if [ -z "$NEW_JDK" ]; then
+        OPTIONS=""
+        for line in `cat $JDKTAB`
+        do
+            echo $line
+            OPTIONS=$OPTIONS${line%:*},
+        done;
+        OPTIONS=${OPTIONS%,*}
+        read -p "Select the jdk for the env (eg $OPTIONS): " NEW_JDK
+    fi
+
+    #Get the path to the new home from the config file.
+    NEWPATH=$PATH
+    NEW_JDK_HOME=""
+    for line in `cat $JDKTAB`
+    do
+        if [ "${NEW_JDK}" == "${line%:*}" ]; then
+            NEW_JDK_HOME="${line#*:}" 
+        fi
+    done;
+
+    REPLACED=""
+    #Replace a jdk home already in the path with the new selection.
+    #Remove all other jdk entries from the path.
+    if [ -n "${NEW_JDK_HOME}" ]; then
+        for line in `cat $JDKTAB`
+        do
+            if [ "$NEW_JDK" != "${line%:*}" ]; then
+                OLD_JDK_HOME=${line#*:}
+                INPATH=`echo $PATH |grep $OLD_JDK_HOME`
+                if ( [ -z "$REPLACED" ] &&  [ -n "$INPATH" ] ); then
+                    NEWPATH=`echo $NEWPATH |sed s^${OLD_JDK_HOME}^${NEW_JDK_HOME}^`
+                    REPLACED=y 
+                fi
+                NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
+            fi
+        done;
+
+        #If the selected jdk is not in the path then add it.
+        INPATH=`echo $NEWPATH |grep ${NEW_JDK_HOME}`
+        if [ -z "${INPATH}" ]; then
+            NEWPATH=${NEWPATH}:${NEW_JDK_HOME}/bin
+        fi
+
+    fi
+fi
+
+export PATH=$NEWPATH
+export JAVA_HOME=$NEW_JDK_HOME
+msg "PATH: $PATH"
+msg "JAVA_HOME: $JAVA_HOME"
+
