@@ -1,27 +1,18 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Configure /etc/jdktab containing java homes eg:
 # 7:/opt/dev/jdk1.7.0_45
 # 6:/opt/dev/jdk1.6.0_45
 #
 # Then configure the env eg
-# $ . jdkenv 6
+# JDK_NO=6
+# $ . jdkenv 
 # or
 # . jdkenv
 # to get the java home selection prompt.
 #
 
-OUTPUT=""
 JDKTAB=""
-if [ -z "$1" ]; then
-    OUTPUT="y" 
-fi
-
-function msg() {
-    if [ -n "$OUTPUT" ]; then
-        echo $1
-    fi
-}
 
 if [ -e /etc/jdktab ]; then
     JDKTAB=/etc/jdktab
@@ -32,8 +23,7 @@ fi
 if [ -n "${JDKTAB}" ]; then
 
     #Prompt for the java home if noone selected.
-    NEW_JDK=$1
-    if [ -z "$NEW_JDK" ]; then
+    if [ -z "$JDK_NO" ]; then
         OPTIONS=""
         for line in `cat $JDKTAB`
         do
@@ -41,7 +31,7 @@ if [ -n "${JDKTAB}" ]; then
             OPTIONS=$OPTIONS${line%:*},
         done;
         OPTIONS=${OPTIONS%,*}
-        read -p "Select the jdk for the env (eg $OPTIONS): " NEW_JDK
+        read -p "Select the jdk for the env (eg $OPTIONS): " JDK_NO
     fi
 
     #Get the path to the new home from the config file.
@@ -49,7 +39,7 @@ if [ -n "${JDKTAB}" ]; then
     NEW_JDK_HOME=""
     for line in `cat $JDKTAB`
     do
-        if [ "${NEW_JDK}" == "${line%:*}" ]; then
+        if [ "${JDK_NO}" = "${line%:*}" ]; then
             NEW_JDK_HOME="${line#*:}" 
         fi
     done;
@@ -60,7 +50,7 @@ if [ -n "${JDKTAB}" ]; then
     if [ -n "${NEW_JDK_HOME}" ]; then
         for line in `cat $JDKTAB`
         do
-            if [ "$NEW_JDK" != "${line%:*}" ]; then
+            if [ "$JDK_NO" != "${line%:*}" ]; then
                 OLD_JDK_HOME=${line#*:}
                 INPATH=`echo $PATH |grep $OLD_JDK_HOME`
                 if ( [ -z "$REPLACED" ] &&  [ -n "$INPATH" ] ); then
@@ -68,6 +58,12 @@ if [ -n "${JDKTAB}" ]; then
                     REPLACED=y 
                 fi
                 NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
+            else 
+                #Be sure we only have element in the PATH.
+                OLD_JDK_HOME=${line#*:}
+                NEWPATH=`echo $NEWPATH |sed s^${OLD_JDK_HOME}^XXXMARKERXX^`
+                NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
+                NEWPATH=`echo $NEWPATH |sed s^XXXMARKERXX^${NEW_JDK_HOME}^`
             fi
         done;
 
@@ -80,8 +76,10 @@ if [ -n "${JDKTAB}" ]; then
     fi
 fi
 
-export PATH=$NEWPATH
-export JAVA_HOME=$NEW_JDK_HOME
-msg "PATH: $PATH"
-msg "JAVA_HOME: $JAVA_HOME"
+unset JDK_NO
+export JDK_NO
+PATH=$NEWPATH
+export PATH
+JAVA_HOME=$NEW_JDK_HOME
+export JAVA_HOME
 
