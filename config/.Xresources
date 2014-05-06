@@ -1,0 +1,63 @@
+*foreground: #DDEEDD
+*background: #1C1C1C
+
+!black
+*color0: #1C1C1C
+*color8: #4d4d4d
+!red
+*color1: #D81860
+*color9: #F00060
+!green
+*color2: #B7CE42
+*color10: #BDE077
+!yellow
+*color3: #FEA63C
+*color11: #FFE863
+!blue
+*color4:       DeepSkyBlue
+*color12:      RoyalBlue
+!magenta
+*color5: #B7416E
+*color13: #BB4466
+!cyan
+*color6: cyan3
+*color14: cyan4
+!white
+*color7: #DDEEDD
+*color15: #6C887A
+
+!XClock*analog: false
+XClock*buffer: true
+!XClock*update: 1
+!XClock*font:      *fixed* 
+!XClock*faceSize: 6
+!*fontWarnings: 2
+
+
+!xlsfonts
+!xcolorsel
+!xrdb -merge .Xresources
+!xfd -fn fname
+!xfd -fa fname
+!fc-match mono
+!fc-list
+
+!xterm -u8
+!only xterm and urxvt support unicode
+xterm*utf8: 1
+!*customization: -color
+xterm*termName: xterm-256color
+
+xterm*faceName: Inconsolata:size=9:minispace=True:antialias=true:bold
+!Xterm*faceName: DejaVu Sans Mono:size=9:antialias=true
+!Xterm*faceName: "DejaVu Sans Mono"
+!xterm*faceName: DejaVu Sans Mono:size=9:antialias=true
+!xterm*faceName: Liberation Mono:size=9:antialias=true
+!xterm*faceName: Andale Mono:size=9:antialias=true
+!xterm*faceName: FreeMono:size=9:antialias=true
+!xterm*faceName: Courier New:size=9:antialias=false
+!xterm*faceName: Sans:size=9:minispace=True:antialias=false
+
+
+!Xterm*font: 7x13
+xterm*faceSize: 10 
