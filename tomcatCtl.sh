@@ -3,7 +3,7 @@
 #
 ENVLOCATION=$1
 COMMAND=$2
-COMMAND_LIST="status, up, start, stop"
+COMMAND_LIST="status, up, start, stop, restart"
 
 if [[ -z "$ENVLOCATION" ]]; then
     echo "Path to environment file tomcat.env not set."
@@ -29,7 +29,7 @@ fi
 
 ENVFILE=$ENVFILE_LOCATION/tomcat.env
 
-source tomcat.env 
+source $ENVFILE
 
 #tomcat.env example
 #
@@ -110,6 +110,10 @@ start)
     exit 0;;
 stop)
     stop
+    exit 0;;
+restart)
+    stop
+    start
     exit 0;;
 *)
     echo "Error no $COMMAND command. Only $COMMAND_LIST."
