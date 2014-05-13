@@ -3,10 +3,13 @@
 #
 ENVLOCATION=$1
 COMMAND=$2
+COMMAND_LIST="status, up, start, stop"
+
 if [[ -z "$ENVLOCATION" ]]; then
-    echo Path to environment file tomcat.env not set.
-    echo Usage: tomcatUpdate.sh /catalinabase
-    echo Where catalinabase contains the tomcat.env
+    echo "Path to environment file tomcat.env not set."
+    echo "Usage: tomcatCtl /catalinabase <cmd> || tomcatCtl . <cmd>"
+    echo "Where catalinabase contains the tomcat.env"
+    echo "cmd: $COMMAND_LIST"
     exit;
 fi
 
@@ -65,7 +68,7 @@ stop() {
     echo -e "\n\n"
     CNT=0;
    
-    while [[ ! -z `pgrep -fl tomcat` ]] && [[ $CNT -lt 5 ]];  do 
+    while [[ ! -z `pgrep -fl $INSTANCE` ]] && [[ $CNT -lt 5 ]];  do 
         echo -n " waiting$CNT..."; CNT=$((CNT+1)); sleep 1; 
     done;
    
@@ -82,9 +85,8 @@ stop() {
 
 upgrade() {
     stop 
-
     rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work
-    mkdir $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/work $CATALINA_BASE/webapps/groovyScripts
+    mkdir $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/work
     do_tomcat_configure
     sleep 2 
     start
@@ -110,7 +112,7 @@ stop)
     stop
     exit 0;;
 *)
-    echo Error no $COMMAND command. Only status, up, start, stop
+    echo "Error no $COMMAND command. Only $COMMAND_LIST."
     exit 1
 esac
 
