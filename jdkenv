@@ -51,6 +51,8 @@ if [ -n "${JDKTAB}" ]; then
         for line in `cat $JDKTAB`
         do
             if [ "$JDK_NO" != "${line%:*}" ]; then
+                #Replace an old jdk with the new jdk exactly one
+                #time and remove all other occurances.
                 OLD_JDK_HOME=${line#*:}
                 INPATH=`echo $PATH |grep $OLD_JDK_HOME`
                 if ( [ -z "$REPLACED" ] &&  [ -n "$INPATH" ] ); then
@@ -59,7 +61,7 @@ if [ -n "${JDKTAB}" ]; then
                 fi
                 NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
             else 
-                #Be sure we only have element in the PATH.
+                #Be sure we only have one instance of the jdk we want in the PATH.
                 OLD_JDK_HOME=${line#*:}
                 NEWPATH=`echo $NEWPATH |sed s^${OLD_JDK_HOME}^XXXMARKERXX^`
                 NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
@@ -69,8 +71,7 @@ if [ -n "${JDKTAB}" ]; then
 
         #If the selected jdk is not in the path then add it.
         INPATH=`echo $NEWPATH |grep ${NEW_JDK_HOME}`
-        if [ -z "${INPATH}" ]; then
-            NEWPATH=${NEWPATH}:${NEW_JDK_HOME}/bin
+        if [ -z "${INPATH}" ]; then NEWPATH=${NEWPATH}:${NEW_JDK_HOME}/bin
         fi
 
     fi
