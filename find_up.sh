@@ -1,0 +1,16 @@
+#!/bin/bash
+#From http://unix.stackexchange.com/questions/6463/find-searching-in-parent-directories-instead-of-subdirectories
+if [[ -z $2 ]]; then
+    path=$(pwd)
+else
+    path=$2
+fi
+
+dot=""
+while [[ "$path" != "" && ! -e "$path/$1"  && "$path" != "$dot" ]]; do
+    dot=$path
+    path=${path%/*}
+done
+#echo "$path"
+#find $path -name $1 -execdir pwd \;
+find $path -name $1 -execdir pwd \;
