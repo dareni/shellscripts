@@ -18,6 +18,7 @@ if [ -e /etc/jdktab ]; then
     JDKTAB=/etc/jdktab
 else
     echo "No /etc/jdktab configured." 
+    exit -1
 fi
 
 if [ -n "${JDKTAB}" ]; then
@@ -75,12 +76,12 @@ if [ -n "${JDKTAB}" ]; then
         fi
 
     fi
+    unset JDK_NO
+    export JDK_NO
+    PATH=$NEWPATH
+    export PATH
+    JAVA_HOME=$NEW_JDK_HOME
+    export JAVA_HOME
 fi
 
-unset JDK_NO
-export JDK_NO
-PATH=$NEWPATH
-export PATH
-JAVA_HOME=$NEW_JDK_HOME
-export JAVA_HOME
 
