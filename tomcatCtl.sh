@@ -85,12 +85,17 @@ stop() {
 
 upgrade() {
     stop 
-    rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work $CATALINA_BASE/temp
-    mkdir $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/work $CATALINA_BASE/temp
-
+    rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work $CATALINA_BASE/temp
+    mkdir $CATALINA_BASE/webapps  $CATALINA_BASE/work $CATALINA_BASE/temp
+    clearLogs
     do_tomcat_configure
     sleep 2 
     start
+}
+
+clearLogs() {
+  rm -rf  $CATALINA_BASE/logs 
+  mkdir  $CATALINA_BASE/logs 
 }
 
 status() {
@@ -114,6 +119,7 @@ stop)
     exit 0;;
 restart)
     stop
+    clearLogs
     start
     exit 0;;
 *)
