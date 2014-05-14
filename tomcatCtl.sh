@@ -85,8 +85,9 @@ stop() {
 
 upgrade() {
     stop 
-    rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work
-    mkdir $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/work
+    rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work $CATALINA_BASE/temp
+    mkdir $CATALINA_BASE/webapps $CATALINA_BASE/logs $CATALINA_BASE/work $CATALINA_BASE/temp
+
     do_tomcat_configure
     sleep 2 
     start
