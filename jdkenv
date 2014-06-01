@@ -16,6 +16,8 @@ JDKTAB=""
 
 if [ -e /etc/jdktab ]; then
     JDKTAB=/etc/jdktab
+elif [ -e /usr/local/etc/jdktab ]; then
+    JDKTAB=/usr/local/etc/jdktab
 else
     echo "No /etc/jdktab configured." 
     exit -1
