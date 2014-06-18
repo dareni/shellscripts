@@ -30,14 +30,13 @@ do
     esac
 
     if [[ $count -gt 2 ]]; then
-        echo $f
         case $FILETYPE in
             war|jar)
                 jar -tvf $f |grep -i $SEARCH_PATTERN;;
             zip)
                 unzip -l $f |grep -i $SEARCH_PATTERN;;
             *)
-                grep -i $SEARCH_PATTERN $f;;
+                grep -H -i $SEARCH_PATTERN $f;;
         esac
     fi
 
