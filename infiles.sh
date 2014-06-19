@@ -22,9 +22,9 @@ do
 
     case $FILETYPE in
         war|jar)
-            count=`jar -tvf $f |grep -c -i $SEARCH_PATTERN`;;
+            count=`jar -tvf $f |grep -c -i "$SEARCH_PATTERN"`;;
         zip)
-            count=`unzip -l $f |grep -c -i $SEARCH_PATTERN`;;
+            count=`unzip -l $f |grep -c -i "$SEARCH_PATTERN"`;;
         *)
             count=`grep -c -i $2 $f;`;;
     esac
@@ -32,11 +32,11 @@ do
     if [[ $count -gt 2 ]]; then
         case $FILETYPE in
             war|jar)
-                jar -tvf $f |grep -i $SEARCH_PATTERN;;
+                jar -tvf $f |grep -i "$SEARCH_PATTERN";;
             zip)
-                unzip -l $f |grep -i $SEARCH_PATTERN;;
+                unzip -l $f |grep -i "$SEARCH_PATTERN";;
             *)
-                grep -H -i $SEARCH_PATTERN $f;;
+                grep -H -i "$SEARCH_PATTERN" $f;;
         esac
     fi
 
