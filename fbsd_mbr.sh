@@ -59,6 +59,17 @@ if [ "$1" = "do_gpart" ]; then
         exit;
     fi
 
+#from wblock
+# gpart create -s mbr da0
+# gpart bootcode -b /boot/mbr da0
+# gpart add -t freebsd da0
+# gpart set -a active -i 1 da0
+# gpart create -s bsd da0s1
+# gpart bootcode -b /boot/boot da0s1
+# Create the FreeBSD partitions(a,b) in the slice.
+# gpart add -t freebsd-ufs  -a 4k -s 2g   da0s1
+# gpart add -t freebsd-swap -a 4k -s 512m da0s1
+#
 # 1G swap 1024*1024*1024/512    
     gpart create -s GPT $DISK1
 
