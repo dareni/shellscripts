@@ -127,6 +127,7 @@ if [ "$1" = "do_chroot" ]; then
     fi
 
     passwd
+    #pwd_mkdb
     tzsetup
     cd /etc/mail
     make aliases
