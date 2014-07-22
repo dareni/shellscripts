@@ -5,7 +5,7 @@ ENVLOCATION=$1
 COMMAND=$2
 COMMAND_LIST="status, up, start, stop, restart"
 
-if [[ -z "$ENVLOCATION" ]]; then
+if [[ -z "$COMMAND" ]]; then
     echo "Path to environment file tomcat.env not set."
     echo "Usage: tomcatCtl /catalinabase <cmd> || tomcatCtl . <cmd>"
     echo "Where catalinabase contains the tomcat.env"
