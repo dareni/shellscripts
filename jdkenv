@@ -1,16 +1,23 @@
 #!/bin/sh
 #
-# Configure /etc/jdktab containing java homes eg:
-# 7:/opt/dev/jdk1.7.0_45
-# 6:/opt/dev/jdk1.6.0_45
-#
-# Then configure the env eg
-# JDK_NO=6
-# $ . jdkenv 
-# or
-# . jdkenv
-# to get the java home selection prompt.
-#
+
+function outputDoc() {
+    DOC="\
+
+  Configure /etc/jdktab containing java homes eg:
+  7:/opt/dev/jdk1.7.0_45
+  6:/opt/dev/jdk1.6.0_45
+
+  Then configure the env eg
+  JDK_NO=6
+  $ . jdkenv
+  or
+  . jdkenv
+  to get the java home selection prompt.
+"
+    echo "$DOC"
+
+}
 
 JDKTAB=""
 
@@ -19,7 +26,8 @@ if [ -e /etc/jdktab ]; then
 elif [ -e /usr/local/etc/jdktab ]; then
     JDKTAB=/usr/local/etc/jdktab
 else
-    echo "No /etc/jdktab configured." 
+    echo "No /etc/jdktab configured."
+    outputDoc
 fi
 
 if [ -n "${JDKTAB}" ]; then
@@ -42,7 +50,7 @@ if [ -n "${JDKTAB}" ]; then
     for line in `cat $JDKTAB`
     do
         if [ "${JDK_NO}" = "${line%:*}" ]; then
-            NEW_JDK_HOME="${line#*:}" 
+            NEW_JDK_HOME="${line#*:}"
         fi
     done;
 
@@ -59,10 +67,10 @@ if [ -n "${JDKTAB}" ]; then
                 INPATH=`echo $PATH |grep $OLD_JDK_HOME`
                 if ( [ -z "$REPLACED" ] &&  [ -n "$INPATH" ] ); then
                     NEWPATH=`echo $NEWPATH |sed s^${OLD_JDK_HOME}^${NEW_JDK_HOME}^`
-                    REPLACED=y 
+                    REPLACED=y
                 fi
                 NEWPATH=`echo $NEWPATH |sed s^:*${OLD_JDK_HOME}[^:]*^^g |sed s^:$^^g`
-            else 
+            else
                 #Be sure we only have one instance of the jdk we want in the PATH.
                 OLD_JDK_HOME=${line#*:}
                 NEWPATH=`echo $NEWPATH |sed s^${OLD_JDK_HOME}^XXXMARKERXX^`
