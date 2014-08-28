@@ -20,7 +20,6 @@ elif [ -e /usr/local/etc/jdktab ]; then
     JDKTAB=/usr/local/etc/jdktab
 else
     echo "No /etc/jdktab configured." 
-    exit -1
 fi
 
 if [ -n "${JDKTAB}" ]; then
