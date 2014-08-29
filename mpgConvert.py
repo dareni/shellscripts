@@ -31,7 +31,7 @@ if not os.path.isdir(outdir):
 for targetfile in files:
     filename = os.path.basename(targetfile)
     name, extension = os.path.splitext(filename)
-    cmd = 'avconv  -i "' +  targetfile + '" -b 64k -f mp3 "' + \
+    cmd = 'avconv  -i "' +  targetfile + '" -b "' + bitrate + '" -f mp3 "' + \
         outdir + '/' + name + '.mp3"'
     os.system(cmd)
     
