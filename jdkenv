@@ -92,5 +92,3 @@ if [ -n "${JDKTAB}" ]; then
     JAVA_HOME=$NEW_JDK_HOME
     export JAVA_HOME
 fi
-
-
