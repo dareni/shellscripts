@@ -105,7 +105,14 @@ status() {
 
 case $COMMAND in
 status)
-    status
+    ALREADY_UP=`status`
+    if [[ -z "$ALREADY_UP" ]]; then
+        echo -e "Tomcat is down:\n BASE: $CATALINA_BASE\n HOME: $CATALINA_HOME\n \
+ JDK: $JAVA_HOME"
+    else
+        echo -e "Running:\n $ALREADY_UP"
+    fi
+
     exit 0;;
 up)
     echo upgrading
