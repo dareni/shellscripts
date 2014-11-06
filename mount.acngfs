@@ -1,0 +1,19 @@
+#! /bin/bash
+# Mount the debian sources from the remote cache host: aptcacher
+#
+#fstab entry example:
+#http://mirror.aarnet.edu.au/debian /var/local/acngfs_debian acngfs /var/cache/apt-cacher-ng/debrep 0 0 
+#
+#sources.list example:
+#deb file:/var/local/acngfs_debian wheezy main contrib non-free
+
+#Don't forget to create the mount point and make aptcacher resolve.
+
+/usr/lib/apt-cacher-ng/acngfs $1 aptcacher:3142 ${4##*rw,} $2 -o allow_root,auto_unmount
+
+
+
+
+
+
+
