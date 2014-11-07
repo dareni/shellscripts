@@ -81,7 +81,7 @@ Style * MinOverlapPlacementPenalties 1 0 0 1 0 50
 OpaqueMoveSize -1
 #Emulate MWM - no title on trayer
 #nb test disable
-#Emulate MWM
+Emulate MWM
 HideGeometryWindow Never
 #SnapAttraction 5 SameType Screen
 
@@ -96,7 +96,7 @@ XorValue 55555
 Style * WindowShadeSteps 20, WindowShadeScrolls
 SetAnimation  10  -.01 0 .01 .03 .08 .18 .3 .45 .6 .75 .85 .90 .94 .97 .99 1.0
 #MwmDecor no title bar on stalonetray
-#Style * MwmDecor
+Style * MwmDecor
 #Style * SlipperyIcon
 #Style * NoDecorHint, SlipperyIcon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
@@ -257,6 +257,10 @@ DestroyFunc FvwmNetbeans
 AddToFunc   FvwmNetbeans
 + I Exec exec /bin/bash /opt/dev/netbeans-8.0/bin/netbeans
 
+DestroyFunc FvwmPowerArchitect
+AddToFunc   FvwmPowerArchitect
++ I Exec exec /opt/dev/jdk1.7.0_67/bin/java -jar /opt/dev/architect-1.0.7/architect.jar 
+
 DestroyFunc FvwmIreport
 AddToFunc   FvwmIreport
 + I Exec exec xterm -hold -e ireport
@@ -358,7 +362,8 @@ DestroyFunc InitFunction
 AddToFunc   InitFunction
 + I FvwmStalonetray
 + I Exec exec xclock -digital  -norender -padding -5 -geometry 115x14+3480+0 -strftime  " %a %b %d %Y"
-+ I Exec exec xterm +sb -g 100x70+1680+0 -fn 6x13
++ I Exec exec xterm +sb -g 100x58+1680+0 -fn 6x13
++ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
 + I Schedule 100 FvwmSkype
 + I Schedule 200 FvwmLinphone
 + I Schedule 300 FvwmPidgin
@@ -463,11 +468,13 @@ AddToMenu AppMenu
 + "&Pdf-x" FvwmXpdf
 + "&Pdf-evince" FvwmEvince
 + "X&mms%menu/xmms.png%"  FvwmXmms
++ "&Gimp%menu/gimp.png%" FvwmGimp
 + "T&otem"  FvwmTotem
 + "&Evolution"  FvwmEvolution
 + "Sk&ype"  FvwmSkype
 + "&Mumble"  FvwmMumble
 + "Net&beans"  FvwmNetbeans
++ "Power&Architect" FvwmPowerArchitect
 #+ "&IReport" FvwmIreport 
 + "&Calibre-ebook"  FvwmCalibre
 + "&Nautilus"  FvwmNautilus
@@ -487,6 +494,7 @@ AddToMenu HostMenu
 #+ "Vpn&Uat" Exec exec xterm -T vpnUat -e sudo /home/daren/bin/vpnUat.sh
 + "&Daisy" Exec exec xterm -T daisy -e ~/bin/hosts.sh daisy  
 + "&Bud"   Exec exec xterm -T bud -e ~/bin/hosts.sh bud
++ "&Noddy"   Exec exec xterm -T noddy  -e ~/bin/hosts.sh noddy
 
 DestroyMenu Jconsole
 AddToMenu Jconsole

@@ -30,6 +30,7 @@ fi
 ENVFILE=$ENVFILE_LOCATION/tomcat.env
 
 source $ENVFILE
+BUP_JAVA_OPTS=$JAVA_OPTS
 
 #tomcat.env example
 #
@@ -55,12 +56,14 @@ start() {
     ALREADY_UP=`status`
     if [[ -z "$ALREADY_UP" ]]; then
         nice -20 $CATALINA_HOME/bin/startup.sh
+        echo -e "JAVAOPTS: $JAVA_OPTS"
     else
         echo -e "Already running:\n $ALREADY_UP"
     fi
 }
 
 stop() {
+    unset JAVA_OPTS
     $CATALINA_HOME/bin/shutdown.sh
     echo -e "\n"
     echo  -e "Tomcat process is: \n" 
@@ -80,7 +83,7 @@ stop() {
             do echo -n " killing$CNT..."; CNT=$((CNT+1)); sleep 1; 
         done;
     fi;
-   
+    export JAVA_OPTS=$BUP_JAVA_OPTS
 }
 
 upgrade() {
