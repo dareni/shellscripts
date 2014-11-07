@@ -3,17 +3,16 @@
 #
 #fstab entry example:
 #http://mirror.aarnet.edu.au/debian /var/local/acngfs_debian acngfs /var/cache/apt-cacher-ng/debrep 0 0 
+#http://security.debian.org /var/local/acngfs_debian_security acngfs /var/cache/apt-cacher-ng/security.debian.org 0 0 
 #
 #sources.list example:
 #deb file:/var/local/acngfs_debian wheezy main contrib non-free
+#deb file:/var/local/acngfs_debian_security wheezy/updates main
+#
+#
+#/etc/apt/apt.conf.d/02proxy
+#Acquire::http { Proxy "http://aptcacher:3142"; };
 
-#Don't forget to create the mount point and make aptcacher resolve.
+#Don't forget to create the mount points and make aptcacher resolve.
 
 /usr/lib/apt-cacher-ng/acngfs $1 aptcacher:3142 ${4##*rw,} $2 -o allow_root,auto_unmount
-
-
-
-
-
-
-
