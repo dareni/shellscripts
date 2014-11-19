@@ -15,24 +15,30 @@ usage() {
     echo "No args specified so now running tests ..."
 }
 
+G_ZFS_SRC_FS=$1
+G_ZFS_DEST_FS=$2
+G_ZFS_USER_HOST=$3
 
-G_FILESYSTEM_LIST=""
-G_FILESYSTEM_EXCEPTIONS=""
 G_MAX_SNAPSHOT=""
 G_SNAPSHOT_NAME=""
-G_BRANCH_CNT="0"
+ZFS_NO_DATA_MESSAGE="dataset does not exist"
 
-#BUPFS=zroot/data
-BUPFS=$1
-REMOTEFS=zroot/bup
-REMOTEHOST=root@192.168.1.102
-#snapshot of the root
-ROOTSS=""
-TARGETDIR=${BUPFS##*/}
+# isValidSnapshot return status.
+G_SS_STATUS=0
+
+if [ -z "`which jot`" ]; then
+    echo Please install athena-jot\(bsd jot\) the sequence generator. 
+    exit
+fi
 
 ###############################################################################
-set_avar()
-{
+# shell variable functionality
+###############################################################################
+set_avar() {
+# Set a dynamic variable
+# $1 and $2 are the variable name parts.
+# $3 - the variable value.
+#
   eval "$1_$2=\$3"
 }
 
@@ -46,20 +52,144 @@ get_avar()
   _get_avar "$@" && printf "%s\n" "$_AVAR"
 }
 
-###############################################################################
-getRemote() {
-   echo get $REMOTEFS/$1
-   for line in `ssh $REMOTEHOST zfs list -d 1 -H -o name -t all $REMOTEFS/$1`
-   do
-        snapcnt=`echo $line | grep -c @`
-        if [ 0 -eq "$snapcnt" ]; then
-            currentname=$line
-         currentss=""
-      fi
-   done;
-   return 0;
+array_clear()
+{
+    CNT=`get_avar "$1" 0`
+    for i in `jot "-" 0 ${CNT:-"0"} 1`
+    do
+        unset $1_$i 
+    done
 }
 
+array_iterator() {
+#
+# Return the elements of an array.    
+#
+# $1 the array name
+#
+    local ARRAYNAME="$1"
+    local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
+    if [ ! -z "$ARRAYSIZE" ]; then
+        for CNT in `jot "-" 1 "$ARRAYSIZE" 1`
+        do
+            echo `get_avar "$ARRAYNAME" "$CNT"`
+        done
+    fi
+}
+
+array_add() {
+#
+# Add an element to an array.    
+#
+# $1 the array name.
+# $2 the element value.
+#
+    local ARRAYNAME="$1"
+    local ELEMENT_VALUE="$2"
+    local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
+    if [ -z "$ARRAYSIZE" ]; then
+        ARRAYSIZE=0
+    fi
+    ARRAYSIZE=$((ARRAYSIZE+1))
+    set_avar "$ARRAYNAME" 0 "$ARRAYSIZE"
+    set_avar "$ARRAYNAME" "$ARRAYSIZE" "$ELEMENT_VALUE"
+}
+
+array_size() {
+    local ARRAYNAME="$1"
+    local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
+    echo $ARRAYSIZE
+}
+
+arrayToList() {
+#
+# Convert an array to a list.
+#
+#   $1 - array name
+#
+
+    local ARRAYNAME="$1"
+    local LIST=""
+
+    for ELEMENT in `array_iterator  "$ARRAYNAME"`
+    do
+        if [ -z "$LIST" ]; then
+            LIST=$ELEMENT 
+        else
+            LIST="$LIST $ELEMENT"
+        fi
+    done
+    echo $LIST
+}
+
+listToArray() {
+#
+# Convert a list to an array.
+#
+#   $1 - list
+#   $2 - array name
+#
+    local ARRAYLIST="$1"
+    local ARRAY_NAME="$2"    
+    local CNT=0
+
+    for WORD in $ARRAYLIST
+    do
+        CNT=$((CNT+1))
+        set_avar $ARRAY_NAME $CNT $WORD
+    done;
+    set_avar $ARRAY_NAME 0 $CNT
+}
+
+###############################################################################
+getRemoteFsStatus() {
+#
+# Backup the given filesystem.
+#
+# $1 = the target filesytem on the remote host.
+#
+#  return the `zfs list` listing for the target filesystem.
+#
+#           0 = success 
+#           1 = failure and returns the error message
+#
+    local REMOTEFS="$1" 
+    local USER_HOST="$2"
+    CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
+    eval $CMD
+    return $?;
+}
+
+###############################################################################
+sendNewRemoteFileSystem() {
+#
+# Send the filesystem to the remote host where it does not exist. 
+#
+# $1 = the local filesystem for backup.
+# $2 = the location of the filesytem on the remote host.
+#
+# return    0 = success 
+#           1 = failure and returns the error message
+#
+    local LOCALFS="$1"
+    local REMOTEFS="$2"
+    echo $REMOTEFS
+    REMOTEFS=`dirname $REMOTEFS`
+    echo $REMOTEFS
+    local USER_HOST="$3"
+    local REMOTE_HOST="${USER_HOST#*@}" 
+    local SNAPSHOT_VERSION="$4"
+
+#    RECEIVE=`ssh $USER_HOST 'nc -w 120 -l 192.168.1.102 8023 | zfs receive -d zroot/bup' &`
+#    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
+
+echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS 
+    RECEIVE=`ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023 \| zfs receive -d $REMOTEFS`& 
+echo    SEND=zfs send $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
+    SEND=`zfs send -R $LOCALFS@$SNAPSHOT_VERSION \| nc -w 20 $REMOTE_HOST 8023` 
+
+    return 0;
+}
 
 ###############################################################################
 doBackup() {
@@ -67,24 +197,81 @@ doBackup() {
 # Backup the given filesystem.
 #
 # $1 = the file system.
+# $2 = the remote file system destination.
+# $3 = user host ie user@remotehost 
 #
 # return    0 = success 
 #           1 = failure and returns the error message
 #
-# check the local filesystem for snapshot continuity.
-    local ZFILESYSTEM=$1
-    local ROOTLIST=`zfs list -d 1 -H -o name -t all $ZFILESYSTEM`
-    getSnapshotData "$ROOTLIST"
-    local RET=$?
+    # check the local filesystem for snapshot continuity.
+    local ZFS_SRC_FS="$1"
+    local ZFS_DEST_FS="$2"
+    local USER_HOST="$3"
+    local ROOTLIST=""
+    local LOCAL_ARRAY_PREFIX="MAIN"
+    ROOTLIST=`zfs list -d 1 -H -o name -t all $ZFS_SRC_FS`
+    local REMOTELIST=""
+    SNAPSHOT_DATA=`getSnapshotData "$ROOTLIST"`
+    local RET="$?"
     if [ $? -ne 0 ]; then
         return $?
     fi
-    local FULLLIST=`zfs list -H -o name -t all $ZFILESYSTEM`
-    getSnapshotFilesystems "$FULLLIST" "$G_MAX_SNAPSHOT"
+    MAX_SNAPSHOT="${SNAPSHOT_DATA#*@}"
+    if [ -z "$MAX_SNAPSHOT" ]; then
+        echo No snapshot id for $ZFS_SRC_FS.
+        return 1
+    fi
+    local FULLLIST=""
+    FULLLIST=`zfs list -r -H -o name -t all $ZFS_SRC_FS`
+    getSnapshotFilesystems "$FULLLIST" "$MAX_SNAPSHOT" $LOCAL_ARRAY_PREFIX
+    if [ $? -ne 0 ]; then
+        return $?
+    fi
+    if [ ! -z "${LOCAL_ARRAY_PREFIX}_EXCEPTIONS_ARRAY" ]; then
+        local m1="Filesystem snapshot inconsistencies. The root snapshot" 
+        local m2=" version $MAX_SNAPSHOT is not matched by the filesystems: "
+        echo $m1$m2$G_FILESYSTEM_EXECEPTIONS 
+        return 1 
+    fi
 
-# loop on the local tree sending the data to the remote host
-# send new remote filesystem
-# send incremental remote filesystem
+    # loop on the local tree branches
+    local FS_CNT=1
+    for FILE in `array_iterator ${LOCAL_ARRAY_PREFIX}_FS_ARRAY`
+    do 
+        REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
+        HAS_SNAP=`echo $REMOTE_FS| grep -c @`
+        if [ 0 -eq "$HAS_SNAP" ]; then
+            echo  Error: No snapshot on source file system: $FILE
+            return 1 
+        fi
+        local LOCALFILE="${FILE%@*}"
+        REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
+        REMOTELIST=$(getRemoteFsStatus "$REMOTE_FS" "$USER_HOST")
+        local RET="$?"
+        if [ -z "$REMOTELIST" ]; then
+            echo "Remote FS status failure. status: $RET"
+        fi
+        DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"` 
+        # check each remote host branch status
+        if [ "$DOES_NOT_EXIST" -ne 0 ]; then
+            # send new remote filesystem
+            #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS"
+            echo sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+            sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+        else
+            if [ $RET -ne 0 ]; then
+                echo "Remote FS status failure. status: $RET error: $REMOTELIST"
+            fi
+            # check the REMOTE LIST for the snapshot version.
+            REMOTE_SNAPSHOT_DATA=`getSnapshotData "$REMOTELIST"`
+            REMOTE_SNAPSHOT_VERSION=" ${REMOTE_SNAPSHOT_DATA%@*} "
+            LOCAL_BRANCH_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
+            SS_VERSIONS_TO_SEND=${LOCAL_BRANCH_VERSION#*$REMOTE_SNAPSHOT_VERSION}
+            echo "sendIncremental $SS_VERSIONS_TO_SEND"
+        fi 
+
+        FS_CNT=$((FS_CNT+1))
+    done;
 }
 
 ###############################################################################
@@ -92,78 +279,72 @@ getSnapshotData() {
 #
 # Get the G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root. 
 #
-# $1 = the list from `zfs list -d 1 -H -o name -t all zfilesystem`
+# $1 = name of an array containing `zfs list -d 1 -H -o name -t all zfilesystem`
 #
 # return    G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root. 
 #           0 = success 
 #           1 = failure and returns the error message
 
-    G_MAX_SNAPSHOT=""
-    G_SNAPSHOT_NAME=""
-    local LIST=$1
-    local LINE=""
+    local MAX_SNAPSHOT=""
+    local SNAPSHOT_NAME=""
+    local ARRAYNAME="$1"
+    local FS=""
     local SNAPCNT=""
     local FIRST="1"
+    local CURRENTSS=""
 
-    for LINE in $LIST
+    for FS in `array_iterator "$ARRAYNAME"`
     do
-        SNAPCNT=`echo "$LINE" | grep -c @`
+        SNAPCNT=`echo "$FS" | grep -c @`
         if [ 0 -eq "$SNAPCNT" ]; then
-            if [ -z "$G_SNAPSHOT_NAME" ]; then
-                G_SNAPSHOT_NAME=$LINE
+            if [ -z "$SNAPSHOT_NAME" ]; then
+                SNAPSHOT_NAME="$FS"
             fi 
         else        
-            if [ -z "$G_SNAPSHOT_NAME" ]; then
-                G_SNAPSHOT_NAME=${LINE%%@*}
+            if [ -z "$SNAPSHOT_NAME" ]; then
+                SNAPSHOT_NAME="${FS%%@*}"
             fi
-            if [ "${LINE%%@*}" != "$G_SNAPSHOT_NAME" ]; then
-                echo "Name mismatch '${LINE%%@*}' != '$G_SNAPSHOT_NAME'"
+            if [ "${FS%%@*}" != "$SNAPSHOT_NAME" ]; then
+                echo "Name mismatch '${FS%%@*}' != '$SNAPSHOT_NAME'"
                 return 1
             fi
-            local CURRENTSS=$(getSnapshotVersion $LINE)
-            G_MAX_SNAPSHOT="$CURRENTSS"
+            CURRENTSS=$(getSnapshotVersion "$FS")
+            MAX_SNAPSHOT="$CURRENTSS"
         fi
     done;
+    echo "$SNAPSHOT_NAME@$MAX_SNAPSHOT"
     return 0;
 }
 
 ###############################################################################
 sortSnapshotFilesystems() {
 #
-# Adjusts G_FILESYSTEM_LIST and G_FILESYSTEM_EXCEPTIONS with the last line
-# filesystem snapshot. 
+# Adjusts <PREFIX>_FS_ARRAY and <PREFIX>_EXCEPTIONS_ARRAY with the last filesystem. 
 #
-# $1 = last line
-# $2 = current line
-# $3 = snapshot version
+# $1 = last filesystem.
+# $2 = current filesystem.
+# $3 = snapshot version.
+# $4 = the return array name <PREFIX>.
 #
-# return    G_FILESYSTEM_LIST contains all filesystems for the
+# return    <PREFIX>_FS_ARRAY contains all filesystems for the
 #               given snapshot.
-#           G_FILESYSTEM_EXCEPTIONS contains all filesystems without 
+#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without 
 #               the given snapshot.
-#           G_SS_STATUS - isValidSnapshot status.
+#           G_SS_STATUS - isValidSnapshot return status.
 #
 #           0 = success 
 #           1 = failure and returns the error message
 #
-    local LASTLINE=$1
-    local CURRENTLINE=$2
-    local SSVERSION=$3
-    isValidSnapshot "$LASTLINE" "$CURRENTLINE" "$SSVERSION" 
+    local LASTFS="$1"
+    local CURRENTFS="$2"
+    local SSVERSION="$3"
+    local AN_PREFIX="$4"
+    isValidSnapshot "$LASTFS" "$CURRENTFS" "$SSVERSION" 
     G_SS_STATUS=$?
     if [ $G_SS_STATUS -eq 0 ]; then
-        if [ -z  "$G_FILESYSTEM_LIST" ]; then
-            G_FILESYSTEM_LIST="$LASTLINE"
-        else
-            G_FILESYSTEM_LIST="$G_FILESYSTEM_LIST $LASTLINE"
-        fi
+        array_add "${AN_PREFIX}_FS_ARRAY" "$LASTFS"
     elif [ $G_SS_STATUS -eq 1 ]; then
-        if [ -z  "$G_FILESYSTEM_EXCEPTIONS" ]; then
-            G_FILESYSTEM_EXCEPTIONS="$LASTLINE"
-        else
-            G_FILESYSTEM_EXCEPTIONS="$G_FILESYSTEM_EXCEPTIONS $LASTLINE"
-        fi
-
+        array_add "${AN_PREFIX}_EXCEPTIONS_ARRAY" "$LASTFS"
     elif [ $G_SS_STATUS -eq 3 ]; then
         echo $MSG
         return 1;
@@ -174,85 +355,86 @@ sortSnapshotFilesystems() {
 ###############################################################################
 getSnapshotFilesystems() {
 #
-# Build a list of all filesystems matching the given snapshot version.
+# Build an array containing all of the filesystems matching the given
+# snapshot version.
 #
-# $1 = the list of file systems
-# $2 = the snapshot version
+# $1 = the array name containing the file system list.
+# $2 = the snapshot version.
+# $3 = the return array name <PREFIX>.
 #
-# return    G_FILESYSTEM_LIST contains all filesystems for the
+# return    <PREFIX>_FS_ARRAY contains all filesystems for the
 #               given snapshot.
-#           G_FILESYSTEM_EXCEPTIONS contains all filesystems without 
+#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without 
 #               the given snapshot.
-#           G_BRANCH_CNT is the number of filesystems in G_FILESYSTEM_LIST
-#           G_BRANCH_SS_LIST array contains the snapshot identifiers
-#               for each branch/filesystem in G_FILESYSTEM_LIST.
+#           <PREFIX>_SS_LIST_ARRAY array contains the snapshot identifiers
+#               for each branch/filesystem in _FS_ARRAY.
 #           0 = success 
 #           1 = failure and returns the error message
 #
-    G_FILESYSTEM_LIST=""
-    G_FILESYSTEM_EXCEPTIONS=""
-    local LIST=$1
-    local SSVERSION=$2
+    local ARRAYNAME="$1"
+    local SSVERSION="$2"
+    local AN_PREFIX="$3"
+    array_clear "${AN_PREFIX}_FS_ARRAY"
+    array_clear "${AN_PREFIX}_EXCEPTIONS_ARRAY"
+    array_clear "${AN_PREFIX}_SS_LIST_ARRAY"
+
     local RET=0
     local CURRENTLINE=""
     local LASTLINE=""
     local FIRST="1"
-    if [ $G_BRANCH_CNT -gt 0 ]; then
-        while [ $G_BRANCH_CNT -gt 0 ]; do 
-           set_avar G_BRANCH_SS_LIST $G_BRANCH_CNT ""
-           G_BRANCH_CNT=$((G_BRANCH_CNT-1))
-        done;
-    fi
-    G_BRANCH_CNT=1
+    local LASTSS=""
 
-    for LINE in $LIST ""
+    local BRANCH_CNT=1
+
+    for LINE in `array_iterator $ARRAYNAME` ""
     do
-        CURRENTLINE=$LINE
+        CURRENTLINE="$LINE"
         local SSLIST=""
         if [ "$FIRST" = "0" ]; then
-            sortSnapshotFilesystems "$LASTLINE" "$CURRENTLINE" "$SSVERSION"
+            sortSnapshotFilesystems "$LASTLINE" "$CURRENTLINE" "$SSVERSION" "$AN_PREFIX"
             if [ $? -eq 1 ]; then
                 return 1;
             fi
             #store the snapshots for each branch
             if [ "$G_SS_STATUS" -eq 2 -o "$G_SS_STATUS" -eq 0 ]; then
                 #is an intermediate or final snapshot so add to the list.   
-                local LASTSS=$(getSnapshotVersion $LASTLINE)
-                SSLIST=$(get_avar G_BRANCH_SS_LIST $G_BRANCH_CNT) 
+                LASTSS=$(getSnapshotVersion "$LASTLINE")
+                SSLIST=$(get_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT") 
                 if [ ! -z "$LASTSS" ]; then
                     if [ -z "$SSLIST" ]; then
-                        SSLIST=$LASTSS
+                        SSLIST="$LASTSS"
                     else
                         SSLIST="$SSLIST $LASTSS"
                     fi
                 fi
-                set_avar G_BRANCH_SS_LIST $G_BRANCH_CNT "$SSLIST"
+                set_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT" "$SSLIST"
             fi
 
             if [ $G_SS_STATUS -eq 0 ]; then
                 #Set the branch counter for the next branch
-                G_BRANCH_CNT=$((G_BRANCH_CNT+1))
+                BRANCH_CNT=$((BRANCH_CNT+1))
             elif [ $G_SS_STATUS -eq 1 ]; then
                 #is an invalid snapshot collection so clear the list.   
-                set_avar G_BRANCH_SS_LIST $G_BRANCH_CNT ""
+                set_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT" ""
             fi
         else
             FIRST="0"
         fi
-        LASTLINE=$CURRENTLINE
+        LASTLINE="$CURRENTLINE"
     done
-    G_BRANCH_CNT=$((G_BRANCH_CNT-1))
+    BRANCH_CNT=$((BRANCH_CNT-1))
+    set_avar "${AN_PREFIX}_SS_LIST_ARRAY" "0" "$BRANCH_CNT"
     return 0;
 }
 
 ###############################################################################
 getSnapshotVersion() {
-    local TMPSTR=$1
-    local SNAPSHOT=${TMPSTR##*@}
+    local TMPSTR="$1"
+    local SNAPSHOT="${TMPSTR##*@}"
     if [ "$TMPSTR" = "$SNAPSHOT" ]; then
         SNAPSHOT="" 
     fi
-    echo $SNAPSHOT
+    echo "$SNAPSHOT"
     return 0;
 }
 
@@ -267,10 +449,10 @@ nameValidation() {
 # return    0 = valid 
 #           1 = invalid
 
-    local LASTLINE=$1
-    local CURRENTLINE=$2
-    local LASTNAME=${LASTLINE%%@*}
-    local CURRENTNAME=${CURRENTLINE%%@*}
+    local LASTLINE="$1"
+    local CURRENTLINE="$2"
+    local LASTNAME="${LASTLINE%%@*}"
+    local CURRENTNAME="${CURRENTLINE%%@*}"
 
     if [ "$LASTNAME" != "$CURRENTNAME" ]; then
         echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE"
@@ -297,11 +479,13 @@ isValidSnapshot() {
 #           2 = intermediate snapshot
 #           3 = error
 #
-    local LASTLINE=$1
-    local CURRENTLINE=$2
-    local SSVERSION=$3
-    local L_HAS_SNAP=`echo $LASTLINE | grep -c @`
-    local C_HAS_SNAP=`echo $CURRENTLINE | grep -c @`
+    local LASTLINE="$1"
+    local CURRENTLINE="$2"
+    local SSVERSION="$3"
+    local L_HAS_SNAP=""
+    L_HAS_SNAP=`echo "$LASTLINE" | grep -c @`
+    local C_HAS_SNAP=""
+    C_HAS_SNAP=`echo "$CURRENTLINE" | grep -c @`
     local LASTNAME="" 
     local CURRENTNAME=""
 
@@ -330,7 +514,7 @@ isValidSnapshot() {
         if [ $C_HAS_SNAP -eq 0 ]; then 
             #Check the last for the correct snapshot version.
             #Current and last names do not need to match.
-            LASTSS=$(getSnapshotVersion $LASTLINE)
+            LASTSS=$(getSnapshotVersion "$LASTLINE")
             if [ -z "$SSVERSION"  -o "$LASTSS" = "$SSVERSION"  ]; then 
                 #Is a valid snapshot.
                 return 0;
@@ -367,6 +551,24 @@ if [ 3 -ne $# ]; then
 
     usage
 
+    ### array tests ########################################################### 
+    echo
+    array_add tst w  
+    array_add tst x  
+    array_add tst y  
+    assertEqual "$tst_0" "3" arrayValidation1
+    assertEqual "$tst_1" "w" arrayValidation2
+    assertEqual "$tst_2" "x" arrayValidation3
+    assertEqual "$tst_3" "y" arrayValidation4
+    assertEqual "$tst_4" "" arrayValidation5
+    echo array add test ok.
+    array_clear tst
+    assertEqual "$tst_0" "" arrayValidation6
+    assertEqual "$tst_1" "" arrayValidation7
+    assertEqual "$tst_2" "" arrayValidation8
+    assertEqual "$tst_3" "" arrayValidation9
+    echo array tests ok.
+
     ### nameValidation tests ################################################## 
     RET=$(nameValidation "zpool/data" "zpool/data")
     assertEqual $? 0 "nameValidation1" "$RET"
@@ -388,6 +590,7 @@ if [ 3 -ne $# ]; then
 
     RET=$(nameValidation "zpool/" "zpool")
     assertEqual $? 1 "nameValidation6" "$RET"
+    echo nameValidation tests ok.
 
     ### isValidSnapshot tests ################################################# 
     RET=$(isValidSnapshot "zpool/data" "zpool/data" "0") 
@@ -428,115 +631,136 @@ if [ 3 -ne $# ]; then
 
     RET=$(isValidSnapshot "zpool/data@0" "zpool/data@3" "") 
     assertEqual $? 2 "isValidSnapshot11" "$RET"
+    echo isValidSnapshot tests ok.
 
     ### getSnapshotFilesystems tests ########################################## 
     TEST="zpool/data@0"
-    getSnapshotFilesystems "$TEST" "0" 
+    array_clear TEST
+    listToArray "$TEST" TEST
+    getSnapshotFilesystems TEST 0 G
     assertEqual $? 0 "getSnapshotFilesystems1" 
-    assertEqual "$G_FILESYSTEM_LIST" "$TEST" "getSnapshotFilesystems2"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "" "getSnapshotFilesystems3"
-    assertEqual "$G_BRANCH_CNT" 1 getSnapshotFilesystems1a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST $G_BRANCH_CNT)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$TEST" "getSnapshotFilesystems2"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "" "getSnapshotFilesystems3"
+    assertEqual "`array_size G_FS_ARRAY`" 1 getSnapshotFilesystems1a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY "`array_size G_FS_ARRAY`")
     assertEqual "$TESTRET" "0" getSnapshotFilesystems1b
 
     TEST="zpool/data@0 zpool/data@1 zpool/data/test zpool/data/test1"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="zpool/data@1 zpool/data/test zpool/data/test1"
     FSE=""
-    getSnapshotFilesystems "$TEST" "" 
+    getSnapshotFilesystems TEST "" G
     assertEqual $? 0 "getSnapshotFilesystems4" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems5"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems6"
-    assertEqual "$G_BRANCH_CNT" 3 getSnapshotFilesystems4a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 1)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems5"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems6"
+    assertEqual "`array_size G_FS_ARRAY`" 3 getSnapshotFilesystems4a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 1)
     assertEqual "$TESTRET" "0 1" getSnapshotFilesystems4b
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 2)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 2)
     assertEqual "$TESTRET" "" getSnapshotFilesystems4c
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 3)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 3)
     assertEqual "$TESTRET" "" getSnapshotFilesystems4d
 
     TEST="zpool/data@0 zpool/data@1 zpool/data/test zpool/data/test@1"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="zpool/data@1 zpool/data/test@1"
     FSE=""
-    getSnapshotFilesystems "$TEST" "" 
+    getSnapshotFilesystems TEST "" G
     assertEqual $? 0 "getSnapshotFilesystems7" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems8"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems9"
-    assertEqual "$G_BRANCH_CNT" 2 getSnapshotFilesystems7a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 1)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems8"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems9"
+    assertEqual "`array_size G_FS_ARRAY`" 2 getSnapshotFilesystems7a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 1)
     assertEqual "$TESTRET" "0 1" getSnapshotFilesystems7b
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 2)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 2)
     assertEqual "$TESTRET" "1" getSnapshotFilesystems7c
 
     TEST="zpool/data@0 zpool/data@1 zpool/data/test zpool/data/test@1"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="zpool/data@1 zpool/data/test@1"
     FSE=""
-    getSnapshotFilesystems "$TEST" "1" 
+    getSnapshotFilesystems TEST 1 G
     assertEqual $? 0 "getSnapshotFilesystems10" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems11"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems12"
-    assertEqual "$G_BRANCH_CNT" 2 getSnapshotFilesystems11a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 1)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems11"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems12"
+    assertEqual "`array_size G_FS_ARRAY`" 2 getSnapshotFilesystems11a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 1)
     assertEqual "$TESTRET" "0 1" getSnapshotFilesystems11b
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 2)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 2)
     assertEqual "$TESTRET" "1" getSnapshotFilesystems11c
 
     TEST="zpool/data zpool/data@0 zpool/data/test zpool/data/test@1"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="zpool/data/test@1"
     FSE="zpool/data@0"
-    getSnapshotFilesystems "$TEST" "1" 
+    getSnapshotFilesystems TEST 1 G
     assertEqual $? 0 "getSnapshotFilesystems13" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems14"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems15"
-    assertEqual "$G_BRANCH_CNT" 1 getSnapshotFilesystems13a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 1)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems14"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems15"
+    assertEqual "`array_size G_FS_ARRAY`" 1 getSnapshotFilesystems13a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 1)
     assertEqual "$TESTRET" "1" getSnapshotFilesystems13b
 
     TEST="z/d z/d@0 z/d/t@0"
-    getSnapshotFilesystems "$TEST" "" >/dev/null
+    array_clear TEST
+    listToArray "$TEST" TEST
+    getSnapshotFilesystems TEST "" G >/dev/null
     assertEqual $? 1 "getSnapshotFilesystems16" 
 
     TEST="z/d z/d@0 z/d/a z/d/b z/d/c z/d/c@0"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="z/d@0 z/d/a z/d/b z/d/c@0"
     FSE=""
-    getSnapshotFilesystems "$TEST" "" 
+    getSnapshotFilesystems TEST "" G
     assertEqual $? 0 "getSnapshotFilesystems17" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems18"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems19"
-    assertEqual "$G_BRANCH_CNT" 4 getSnapshotFilesystems17a
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 1)
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems18"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems19"
+    assertEqual "`array_size G_FS_ARRAY`" 4 getSnapshotFilesystems17a
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 1)
     assertEqual "$TESTRET" "0" getSnapshotFilesystems17b
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 2)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 2)
     assertEqual "$TESTRET" "" getSnapshotFilesystems17c
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 3)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 3)
     assertEqual "$TESTRET" "" getSnapshotFilesystems17d
-    TESTRET=$(get_avar G_BRANCH_SS_LIST 4)
+    TESTRET=$(get_avar G_SS_LIST_ARRAY 4)
     assertEqual "$TESTRET" "0" getSnapshotFilesystems17e
 
     TEST="z/d z/d@0 z/d/a z/d/b z/d/c z/d/c@0"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS=""
     FSE="z/d@0 z/d/a z/d/b z/d/c@0"
-    getSnapshotFilesystems "$TEST" "1" 
+    getSnapshotFilesystems TEST "1" G
     assertEqual $? 0 "getSnapshotFilesystems20" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems21"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems22"
-    assertEqual "$G_BRANCH_CNT" 0 getSnapshotFilesystems20a
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems21"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems22"
+    assertEqual "`array_size G_FS_ARRAY`" "" getSnapshotFilesystems20a
 
     TEST="z/a z/b z/c z/d"
+    array_clear TEST
+    listToArray "$TEST" TEST
     FS="z/a z/b z/c z/d"
     FSE=""
-    getSnapshotFilesystems "$TEST" "" 
+    getSnapshotFilesystems TEST "" G
     assertEqual $? 0 "getSnapshotFilesystems23" 
-    assertEqual "$G_FILESYSTEM_LIST" "$FS" "getSnapshotFilesystems24"
-    assertEqual "$G_FILESYSTEM_EXCEPTIONS" "$FSE" "getSnapshotFilesystems25"
-    assertEqual "$G_BRANCH_CNT" 4 getSnapshotFilesystems23a
+    assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems24"
+    assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems25"
+    assertEqual "`array_size G_FS_ARRAY`" 4 getSnapshotFilesystems23a
+    echo getSnapshotFilesystems tests ok.
 
     ### getSnapshotData tests ################################################# 
-    TEST="z/d z/d@0 z/d@1 z/d@2 z/d/c z/d/e"
-    getSnapshotData "$TEST"
+    array_clear TEST
+    listToArray "z/d z/d@0 z/d@1 z/d@2 z/d/c z/d/e" TEST
+    SNAPSHOTDATA=`getSnapshotData "TEST"`
     assertEqual $? 0 "getSnapshotData1" 
-    assertEqual "$G_MAX_SNAPSHOT" "2" "getSnapshotData2" 
-    assertEqual "$G_SNAPSHOT_NAME" "z/d" "getSnapshotData3" 
-
+    assertEqual "${SNAPSHOTDATA#*@}" "2" "getSnapshotData2" 
+    assertEqual "${SNAPSHOTDATA%@*}" "z/d" "getSnapshotData3" 
+    echo getSnapshotData tests ok.
 
     ### tests complete ######################################################## 
     echo Tests completed ok.
@@ -545,67 +769,4 @@ if [ 3 -ne $# ]; then
 fi
 
 echo Starting backup ...
-exit
-###############################################################################
-#remotelist=`ssh $REMOTEHOST zfs list -d 1 -H -o name -t all $REMOTEFS/$1`
-
-list=`zfs list -r -H -o name -t all $BUPFS`
-echo $list
-
-exit
-
-
-if [ -z $BUPFS ]; then
-   echo Usage zfsBup.sh bupfs
-   exit 0;
-fi
-
-for line in `zfs list -r -H -o name -t all $BUPFS`
-do
-   SNAP=`echo $line | grep -c @`
-   if [ 0 -eq "$SNAP" ]; then
-      CURRENTNAME=$line
-      CURRENTSS=""
-      getMaxSnapShot $TARGETDIR${CURRENTNAME#*$TARGETDIR}
-   else 
-      CURRENTSS=${line##*@}
-      CURRENTNAME=${line%%@*}
-   fi
-   if [ -z "$LASTNAME" ]; then
-      LASTNAME=${CURRENTNAME}
-   fi
-   if [ "$CURRENTNAME" = "$LASTNAME" ]; then
-   #save the snapshot version
-      if [ -z "$CURRENTSS" -a ! -z "$ROOTSS" ]; then
-         echo Error1: No snapshot for $CURRENTNAME.
-      else
-         LASTSS=$CURRENTSS
-      fi
-   else
-   #next file system    
-      if [ ! -z "$ROOTSS" ]; then
-         if [ "$LASTSS" != "$ROOTSS" ]; then
-            echo Error2: Filesystem $LASTNAME has snapshot $LASTSS, not snapshot: $ROOTSS
-         else
-            echo Filesystem: $LASTNAME@$LASTSS ok.  
-         fi 
-      else 
-         if [ -z "$LASTSS" ]; then
-            echo Error0: No snapshot for root file system.
-            exit 0;
-         else
-            echo Filesystem: $LASTNAME@$LASTSS is the root. 
-            ROOTSS=$LASTSS
-         fi
-      fi
-      LASTNAME=$CURRENTNAME
-   fi 
-done;
-
-if [ "$LASTSS" != "$ROOTSS" ]; then
-   echo Error2: Filesystem $LASTNAME has snapshot $LASTSS, not snapshot: $ROOTSS
-else
-   echo Filesystem: $LASTNAME@$LASTSS ok.  
-fi 
-
-
+doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
