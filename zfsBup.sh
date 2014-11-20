@@ -98,7 +98,7 @@ array_add() {
 array_size() {
     local ARRAYNAME="$1"
     local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
-    echo $ARRAYSIZE
+    echo ${ARRAYSIZE:-0}
 }
 
 arrayToList() {
@@ -147,6 +147,7 @@ getRemoteFsStatus() {
 # Backup the given filesystem.
 #
 # $1 = the target filesytem on the remote host.
+# $2 = the target user@host.
 #
 #  return the `zfs list` listing for the target filesystem.
 #
@@ -156,6 +157,7 @@ getRemoteFsStatus() {
     local REMOTEFS="$1" 
     local USER_HOST="$2"
     CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
+#    echo "$CMD" >/dev/stderr
     eval $CMD
     return $?;
 }
@@ -173,9 +175,7 @@ sendNewRemoteFileSystem() {
 #
     local LOCALFS="$1"
     local REMOTEFS="$2"
-    echo $REMOTEFS
     REMOTEFS=`dirname $REMOTEFS`
-    echo $REMOTEFS
     local USER_HOST="$3"
     local REMOTE_HOST="${USER_HOST#*@}" 
     local SNAPSHOT_VERSION="$4"
@@ -184,11 +184,17 @@ sendNewRemoteFileSystem() {
 #    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
 
 echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS 
-    RECEIVE=`ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023 \| zfs receive -d $REMOTEFS`& 
-echo    SEND=zfs send $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
-    SEND=`zfs send -R $LOCALFS@$SNAPSHOT_VERSION \| nc -w 20 $REMOTE_HOST 8023` 
-
-    return 0;
+    CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -d $REMOTEFS"
+    ssh $USER_HOST "$CMD" & 
+    RXPID=$?
+    sleep 2
+echo    SEND=zfs send -R $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
+    zfs send -R $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
+    RET=$?
+    if [ $RET -ne 0 ]; then
+        kill -9 $RXPID
+    fi
+    return $RET;
 }
 
 ###############################################################################
@@ -207,11 +213,13 @@ doBackup() {
     local ZFS_SRC_FS="$1"
     local ZFS_DEST_FS="$2"
     local USER_HOST="$3"
-    local ROOTLIST=""
-    local LOCAL_ARRAY_PREFIX="MAIN"
-    ROOTLIST=`zfs list -d 1 -H -o name -t all $ZFS_SRC_FS`
+    for FS in `zfs list -d 1 -H -o name -t all $ZFS_SRC_FS`
+    do
+        array_add ROOTLIST "$FS"
+    done;
+
     local REMOTELIST=""
-    SNAPSHOT_DATA=`getSnapshotData "$ROOTLIST"`
+    SNAPSHOT_DATA=`getSnapshotData ROOTLIST`
     local RET="$?"
     if [ $? -ne 0 ]; then
         return $?
@@ -221,22 +229,24 @@ doBackup() {
         echo No snapshot id for $ZFS_SRC_FS.
         return 1
     fi
-    local FULLLIST=""
-    FULLLIST=`zfs list -r -H -o name -t all $ZFS_SRC_FS`
-    getSnapshotFilesystems "$FULLLIST" "$MAX_SNAPSHOT" $LOCAL_ARRAY_PREFIX
+    for FS in `zfs list -r -H -o name -t all $ZFS_SRC_FS`
+    do
+        array_add FULL_LIST "$FS"
+    done
+    getSnapshotFilesystems FULL_LIST "$MAX_SNAPSHOT" MAIN
     if [ $? -ne 0 ]; then
         return $?
     fi
-    if [ ! -z "${LOCAL_ARRAY_PREFIX}_EXCEPTIONS_ARRAY" ]; then
-        local m1="Filesystem snapshot inconsistencies. The root snapshot" 
-        local m2=" version $MAX_SNAPSHOT is not matched by the filesystems: "
-        echo $m1$m2$G_FILESYSTEM_EXECEPTIONS 
+    if [ "`array_size MAIN_EXCEPTIONS_ARRAY`" -ne 0 ]; then
+        local M1="Filesystem snapshot inconsistencies. The root snapshot" 
+        local M2=" version $MAX_SNAPSHOT is not matched by the filesystems: "
+        echo $M1$M2$G_FILESYSTEM_EXECEPTIONS 
         return 1 
     fi
 
     # loop on the local tree branches
     local FS_CNT=1
-    for FILE in `array_iterator ${LOCAL_ARRAY_PREFIX}_FS_ARRAY`
+    for FILE in `array_iterator MAIN_FS_ARRAY`
     do 
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
@@ -456,6 +466,7 @@ nameValidation() {
 
     if [ "$LASTNAME" != "$CURRENTNAME" ]; then
         echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE"
+        echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'"
         return 1;                 
     fi
     return 0;
