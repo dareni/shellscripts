@@ -219,6 +219,10 @@ DestroyFunc FvwmChrome
 AddToFunc   FvwmChrome
 + I Exec exec chromium
 
+DestroyFunc FvwmVirtualBox
+AddToFunc   FvwmVirtualBox
++ I Exec exec virtualbox 
+
 DestroyFunc FvwmXpdf
 AddToFunc   FvwmXpdf
 + I Exec exec xpdf
@@ -447,6 +451,7 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "&Xterm" FvwmXTerm
 + "&Firefox" FvwmFireFox
 + "&Chrome" FvwmChrome
++ "&Virtualbox" FvwmVirtualBox
 + "" Nop
 + "&Hosts" Menu HostMenu
 + "&Scripts" Menu ScriptMenu
@@ -495,6 +500,7 @@ AddToMenu HostMenu
 + "&Daisy" Exec exec xterm -T daisy -e ~/bin/hosts.sh daisy  
 + "&Bud"   Exec exec xterm -T bud -e ~/bin/hosts.sh bud
 + "&Noddy"   Exec exec xterm -T noddy  -e ~/bin/hosts.sh noddy
++ "B&ob"   Exec exec xterm -T bob -e ~/bin/hosts.sh bob 
 
 DestroyMenu Jconsole
 AddToMenu Jconsole

@@ -14,11 +14,12 @@ vboxmanage modifyvm "$VMNAME" --boot1 dvd --boot2 disk --audio none --usb off --
 vboxmanage storagectl "$VMNAME" --name ide --add ide --controller PIIX4 --bootable on
 vboxmanage storageattach "$VMNAME" --storagectl ide --port 0 --device 0 --type dvddrive --medium emptydrive
 
-#Create hd
-vboxmanage storagectl "$VMNAME" --name scsi --add scsi --controller LSILogic --bootable on --hostiocache on
+#Create hd use sata - for best freebsd support.
+#vboxmanage storagectl "$VMNAME" --name scsi --add scsi --controller LSILogic --bootable on --hostiocache on
+vboxmanage storagectl "$VMNAME" --name sata --add sata  --bootable on --hostiocache on
 export ROOTFILE="$BASEFOLDER/$VMNAME/${VMNAME}_root.vdi"
 vboxmanage createhd --filename "$ROOTFILE" --format VDI --size 2048 --variant Standard
-vboxmanage storageattach "$VMNAME" --storagectl scsi --port 0 --device 0 --type hdd --medium "$ROOTFILE"
+vboxmanage storageattach "$VMNAME" --storagectl sata --port 0 --device 0 --type hdd --medium "$ROOTFILE"
 
 #Separate swap disk
 SWAPFILE="$BASEFOLDER/$VMNAME/${VMNAME}_swap.vdi"
