@@ -29,3 +29,5 @@ vboxmanage  storageattach "$VMNAME" --storagectl scsi --port 1 --device 0 --type
 #vboxmanage unregistervm fbsd --delete
 #vboxmanage startvm $VMNAME
 #vboxmanage clonevm s1 --mode all --name s2 --basefolder "$BASEFOLDER" --register
+#vboxmanage modifyhd /vm/disk1.vdi --resizebyte 1073741824
+
