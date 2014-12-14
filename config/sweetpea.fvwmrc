@@ -544,6 +544,9 @@ Key Super_L A A QuickMenu
 #Key XF86AudioRaiseVolume A A Exec exec /usr/bin/amixer sset Master,0 10%+,10%+ 
 #Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%- 
 #Key XF86AudioMute A A Exec exec /usr/bin/amixer sset Master,0 toggle
+Key XF86AudioRaiseVolume A A Exec exec ~/bin/pa-vol.py plus
+Key XF86AudioLowerVolume A A Exec exec ~/bin/pa-vol.py minus
+Key XF86AudioMute A A Exec exec ~/bin/pa-vol.py mute
 Key F8 A C Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
 Key F9 A C Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus 
 Key F10 A C Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
