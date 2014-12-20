@@ -10,7 +10,14 @@
 usage() {
     echo "Usage ./zfsBup.sh src_zfs dest_zfs user@remote_host"
     echo
-    echo example: ./zfsup.sh zpool/data zpool/data/bup root@192.168.1.102
+    echo example: 
+    echo "          1) Create a snapshot."
+    echo
+    echo "      zfs snapshot -r zroot/zdata@1"
+    echo          
+    echo "          2) Do the backup."
+    echo 
+    echo "      zfsBup.sh zroot/data zroot/bup root@192.168.1.102"
     echo
     echo "No args specified so now running tests ..."
 }
@@ -68,7 +75,13 @@ array_iterator() {
 # $1 the array name
 #
     local ARRAYNAME="$1"
+    local VALIDNAME=`echo "$ARRAYNAME" |grep " " -c`
+    if [ $VALIDNAME -gt 0 ]; then
+        echo "Invalid arrayname \"$ARRAYNAME\"." >/dev/stderr
+        exit 1
+    fi
     local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
+    
     if [ ! -z "$ARRAYSIZE" ]; then
         for CNT in `jot "-" 1 "$ARRAYSIZE" 1`
         do
@@ -157,7 +170,7 @@ getRemoteFsStatus() {
     local REMOTEFS="$1" 
     local USER_HOST="$2"
     CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
-#    echo "$CMD" >/dev/stderr
+#echo "$CMD" >/dev/stderr
     eval $CMD
     return $?;
 }
@@ -169,13 +182,15 @@ sendNewRemoteFileSystem() {
 #
 # $1 = the local filesystem for backup.
 # $2 = the location of the filesytem on the remote host.
+# $3 = the remote username@hostname
+# $4 = snapshot version to send
 #
 # return    0 = success 
 #           1 = failure and returns the error message
 #
     local LOCALFS="$1"
     local REMOTEFS="$2"
-    REMOTEFS=`dirname $REMOTEFS`
+#REMOTEFS=`dirname $REMOTEFS`
     local USER_HOST="$3"
     local REMOTE_HOST="${USER_HOST#*@}" 
     local SNAPSHOT_VERSION="$4"
@@ -188,8 +203,30 @@ echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $R
     ssh $USER_HOST "$CMD" & 
     RXPID=$?
     sleep 2
-echo    SEND=zfs send -R $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
-    zfs send -R $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
+echo    SEND=zfs send $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
+    zfs send $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
+    RET=$?
+    if [ $RET -ne 0 ]; then
+        kill -9 $RXPID
+    fi
+    return $RET;
+}
+
+###############################################################################
+sendIncrementalFileSystem() {
+#
+# Send the filesystem to the remote host where it does not exist. 
+#
+# $1 = the local filesystem for backup.
+# $2 = the location of the filesytem on the remote host.
+# $3 = the remote username@hostname
+# $4 = snapshot version list to send
+    CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -d $REMOTEFS"
+    ssh $USER_HOST "$CMD" & 
+    RXPID=$?
+    echo "$CMD"
+    sleep 2
+    zfs send $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
     RET=$?
     if [ $RET -ne 0 ]; then
         kill -9 $RXPID
@@ -248,6 +285,9 @@ doBackup() {
     local FS_CNT=1
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do 
+        echo "Bup filesystem: $FILE" > /dev/stderr
+        echo continue?
+        read blah
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
@@ -257,6 +297,7 @@ doBackup() {
         local LOCALFILE="${FILE%@*}"
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
         REMOTELIST=$(getRemoteFsStatus "$REMOTE_FS" "$USER_HOST")
+        echo remotelist=$REMOTELIST
         local RET="$?"
         if [ -z "$REMOTELIST" ]; then
             echo "Remote FS status failure. status: $RET"
@@ -266,21 +307,26 @@ doBackup() {
         if [ "$DOES_NOT_EXIST" -ne 0 ]; then
             # send new remote filesystem
             #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS"
-            echo sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
-            sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+            echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+#sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+            sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT"
         else
             if [ $RET -ne 0 ]; then
                 echo "Remote FS status failure. status: $RET error: $REMOTELIST"
             fi
+#echo $REMOTELIST  > /dev/stderr
             # check the REMOTE LIST for the snapshot version.
-            REMOTE_SNAPSHOT_DATA=`getSnapshotData "$REMOTELIST"`
+            listToArray "$REMOTELIST" arrayREMOTELIST 
+            REMOTE_SNAPSHOT_DATA=`getSnapshotData arrayREMOTELIST`
+#echo $REMOTE_SNAPSHOT_DATA  > /dev/stderr
             REMOTE_SNAPSHOT_VERSION=" ${REMOTE_SNAPSHOT_DATA%@*} "
             LOCAL_BRANCH_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
             SS_VERSIONS_TO_SEND=${LOCAL_BRANCH_VERSION#*$REMOTE_SNAPSHOT_VERSION}
-            echo "sendIncremental $SS_VERSIONS_TO_SEND"
+            echo "sendIncrementalFileSystem \"$SS_VERSIONS_TO_SEND\""
         fi 
 
         FS_CNT=$((FS_CNT+1))
+        echo 
     done;
 }
 
@@ -322,7 +368,9 @@ getSnapshotData() {
             MAX_SNAPSHOT="$CURRENTSS"
         fi
     done;
-    echo "$SNAPSHOT_NAME@$MAX_SNAPSHOT"
+    if [ -n "$SNAPSHOT_NAME" ]; then
+        echo "$SNAPSHOT_NAME@$MAX_SNAPSHOT"
+    fi
     return 0;
 }
 
@@ -572,13 +620,17 @@ if [ 3 -ne $# ]; then
     assertEqual "$tst_2" "x" arrayValidation3
     assertEqual "$tst_3" "y" arrayValidation4
     assertEqual "$tst_4" "" arrayValidation5
-    echo array add test ok.
+    echo array add test done.
     array_clear tst
+    assertEqual "`array_size  tst`" "0"
     assertEqual "$tst_0" "" arrayValidation6
     assertEqual "$tst_1" "" arrayValidation7
     assertEqual "$tst_2" "" arrayValidation8
     assertEqual "$tst_3" "" arrayValidation9
-    echo array tests ok.
+    echo array clear test done.
+    RET=$(array_iterator "A B" 2>&1)
+    assertEqual "$RET" "Invalid arrayname \"A B\"." arrayValidation10
+    echo array_iterator  tests done.
 
     ### nameValidation tests ################################################## 
     RET=$(nameValidation "zpool/data" "zpool/data")
@@ -750,7 +802,7 @@ if [ 3 -ne $# ]; then
     assertEqual $? 0 "getSnapshotFilesystems20" 
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems21"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems22"
-    assertEqual "`array_size G_FS_ARRAY`" "" getSnapshotFilesystems20a
+    assertEqual "`array_size G_FS_ARRAY`" "0" getSnapshotFilesystems20a
 
     TEST="z/a z/b z/c z/d"
     array_clear TEST
@@ -779,5 +831,8 @@ if [ 3 -ne $# ]; then
 
 fi
 
+echo ================================================================================ 
 echo Starting backup ...
 doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
+echo Backup complete.
+echo ================================================================================ 
