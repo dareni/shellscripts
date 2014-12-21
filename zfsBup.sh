@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Perform backup of zfs filesystem.
+#  - Backup to a remote host.
 #  - Recursive.
 #  - Automatic incremental backup.
 #  - Source snapshot consistency check.
@@ -155,7 +156,7 @@ listToArray() {
 }
 
 ###############################################################################
-getRemoteFsStatus() {
+getRemoteFsList() {
 #
 # Backup the given filesystem.
 #
@@ -198,12 +199,12 @@ sendNewRemoteFileSystem() {
 #    RECEIVE=`ssh $USER_HOST 'nc -w 120 -l 192.168.1.102 8023 | zfs receive -d zroot/bup' &`
 #    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
 
-echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS 
+#echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS 
     CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -d $REMOTEFS"
     ssh $USER_HOST "$CMD" & 
     RXPID=$?
     sleep 2
-echo    SEND=zfs send $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
+#echo    SEND=zfs send $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 
     zfs send $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
     RET=$?
     if [ $RET -ne 0 ]; then
@@ -220,16 +221,29 @@ sendIncrementalFileSystem() {
 # $1 = the local filesystem for backup.
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
-# $4 = snapshot version list to send
-    CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -d $REMOTEFS"
-    ssh $USER_HOST "$CMD" & 
-    RXPID=$?
-    echo "$CMD"
-    sleep 2
-    zfs send $LOCALFS@$SNAPSHOT_VERSION | nc -w 20 $REMOTE_HOST 8023 
-    RET=$?
-    if [ $RET -ne 0 ]; then
-        kill -9 $RXPID
+# $4 = local snapshot version list to send
+# $5 = remote snapsho 
+    local LOCALFS="$1"
+    local REMOTEFS="$2"
+    local USER_HOST="$3"
+    local REMOTE_HOST="${USER_HOST#*@}" 
+    local LOCAL_SNAPSHOT_VERSION="$4"
+    local REMOTE_SNAPSHOT_VERSION="$5"
+
+    if [ "$LOCAL_SNAPSHOT_VERSION" = "$REMOTE_SNAPSHOT_VERSION" ]; then
+        RET=0
+        echo "Remote and local snapshot verions match, nothing to do."
+    else
+        CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -d $REMOTEFS"
+        ssh $USER_HOST "$CMD" & 
+        RXPID=$?
+        sleep 2
+        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION \
+            | nc -w 20 $REMOTE_HOST 8023 
+        RET=$?
+        if [ $RET -ne 0 ]; then
+            kill -9 $RXPID
+        fi
     fi
     return $RET;
 }
@@ -270,7 +284,8 @@ doBackup() {
     do
         array_add FULL_LIST "$FS"
     done
-    getSnapshotFilesystems FULL_LIST "$MAX_SNAPSHOT" MAIN
+    local LOCAL_ARRAY_PREFIX=MAIN
+    getSnapshotFilesystems FULL_LIST "$MAX_SNAPSHOT" "${LOCAL_ARRAY_PREFIX}"
     if [ $? -ne 0 ]; then
         return $?
     fi
@@ -286,8 +301,6 @@ doBackup() {
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do 
         echo "Bup filesystem: $FILE" > /dev/stderr
-        echo continue?
-        read blah
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
@@ -296,7 +309,7 @@ doBackup() {
         fi
         local LOCALFILE="${FILE%@*}"
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
-        REMOTELIST=$(getRemoteFsStatus "$REMOTE_FS" "$USER_HOST")
+        REMOTELIST=$(getRemoteFsList "$REMOTE_FS" "$USER_HOST")
         echo remotelist=$REMOTELIST
         local RET="$?"
         if [ -z "$REMOTELIST" ]; then
@@ -318,11 +331,17 @@ doBackup() {
             # check the REMOTE LIST for the snapshot version.
             listToArray "$REMOTELIST" arrayREMOTELIST 
             REMOTE_SNAPSHOT_DATA=`getSnapshotData arrayREMOTELIST`
+#echo remotesnapshotdata: $REMOTE_SNAPSHOT_DATA
 #echo $REMOTE_SNAPSHOT_DATA  > /dev/stderr
-            REMOTE_SNAPSHOT_VERSION=" ${REMOTE_SNAPSHOT_DATA%@*} "
-            LOCAL_BRANCH_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
+            REMOTE_SNAPSHOT_VERSION="${REMOTE_SNAPSHOT_DATA##*@}"
+
+#echo remotesnapshotversion: $REMOTE_SNAPSHOT_VERSION
+            SS_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
             SS_VERSIONS_TO_SEND=${LOCAL_BRANCH_VERSION#*$REMOTE_SNAPSHOT_VERSION}
-            echo "sendIncrementalFileSystem \"$SS_VERSIONS_TO_SEND\""
+            echo -n "sendIncrementalFileSystem \"$LOCALFILE\" \"$ZFS_DEST_FS\""
+            echo  "\" $USER_HOST\" \"$MAX_SNAPSHOT\" \"$REMOTE_SNAPSHOT_VERSION\""
+            sendIncrementalFileSystem "$LOCALFILE" "$ZFS_DEST_FS" \
+                "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
         fi 
 
         FS_CNT=$((FS_CNT+1))
