@@ -9,7 +9,7 @@
 #Limitation: file system names must not contain spaces.
 
 usage() {
-    echo "Usage ./zfsBup.sh src_zfs dest_zfs user@remote_host"
+    echo "Usage ./zfsBackup.sh src_zfs dest_zfs user@remote_host"
     echo
     echo example: 
     echo "          1) Create a snapshot."
@@ -18,7 +18,7 @@ usage() {
     echo          
     echo "          2) Do the backup."
     echo 
-    echo "      zfsBup.sh zroot/data zroot/bup root@192.168.1.102"
+    echo "      zfsBackup.sh zroot/data zroot/bup root@192.168.1.102"
     echo
     echo "No args specified so now running tests ..."
 }
