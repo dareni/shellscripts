@@ -1,20 +1,26 @@
-#!/bin/bash
+#!/bin/sh
 #
+# Control multiple tomcat instances.
 #
 ENVLOCATION=$1
 COMMAND=$2
-COMMAND_LIST="status, up, start, stop, restart"
+COMMAND_LIST="\tstatus - is the instance running\n\tup - upgrade ie clear logs, copy new war
+\tstart - start the instance\n\tstop - stop the instance\n\trestart - stop, clear the logs, start\n"
 
-if [[ -z "$COMMAND" ]]; then
+if [ -z "$COMMAND" ]; then
     echo "Path to environment file tomcat.env not set."
-    echo "Usage: tomcatCtl /catalinabase <cmd> || tomcatCtl . <cmd>"
-    echo "Where catalinabase contains the tomcat.env"
-    echo "cmd: $COMMAND_LIST"
+    echo
+    echo "Usage: tomcatCtl /catalinabase <cmd>"
+    echo "       tomcatCtl . <cmd>"
+    echo "'.' when pwd is catalinabase or a child of."
+    echo "NOTE: catalinabase must contain the tomcat.env"
+    echo
+    printf "Commands:\n  $COMMAND_LIST"
     exit;
 fi
 
 ENVFILE_LOCATION=`find_up.sh  tomcat.env $ENVLOCATION`
-if [[ -z "$ENVFILE_LOCATION" ]]; then
+if [ -z "$ENVFILE_LOCATION" ]; then
     echo Environment file $ENVFILE_LOCATION/tomcat.env does not exist. 
     exit;
 fi
@@ -22,15 +28,20 @@ fi
 #TOMCAT_HOME=${t%/*}
 CATALINA_BASE=$ENVFILE_LOCATION
 SERVERCONF=$CATALINA_BASE/conf/server.xml
-if [[ -z "$SERVERCONF" ]]; then
+if [ -z "$SERVERCONF" ]; then
     echo Tomcat environment file $SERVERCONF does not exist. 
     exit;
 fi
 
 ENVFILE=$ENVFILE_LOCATION/tomcat.env
 
-source $ENVFILE
+. $ENVFILE
 BUP_JAVA_OPTS=$JAVA_OPTS
+
+if [ -z "$JAVA_HOME" ]; then
+    echo "Java unconfigured. Exit." > /dev/stderr
+    return
+fi
 
 #tomcat.env example
 #
@@ -54,7 +65,7 @@ INSTANCE="catalina.base=$CATALINA_BASE"
 start() {
     #sleep 2
     ALREADY_UP=`status`
-    if [[ -z "$ALREADY_UP" ]]; then
+    if [ -z "$ALREADY_UP" ]; then
         nice -20 $CATALINA_HOME/bin/startup.sh
         echo -e "JAVAOPTS: $JAVA_OPTS"
     else
@@ -65,25 +76,30 @@ start() {
 stop() {
     unset JAVA_OPTS
     $CATALINA_HOME/bin/shutdown.sh
-    echo -e "\n"
-    echo  -e "Tomcat process is: \n" 
-    pgrep -fl $INSTANCE
-    echo -e "\n\n"
+    printf "\n"
+    PID=`pgrep -fl $INSTANCE`
+    if [ -n "$PID" ]; then
+        printf "Tomcat process is: $PID" 
+    else
+        printf "Tomcat not running."
+    fi
+    printf "\n\n"
     CNT=0;
    
-    while [[ ! -z `pgrep -fl $INSTANCE` ]] && [[ $CNT -lt 5 ]];  do 
+    while [ ! -z "`pgrep -fl $INSTANCE`"  -a $CNT -lt 5 ];  do 
         echo -n " waiting$CNT..."; CNT=$((CNT+1)); sleep 1; 
     done;
    
-    if [[ ! -z `pgrep -fl $INSTANCE` ]]; then
+    if [ ! -z "`pgrep -fl $INSTANCE`" ]; then
         echo -e "\n\nKill tomcat: <Enter>"
         read -p "Abort:       <ctrl>-c" 
         pkill -f $INSTANCE --signal 9
-        while [[ ! -z `pgrep -fl $INSTANCE` ]] && [[ $CNT -lt 5 ]];  
-            do echo -n " killing$CNT..."; CNT=$((CNT+1)); sleep 1; 
+        while [ ! -z "`pgrep -fl $INSTANCE`" -a $CNT -lt 5 ]; do 
+            echo -n " killing$CNT..."; CNT=$((CNT+1)); sleep 1; 
         done;
     fi;
-    export JAVA_OPTS=$BUP_JAVA_OPTS
+    JAVA_OPTS=$BUP_JAVA_OPTS
+    export JAVA_OPTS
 }
 
 upgrade() {
@@ -109,16 +125,16 @@ status() {
 case $COMMAND in
 status)
     ALREADY_UP=`status`
-    if [[ -z "$ALREADY_UP" ]]; then
-        echo -e "Tomcat is down:\n BASE: $CATALINA_BASE\n HOME: $CATALINA_HOME\n \
+    if [ -z "$ALREADY_UP" ]; then
+        printf "Tomcat is down:\n BASE: $CATALINA_BASE\n HOME: $CATALINA_HOME\n \
  JDK: $JAVA_HOME"
     else
-        echo -e "Running:\n $ALREADY_UP"
+        printf "Running:\n $ALREADY_UP"
     fi
 
     exit 0;;
 up)
-    echo upgrading
+    echo upgrading ...
     upgrade
     exit 0;;
 start)
@@ -133,7 +149,7 @@ restart)
     start
     exit 0;;
 *)
-    echo "Error no $COMMAND command. Only $COMMAND_LIST."
+    printf "Error no $COMMAND command. Only commands: \n${COMMAND_LIST}."
     exit 1
 esac
 
