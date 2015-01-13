@@ -1,0 +1,48 @@
+# 1=adapter 2=channel 3=length minutes
+
+if [[ -z "${1}" ]]; then
+    ADAPTER=1
+else
+    ADAPTER=${1}
+fi
+
+if [[ -z "${3}"  ]]; then
+    clear;
+    echo Using adapter: $ADAPTER
+
+    echo Channel List:
+    echo
+
+    cat /etc/mplayer/channels.conf | awk -F':' ' BEGIN{ count=0} {count++; printf $1" "; if (count%7 == 0){print ""}   }; END{print "\n"}'
+    read -p "Select a channel: " chan
+    read -p "Input No Minutes: " recordLengthMin
+else
+    chan=${2}
+    recordLengthMin=${3}
+fi
+
+tzap -a $ADAPTER -r -c /etc/mplayer/channels.conf $chan &
+ZAP=$!
+ATDATE=`date +"%Y%m%d%H%M"`${ADAPTER}
+echo $ZAP
+
+
+#cat /dev/dvb/adapter$ADAPTER/dvr0 > /mnt/orig/u01/$ATDATE.mpg &
+RECORDFILENAME=/opt/oldopt/film/$ATDATE.mpg
+
+{
+while [ 1 ]
+ do 
+ cat /dev/dvb/adapter$ADAPTER/dvr0 >> $RECORDFILENAME
+done
+}&
+CAT=$!
+
+echo $CAT
+
+trap "kill -s 15 $CAT $ZAP 0" SIGINT SIGTERM
+sleep ${recordLengthMin}m
+kill -s 15 $CAT $ZAP 0
+
+#mplayer -fs -cache 8192 -idle dvb://$chan
+

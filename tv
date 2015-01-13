@@ -1,0 +1,35 @@
+ADAPTER=0
+clear;
+
+if [[ -z "$1" ]]; then
+    echo Channel List:
+    echo
+    cat /etc/mplayer/channels.conf | awk -F':' ' BEGIN{ count=0} {count++; printf $1" "; if (count%7 == 0){print ""}   }; END{print "\n"}'
+    read -p "Select a channel: " chan
+else 
+  chan="$1"
+fi
+#read -p "Input No Minutes: " recordLengthSecs
+
+tzap -a $ADAPTER -r -c /etc/mplayer/channels.conf $chan &
+ZAP=$!
+ATDATE=`date +"%Y%m%d%H%M"`
+echo $ZAP
+
+{
+while [ 1 ]
+ do 
+ cat /dev/dvb/adapter$ADAPTER/dvr0 | mplayer -fs -cache 8192 -ao sdl -demuxer mpegts -
+ #cat /dev/dvb/adapter$ADAPTER/dvr0 | mplayer -fs -cache 8192 -
+ #mplayer -fs -cache 8192 -idle dvb://$chan
+done
+}&
+CAT=$!
+
+echo $CAT
+
+read -p "Enter to quit the tv" dummy
+trap "kill -s 15 $CAT $ZAP 0" SIGINT SIGTERM
+kill -s 15 $CAT $ZAP 0
+
+
