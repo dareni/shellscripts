@@ -500,12 +500,14 @@ AddToMenu ScriptMenu
 DestroyMenu HostMenu
 AddToMenu HostMenu
 #+ "Vpn&Uat" Exec exec xterm -T vpnUat -e sudo /home/daren/bin/vpnUat.sh
-+ "&Daisy"      Exec exec xterm -hold -T daisy -e ~/bin/hosts.sh daisy  
-+ "&Bud"        Exec exec xterm -hold -T bud -e ~/bin/hosts.sh bud
-+ "&Noddy"      Exec exec xterm -hold -T noddy  -e ~/bin/hosts.sh noddy
-+ "B&ob"        Exec exec xterm -hold -T bob -e ~/bin/hosts.sh bob 
 + "B&eastie"    Exec exec xterm -hold -T beastie -e ~/bin/hosts.sh beastie
 + "BeastieB&up" Exec exec xterm -hold -T beastiebup -e ~/bin/hosts.sh beastiebup
++ "B&ob"        Exec exec xterm -hold -T bob -e ~/bin/hosts.sh bob
++ "&Bud"        Exec exec xterm -hold -T bud -e ~/bin/hosts.sh bud
++ "&Cephalox"   Exec exec xterm -hold -T cephalox -e ~/bin/hosts.sh cephalox
++ "&Daisy"      Exec exec xterm -hold -T daisy -e ~/bin/hosts.sh daisy
++ "&Noddy"      Exec exec xterm -hold -T noddy  -e ~/bin/hosts.sh noddy
++ "&Sweetpea"   Exec exec xterm -hold -T sweetpea -e ~/bin/hosts.sh sweetpea
 
 DestroyMenu Jconsole
 AddToMenu Jconsole
