@@ -15,6 +15,10 @@ while [ "$path" != "" -a ! -e "$path/$1"  -a "$path" != "$dot" ]; do
     path=${path%/*}
 done
 
-#echo "$path"
-#find $path -name $1 -execdir pwd \;
-find $path -name $1 -execdir pwd \;
+FIND=`which find`
+PWD=`which pwd`
+#Clear the PATH to allow find execution of pwd.
+OLDPATH=$PATH
+PATH=""
+$FIND $path -name $1 -execdir $PWD \;
+PATH=$OLDPATH
