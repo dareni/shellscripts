@@ -1,10 +1,9 @@
 #!/bin/sh
 #
-
-function outputDoc() {
+outputDoc() {
     DOC="\
 
-  Configure /etc/jdktab containing java homes eg:
+  Configure /usr/local/etc/jdktab containing java homes eg:
   7:/opt/dev/jdk1.7.0_45
   6:/opt/dev/jdk1.6.0_45
 
@@ -15,7 +14,7 @@ function outputDoc() {
   . jdkenv
   to get the java home selection prompt.
 "
-    echo "$DOC"
+    echo "$DOC" > /dev/stderr
 
 }
 
@@ -26,7 +25,7 @@ if [ -e /etc/jdktab ]; then
 elif [ -e /usr/local/etc/jdktab ]; then
     JDKTAB=/usr/local/etc/jdktab
 else
-    echo "No /etc/jdktab configured."
+    echo "No /usr/local/etc/jdktab configured." > /dev/stderr
     outputDoc
 fi
 
