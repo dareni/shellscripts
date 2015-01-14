@@ -101,6 +101,7 @@ stop() {
     fi;
     JAVA_OPTS=$BUP_JAVA_OPTS
     export JAVA_OPTS
+    echo
 }
 
 upgrade() {
@@ -128,7 +129,7 @@ status)
     ALREADY_UP=`status`
     if [ -z "$ALREADY_UP" ]; then
         printf "Tomcat is down:\n BASE: $CATALINA_BASE\n HOME: $CATALINA_HOME\n \
- JDK: $JAVA_HOME"
+ JDK: $JAVA_HOME\n\n"
     else
         printf "Running:\n $ALREADY_UP"
     fi
