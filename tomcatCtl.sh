@@ -50,6 +50,7 @@ fi
 #
 #export CATALINA_HOME=/opt/dev/apache-tomcat-7.0.47
 #export CATALINA_BASE=/opt/dev/tomcat7-2
+##CATALINA_BASE contains: conf,lib,logs,webapps
 #
 #export TOMCAT_OPTS=" -agentlib:jdwp=transport=dt_socket,server=y,address=11552,suspend=n"
 #export JAVA_OPTS="-Xms1024m -Xmx7168m -XX:NewSize=256m -XX:MaxNewSize=356m -XX:PermSize=256m -XX:MaxPermSize=356m"
