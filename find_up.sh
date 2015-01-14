@@ -1,5 +1,6 @@
 #!/bin/sh
 #From http://unix.stackexchange.com/questions/6463/find-searching-in-parent-directories-instead-of-subdirectories
+#Find a file in a parent directory.
 
 if [ -z "$2" ]; then
     path="."
@@ -15,10 +16,7 @@ while [ "$path" != "" -a ! -e "$path/$1"  -a "$path" != "$dot" ]; do
     path=${path%/*}
 done
 
-FIND=`which find`
-PWD=`which pwd`
-#Clear the PATH to allow find execution of pwd.
-OLDPATH=$PATH
-PATH=""
-$FIND $path -name $1 -execdir $PWD \;
-PATH=$OLDPATH
+if [ -n "$path" ]; then
+  echo $path
+fi
+
