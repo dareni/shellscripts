@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Restart given vm on resume from suspend.
+#
+# Copy the script containing the user and vm name ie:
+#
+# vboxrestart-USER-VMNAME
+#
+# eg sudo cp ./vbox_restart_pm_utils /etc/pm/sleep.d/20_vboxrestart-root-hal
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+VBOXMANAGE=/usr/bin/vboxmanage
+
+VBOXUSER=`echo $0 |awk -F- '{print $(NF-1)}'`
+VBOXVM=`echo $0 |awk -F- '{print $(NF)}'`
+
+restart() {
+    su -l -c "$VBOXMANAGE controlvm $VBOXVM acpipowerbutton" $VBOXUSER
+    RUNNING=1
+    while [ $RUNNING -eq 1 ]; do
+        RUNNING=`su -l -c "$VBOXMANAGE list runningvms |grep -c $VBOXVM" $VBOXUSER`
+        sleep 2
+    done
+    su -l -c "$VBOXMANAGE startvm $VBOXVM" $VBOXUSER
+}
+
+
+case "${1}" in
+        hibernate|suspend)
+		# nothing
+                ;;
+        resume|thaw)
+                restart 
+                ;;
+esac
+
