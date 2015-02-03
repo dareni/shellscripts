@@ -17,6 +17,6 @@ fi
 CAPACITY=`df ${FS} | awk '{ if (NR == 2) print $5}' |sed 's/%//'`
 
 if [ ${CAPACITY} -ge ${THRESHOLD} ]; then
-   echo "`hostname` ${FS} file system usage ${CAPACITY}%" | mail -s "$FS file system usage ${CAPACITY}%" root@localhost
+   echo "`hostname` ${FS} file system usage ${CAPACITY}%" | mail -s "$FS file system usage ${CAPACITY}%" root
 fi
 
