@@ -88,7 +88,7 @@ HideGeometryWindow Never
 Style * SnapGrid 3 3
 XorValue 55555
 #nb test disable
-#Style * DecorateTransient, DontRaiseTransient
+Style * DecorateTransient, DontRaiseTransient
 #nb test disable
 #Style * DontLowerTransient, StackTransientParent
 #Style * DontLowerTransient
