@@ -3,6 +3,9 @@ Shell Scripts
 
 A collection of usefull scripts.
 
+gstatus.sh - Find subdirectories containing git repositories and print the
+    status of each repository.
+
 jdkenv - A script to allow easy configuration of java jdk or jre environment by
     setting the PATH and JAVA_HOME from a selection of java environments. Does
     a clean up of the PATH to avoid invalid path elements. 
