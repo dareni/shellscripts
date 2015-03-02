@@ -1,3 +1,4 @@
+# Maintained at: git@github.com:dareni/shellscripts.git
 #
 ###########
 #  ____________________________
@@ -115,6 +116,7 @@ Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style stalonetray Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Skype StartIconic
+Style "Buddy List" StartIconic
 Style Mumble EWMHIgnoreStateHints, EWMHIgnoreWindowType
 #Note: netbeans needs sloppyfocus to gain focus to the transient windows.
 Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus

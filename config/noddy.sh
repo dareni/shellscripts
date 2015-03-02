@@ -1,9 +1,13 @@
 #!/usr/local/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 #### noddy ####
+# Link to .fvwm/fvwm.sh executed from .fvwmrc by:
+# + I Exec exec ~/.fvwm/fvwm.sh init
+
 CMD=$1
 
 do_init() {
-    xbacklight -set 0
+    xbacklight -set 0 &
     #Allow right margin of 111
     #Width 115 pos=1920-115-70=1735 - 111 = 1624
     xclock -digital  -norender -padding -5 -geometry 115x14+1624+0 -strftime  " %a %b %d %Y" &
