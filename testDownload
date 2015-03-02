@@ -1,3 +1,4 @@
+# Maintained at: git@github.com:dareni/shellscripts.git
 wget --no-check-certificate -o ~/bin/testDownload.log  https://storage.bigpond.com/public/bin/OnlineStorage.exe
 rm ~/bin/OnlineStorage.exe
 cat ~/bin/testDownload.log

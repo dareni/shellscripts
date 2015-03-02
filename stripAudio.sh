@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 if  [ "$1" = "" ]; then
     echo "Strip the audio to an mp3."
     echo "Usage: ./stripAudio.sh ../*webm"

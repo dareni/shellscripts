@@ -1,4 +1,5 @@
 #!/usr/bin/bc -l
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 ### Funcs.BC - a large number of functions for use with GNU BC
 

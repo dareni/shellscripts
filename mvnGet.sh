@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 REPO=http://repo1.maven.org/maven2
 if [[ -z "$2" ]]; then
     echo Usage: mvnGet.sh groupid artifactid

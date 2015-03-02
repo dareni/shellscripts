@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 # 20110801 dki Add comment for swap creation.
 # 20110825 dki Add notes for transfer of a zpool.
 

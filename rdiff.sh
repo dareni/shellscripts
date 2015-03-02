@@ -1,4 +1,5 @@
 #!/usr/local/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 do_usage(){
    echo "usage:  rdiff.sh <[user@]remotehost> </path/localfile> [</path/remotefile>]"

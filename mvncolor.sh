@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 # Formatting constants
 echo mvn setup.
 export BOLD=`tput bold`

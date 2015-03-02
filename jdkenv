@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 #
 outputDoc() {
     DOC="\

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 if [[ -z $1 ]]; then
    echo No target. eg daren@192.168.1.4:/opt/film

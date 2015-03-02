@@ -1,4 +1,5 @@
 # 1=adapter 2=channel 3=length minutes
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 if [[ -z "${1}" ]]; then
     ADAPTER=1

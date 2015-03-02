@@ -1,5 +1,6 @@
 #!/bin/bash
 # Note: Deleted files are not recorded in the incremental backups.
+# Maintained at: git@github.com:dareni/shellscripts.git
 export BUPDIR="/mnt/o/backup_for_daren"
 export FIREFOX=".mozilla/firefox/*.default/bookmarkbackups"
 export STAGE=/opt/backups

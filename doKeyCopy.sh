@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 if [ -z "$1" ]; then
     echo "Usage: ./doKeyCopy.sh username@host.domain"
 else

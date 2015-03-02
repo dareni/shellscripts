@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 # 20110925 dki Create ufs.sh from zfs.sh
 
 #bud disk usage

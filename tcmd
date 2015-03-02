@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 #Set the current xterm title.
 
 #In .bashrc:

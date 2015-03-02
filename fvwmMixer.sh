@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 vol=`amixer get Master |tail -1 |awk '{print $4}'`
 if [[ "${1}" = "up" ]]; then

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
 #From http://unix.stackexchange.com/questions/6463/find-searching-in-parent-directories-instead-of-subdirectories
 #Find a file in a parent directory.
 

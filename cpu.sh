@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 echo range: `sudo cpufreq-info -l`
 echo current freq: `sudo cpufreq-info -w`
 LOW=`cpufreq-info -l |awk '{print $1}'`

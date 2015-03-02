@@ -1,4 +1,5 @@
 #!/bin/bash
+# Maintained at: git@github.com:dareni/shellscripts.git
 if [[ -z "$1" ]]; then
     echo Usage: infiles.sh search_pattern filetype 
     echo filetype war jar zip

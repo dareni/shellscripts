@@ -1,4 +1,5 @@
 #!/usr/local/bin/python
+# Maintained at: git@github.com:dareni/shellscripts.git
 
 import os
 from sys import argv
