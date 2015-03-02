@@ -35,7 +35,7 @@ if [ -n "${JDKTAB}" ]; then
     #Prompt for the java home if noone selected.
     if [ -z "$JDK_NO" ]; then
         OPTIONS=""
-        for line in `cat $JDKTAB`
+        for line in `cat $JDKTAB |grep -v ^#`
         do
             echo $line
             OPTIONS=$OPTIONS${line%:*},
@@ -47,7 +47,7 @@ if [ -n "${JDKTAB}" ]; then
     #Get the path to the new home from the config file.
     NEWPATH=$PATH
     NEW_JDK_HOME=""
-    for line in `cat $JDKTAB`
+    for line in `cat $JDKTAB |grep -v ^#`
     do
         if [ "${JDK_NO}" = "${line%:*}" ]; then
             NEW_JDK_HOME="${line#*:}"
@@ -58,7 +58,7 @@ if [ -n "${JDKTAB}" ]; then
     #Replace a jdk home already in the path with the new selection.
     #Remove all other jdk entries from the path.
     if [ -n "${NEW_JDK_HOME}" ]; then
-        for line in `cat $JDKTAB`
+        for line in `cat $JDKTAB |grep -v ^#`
         do
             if [ "$JDK_NO" != "${line%:*}" ]; then
                 #Replace an old jdk with the new jdk exactly one
