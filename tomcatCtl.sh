@@ -22,7 +22,7 @@ fi
 
 ENVFILE_LOCATION=`find_up.sh  tomcat.env $ENVLOCATION`
 if [ -z "$ENVFILE_LOCATION" ]; then
-    echo Environment file $ENVFILE_LOCATION/tomcat.env does not exist. 
+    echo Environment file $ENVFILE_LOCATION/tomcat.env does not exist.
     exit;
 fi
 
@@ -30,7 +30,7 @@ fi
 CATALINA_BASE=$ENVFILE_LOCATION
 SERVERCONF=$CATALINA_BASE/conf/server.xml
 if [ -z "$SERVERCONF" ]; then
-    echo Tomcat environment file $SERVERCONF does not exist. 
+    echo Tomcat environment file $SERVERCONF does not exist.
     exit;
 fi
 
@@ -81,23 +81,24 @@ stop() {
     printf "\n"
     PID=`pgrep -fl $INSTANCE`
     if [ -n "$PID" ]; then
-        printf "Tomcat process is: $PID" 
+        printf "Tomcat process is: $PID"
     else
         printf "Tomcat not running."
     fi
     printf "\n\n"
     CNT=0;
-   
-    while [ ! -z "`pgrep -fl $INSTANCE`"  -a $CNT -lt 5 ];  do 
-        echo -n " waiting$CNT..."; CNT=$((CNT+1)); sleep 1; 
+
+    while [ ! -z "`pgrep -fl $INSTANCE`"  -a $CNT -lt 5 ];  do
+        echo -n " waiting$CNT..."; CNT=$((CNT+1)); sleep 1;
     done;
-   
+
     if [ ! -z "`pgrep -fl $INSTANCE`" ]; then
         echo -e "\n\nKill tomcat: <Enter>"
-        read -p "Abort:       <ctrl>-c" 
+        echo "Abort:       <ctrl>-c"
+        read DUMMY
         pkill -f $INSTANCE --signal 9
-        while [ ! -z "`pgrep -fl $INSTANCE`" -a $CNT -lt 5 ]; do 
-            echo -n " killing$CNT..."; CNT=$((CNT+1)); sleep 1; 
+        while [ ! -z "`pgrep -fl $INSTANCE`" -a $CNT -lt 5 ]; do
+            echo -n " killing$CNT..."; CNT=$((CNT+1)); sleep 1;
         done;
     fi;
     JAVA_OPTS=$BUP_JAVA_OPTS
@@ -106,18 +107,24 @@ stop() {
 }
 
 upgrade() {
-    stop 
-    rm -rf $CATALINA_BASE/webapps $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work $CATALINA_BASE/temp
-    mkdir $CATALINA_BASE/webapps  $CATALINA_BASE/work $CATALINA_BASE/temp
+    stop
+    rm -rf $CATALINA_BASE/webapps
+    mkdir $CATALINA_BASE/webapps
+    clearCache
     clearLogs
     do_tomcat_configure
-    sleep 2 
+    sleep 2
     start
 }
 
+clearCache() {
+    rm -rf $CATALINA_BASE/conf/Catalina/localhost $CATALINA_BASE/work $CATALINA_BASE/temp
+    mkdir  $CATALINA_BASE/work $CATALINA_BASE/temp
+}
+
 clearLogs() {
-  rm -rf  $CATALINA_BASE/logs 
-  mkdir  $CATALINA_BASE/logs 
+  rm -rf  $CATALINA_BASE/logs
+  mkdir  $CATALINA_BASE/logs
 }
 
 status() {
@@ -148,6 +155,7 @@ stop)
     exit 0;;
 restart)
     stop
+    clearCache
     clearLogs
     start
     exit 0;;
