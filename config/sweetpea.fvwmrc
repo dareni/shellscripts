@@ -89,7 +89,10 @@ HideGeometryWindow Never
 Style * SnapGrid 3 3
 XorValue 55555
 #nb test disable
-Style * DecorateTransient, DontRaiseTransient
+#Style * DecorateTransient, DontRaiseTransient
+#nb DecorateTransient to give popups a title bar.
+#nb RaiseTransient so popups do not get lost behind the main window.
+Style * DecorateTransient, RaiseTransient
 #nb test disable
 #Style * DontLowerTransient, StackTransientParent
 #Style * DontLowerTransient
