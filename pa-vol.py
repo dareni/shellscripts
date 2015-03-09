@@ -35,9 +35,9 @@ if len(argv) == 2:
     elif option == 'mute':
         result = getSetting('set-sink-mute')
         if result[2].rstrip() == 'yes':
-            value = 'no'
+            value = '0'
         else: 
-            value = 'yes'
+            value = '1'
         setSetting(result[0], result[1], value)
 else:
     print "usage pa-vol.py plus | minus | mute"            
