@@ -22,7 +22,7 @@ restart() {
         RUNNING=`su -l -c "$VBOXMANAGE list runningvms |grep -c $VBOXVM" $VBOXUSER`
         sleep 2
     done
-    su -l -c "$VBOXMANAGE startvm $VBOXVM" $VBOXUSER
+    su -l -c "$VBOXMANAGE startvm $VBOXVM --type headless" $VBOXUSER
 }
 
 
