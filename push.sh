@@ -6,8 +6,9 @@ if [[ -z $1 ]]; then
    exit
 fi
 
-rsync -abHr --progress --no-implied-dirs --files-from=./files \ -e ssh . ${1}
+rsync -abHr --progress --no-implied-dirs --files-from=./files -e ssh . ${1}
 
 #files example:
-#/home/daren/NetBeansProjects/svn-ozone3-mitchellcorp/ozone3-mitchellcorp/o3deploy/target/./o3deploy.war
+#/opt/files/file.txt
+#././file.txt
 
