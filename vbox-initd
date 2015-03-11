@@ -1,0 +1,80 @@
+#!/bin/sh
+# Maintained at: git@github.com:dareni/shellscripts.git
+# 
+# Usage: Copy and rename the script containing the user and vm name ie:
+#
+#   cp shellscripts/vbox_initd /etc/rc.d/vbox-root-hal
+#   Edit the PROVIDES: tag and set to the hostname.
+#
+### BEGIN INIT INFO
+# Provides: [sethostname]
+# Required-Start: nfs-kernel-server vboxballoonctrl-service vboxdrv vboxweb-service
+# Required-Stop: nfs-kernel-server vboxballoonctrl-service vboxdrv vboxweb-service
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Virtualbox vm server start-up/shutdown
+# Description: Virtualbox vm server start-up/shutdown
+### END INIT INFO
+
+
+# chkconfig: 5 99 99
+# description: VirtualBox vbox ctrl
+#
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+VBOXMANAGE=/usr/bin/vboxmanage
+
+VBOXUSER=`echo $0 |awk -F- '{print $(NF-1)}'`
+VBOXVM=`echo $0 |awk -F- '{print $(NF)}'`
+
+#prog="${0##*/}"
+
+do_start()
+{
+        echo -n "Enabling $VBOXVM:"
+        su -l -c "$VBOXMANAGE startvm $VBOXVM --type headless &" $VBOXUSER 
+}
+
+do_stop()
+{
+    /bin/echo -e "\nStopping $VBOXVM:"
+    su -l -c "$VBOXMANAGE controlvm $VBOXVM acpipowerbutton" $VBOXUSER
+
+    RUNNING=1
+    while [ $RUNNING -eq 1 ]; do
+        cnt=$((cnt+1)) 
+        echo "Wait for $VBOXVM shutdown ... $cnt"
+        sleep 1
+        RUNNING=`su -l -c "$VBOXMANAGE list runningvms |grep -c $VBOXVM" $VBOXUSER`
+        if [ $cnt -gt 120 ]; then
+            su -l -c "$VBOXMANAGE controlvm $VBOXVM poweroff" $VBOXUSER
+            /bin/echo "Force power off $VBOXVM" 
+        fi;
+    done;
+}
+
+status()
+{
+    su -l -c "$VBOXMANAGE showvminfo cephalox |grep ^State: |awk '{print \$2}'" $VBOXUSER
+}
+
+case "$1" in
+restart)
+    do_stop
+    do_start
+    ;;
+start)
+    do_start
+    ;;
+stop)
+    do_stop
+    ;;
+status)
+    status
+    ;;
+*)
+    echo $"Usage: $0 {start|stop|restart|status}"
+    exit 3
+    ;;
+esac
+
