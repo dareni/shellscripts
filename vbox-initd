@@ -4,16 +4,16 @@
 # Usage: Copy and rename the script containing the user and vm name ie:
 #
 #   cp shellscripts/vbox_initd /etc/rc.d/vbox-root-hal
-#   Edit the PROVIDES: tag and set to the hostname.
+#   Edit the 'PROVIDES:' tag and set to the hostname.
 #
 ### BEGIN INIT INFO
 # Provides: [sethostname]
-# Required-Start: nfs-kernel-server vboxballoonctrl-service vboxdrv vboxweb-service
-# Required-Stop: nfs-kernel-server vboxballoonctrl-service vboxdrv vboxweb-service
+# Required-Start: nfs-kernel-server virtualbox 
+# Required-Stop: nfs-kernel-server virtualbox
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: Virtualbox vm server start-up/shutdown
-# Description: Virtualbox vm server start-up/shutdown
+# Short-Description: Virtualbox 4.1 vm server start-up/shutdown
+# Description: Virtualbox 4.1 vm server start-up/shutdown
 ### END INIT INFO
 
 
@@ -27,25 +27,36 @@ VBOXMANAGE=/usr/bin/vboxmanage
 VBOXUSER=`echo $0 |awk -F- '{print $(NF-1)}'`
 VBOXVM=`echo $0 |awk -F- '{print $(NF)}'`
 
-#prog="${0##*/}"
+prog="${0##*/}"
 
 do_start()
 {
+    RUNNING=`status`
+    if [ "$RUNNING" = "running" ]; then
+        /bin/echo -e "\n$VBOXVM already running: $RUNNING"
+    else 
         echo -n "Enabling $VBOXVM:"
         su -l -c "$VBOXMANAGE startvm $VBOXVM --type headless &" $VBOXUSER 
+        sleep 1;
+    fi
 }
 
 do_stop()
 {
-    /bin/echo -e "\nStopping $VBOXVM:"
-    su -l -c "$VBOXMANAGE controlvm $VBOXVM acpipowerbutton" $VBOXUSER
+    RUNNING=`status`
+    if [ "$RUNNING" = "running" ]; then
+        /bin/echo -e "\nStopping $VBOXVM:"
+         su -l -c "$VBOXMANAGE controlvm $VBOXVM acpipowerbutton" $VBOXUSER
+         sleep 1;
+    else 
+        /bin/echo -e "\n$VBOXVM already off: $RUNNING"
+    fi
 
-    RUNNING=1
-    while [ $RUNNING -eq 1 ]; do
+    while [ "$RUNNING" = "running" ]; do
         cnt=$((cnt+1)) 
-        echo "Wait for $VBOXVM shutdown ... $cnt"
+        RUNNING=`status`
+        echo "Wait for $VBOXVM shutdown ... $cnt $RUNNING"
         sleep 1
-        RUNNING=`su -l -c "$VBOXMANAGE list runningvms |grep -c $VBOXVM" $VBOXUSER`
         if [ $cnt -gt 120 ]; then
             su -l -c "$VBOXMANAGE controlvm $VBOXVM poweroff" $VBOXUSER
             /bin/echo "Force power off $VBOXVM" 
