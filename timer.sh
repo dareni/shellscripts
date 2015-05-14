@@ -21,7 +21,7 @@ do
    echo $TIMER
 done;
 
-if [ ! -z $MESSAGE ]; then
+if [ ! -z "$MESSAGE" ]; then
     echo $MESSAGE
 fi
 beep -d 1000 -r 3600&
