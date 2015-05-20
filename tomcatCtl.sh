@@ -69,9 +69,9 @@ start() {
     ALREADY_UP=`status`
     if [ -z "$ALREADY_UP" ]; then
         nice -20 $CATALINA_HOME/bin/startup.sh
-        echo -e "JAVAOPTS: $JAVA_OPTS"
+        echo "JAVAOPTS: $JAVA_OPTS"
     else
-        echo -e "Already running:\n $ALREADY_UP"
+        echo "Already running: $ALREADY_UP"
     fi
 }
 
@@ -89,11 +89,13 @@ stop() {
     CNT=0;
 
     while [ ! -z "`pgrep -fl $INSTANCE`"  -a $CNT -lt 5 ];  do
-        echo -n " waiting$CNT..."; CNT=$((CNT+1)); sleep 1;
+       echo -n " waiting $CNT..."
+       CNT=$((CNT+1)); sleep 1;
     done;
 
     if [ ! -z "`pgrep -fl $INSTANCE`" ]; then
-        echo -e "\n\nKill tomcat: <Enter>"
+        echo 
+        echo  "Kill tomcat: <Enter>"
         echo "Abort:       <ctrl>-c"
         read DUMMY
         pkill -f $INSTANCE --signal 9
