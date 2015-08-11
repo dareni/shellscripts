@@ -3,7 +3,7 @@
 ###########
 #  ____________________________
 # (   _________________________)
-#  ) (__  _  _  _    _  
+#  ) (
 # (   __)( \/ )( \/\/ )/\/\
 #  ) (    \  /  \    //    \
 # (___)    \/    \/\/(_/\/\_) 2.5.10
@@ -11,12 +11,12 @@
 # My personal fvwm2rc file
 #
 #######################
-# 'I' stands for "Immediate", and is executed as soon as the function is invoked.  
-# 'M' stands for "Motion", i.e. if the user starts moving the mouse.  
-# 'C' stands for "Click", i.e., if the user presses and releases the mouse button.  
+# 'I' stands for "Immediate", and is executed as soon as the function is invoked.
+# 'M' stands for "Motion", i.e. if the user starts moving the mouse.
+# 'C' stands for "Click", i.e., if the user presses and releases the mouse button.
 # 'H' stands for "Hold", i.e. if the user presses a mouse button and holds it down
-#       for more than ClickTime milliseconds.  
-# 'D' stands for "Double-click".  The action 'I' causes an action to be performed 
+#       for more than ClickTime milliseconds.
+# 'D' stands for "Double-click".  The action 'I' causes an action to be performed
 #       on the button-press, if the function is invoked with prior knowledge of which
 #       window to act on.
 
@@ -56,14 +56,14 @@ ClickTime 350
 
 MoveThreshold 3
 #Sloppy focus breaks the last used circulation list.
-Style * MouseFocusClickRaises 
+Style * MouseFocusClickRaises
 #Style * SloppyFocus
 #dki 12 Aug 2013 remove SloppyFocus
 #Style * FPSortWindowlistByFocus, SloppyFocus, MouseFocusClickRaises
 
 #Reserve space around the edge
 #Ignore CapsLock for modifier key bindings
-IgnoreModifiers L25 
+IgnoreModifiers L25
 
 #####
 # Global Styles and options
@@ -76,7 +76,7 @@ Style * MinOverlapPlacementPenalties 1 0 0 1 0 50
 #GrabFocusOff not the cause of x11 freezes during netbeans debug.
 
 #nb test disable
-#Style * GrabFocusOff 
+#Style * GrabFocusOff
 #Style * TileCascadePlacement, GrabFocusOff
 #Style * NoPPosition, ResizeOpaque
 OpaqueMoveSize -1
@@ -126,10 +126,10 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 #Style Checkout StaysOnTop
 #Style "Browse Repository Folders" StaysOnTop
 #Style FvwmEvolution Iconify
-#Style "stalonetray" !Borders, Title, Layer 6, StaysOnTop 
-#Style "alltray" !Borders, Title, Layer 6 
+#Style "stalonetray" !Borders, Title, Layer 6, StaysOnTop
+#Style "alltray" !Borders, Title, Layer 6
 #Style *NetBeans* FPSortWindowlistByFocus, FPEnterToFocus
-#Style *NetBeans* FocusFollowsMouse 
+#Style *NetBeans* FocusFollowsMouse
 
 #####
 # Events
@@ -188,8 +188,8 @@ AddToFunc   FvwmWindowShade
 DestroyFunc FvwmWindowRestack
 AddToFunc   FvwmWindowRestack
 #+ I RestackTransients
-+ I Iconify 
-+ I Iconify 
++ I Iconify
++ I Iconify
 
 #####
 # Program Launching Functions
@@ -226,7 +226,7 @@ AddToFunc   FvwmChrome
 
 DestroyFunc FvwmVirtualBox
 AddToFunc   FvwmVirtualBox
-+ I Exec exec virtualbox 
++ I Exec exec virtualbox
 
 DestroyFunc FvwmXpdf
 AddToFunc   FvwmXpdf
@@ -268,7 +268,7 @@ AddToFunc   FvwmNetbeans
 
 DestroyFunc FvwmPowerArchitect
 AddToFunc   FvwmPowerArchitect
-+ I Exec exec /opt/dev/jdk1.7.0_67/bin/java -jar /opt/dev/architect-1.0.7/architect.jar 
++ I Exec exec /opt/dev/jdk1.7.0_67/bin/java -jar /opt/dev/architect-1.0.7/architect.jar
 
 DestroyFunc FvwmIreport
 AddToFunc   FvwmIreport
@@ -305,9 +305,9 @@ AddToFunc FvwmXClock
 #xclock -norender -font 6x9 -d -strftime %a-%H:%M-Los_Angeles -geometry 160x25 -bg blue -fg white)
 
 
-DestroyFunc FvwmPidgin
-AddToFunc   FvwmPidgin
-+ I Exec exec pidgin
+DestroyFunc FvwmGajim
+AddToFunc   FvwmGajim
++ I Exec exec gajim
 
 DestroyFunc FvwmLinphone
 AddToFunc   FvwmLinphone
@@ -370,7 +370,7 @@ AddToFunc   StartFunction
 DestroyFunc InitFunction
 AddToFunc   InitFunction
 # Setup: ln ~/bin/shellscripts/xxx.sh ~/.fvwm/fvwm.sh
-+ I Exec exec ~/.fvwm/fvwm.sh init 
++ I Exec exec ~/.fvwm/fvwm.sh init
 
 #+ I FvwmStalonetray
 #+ I Exec exec xclock -digital  -norender -padding -5 -geometry 115x14+3480+0 -strftime  " %a %b %d %Y"
@@ -378,16 +378,16 @@ AddToFunc   InitFunction
 #+ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
 + I Schedule 100 FvwmSkype
 + I Schedule 200 FvwmLinphone
-+ I Schedule 300 FvwmPidgin
++ I Schedule 300 FvwmGajim
 #+ I Schedule 600 FvwmXClock
-#+ I Schedule 900 FvwmXload 
+#+ I Schedule 900 FvwmXload
 + I Schedule 2000 FvwmMumble
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
 #+ I Schedule 8000 FvwmEvolution
 #+ I FvwmJitsi
 #+ I Schedule 8000 FvwmPnmixer
-#+ I Exec exec unclutter -keystroke -exec /home/daren/.fvwm/touchpadOff.sh 
+#+ I Exec exec unclutter -keystroke -exec /home/daren/.fvwm/touchpadOff.sh
 #+ I Exec exec unclutter -keystroke
 #+ I Exec exec xscreensaver
 #+ I Exec exec fvwm-root -r $[fvwm_wallpapers]/background.png
@@ -448,7 +448,7 @@ DestroyFunc FuncDisablePager
 addToFunc FuncDisablePager
 + I setenv FVWMPAGER 0
 + I WindowId $[fvwmpagerid] Delete
-               
+
 #DestroyFunc Showall
 #AddToFunc Showall
 #+ I All MoveToPage
@@ -488,7 +488,7 @@ AddToMenu AppMenu
 + "&Mumble"  FvwmMumble
 + "Net&beans"  FvwmNetbeans
 + "Power&Architect" FvwmPowerArchitect
-#+ "&IReport" FvwmIreport 
+#+ "&IReport" FvwmIreport
 + "&Calibre-ebook"  FvwmCalibre
 + "&Nautilus"  FvwmNautilus
 + "&VolumeControl" FvwmPavuControl
@@ -511,6 +511,8 @@ AddToMenu HostMenu
 + "&Daisy"      Exec exec xterm -hold -T daisy -e ~/bin/hosts.sh daisy
 + "&Noddy"      Exec exec xterm -hold -T noddy  -e ~/bin/hosts.sh noddy
 + "&Sweetpea"   Exec exec xterm -hold -T sweetpea -e ~/bin/hosts.sh sweetpea
++ "&Noah"   Exec exec xterm -hold -T noah -e ~/bin/hosts.sh noah
++ "&Ewan"   Exec exec xterm -hold -T ewan -e ~/bin/hosts.sh ewan
 + "&zbeastie"    Exec exec xterm -hold -T zbeastie -e ~/bin/hosts.sh zbeastie
 + "zbeastieB&up" Exec exec xterm -hold -T zbeastiebup -e ~/bin/hosts.sh zbeastiebup
 
@@ -521,7 +523,7 @@ AddToMenu Jconsole
 DestroyFunc QuickMenu
 AddToFunc QuickMenu
 + I Menu QuickMenu
-#+ I Exec exec /home/daren/.fvwm/touchpadOn.sh 
+#+ I Exec exec /home/daren/.fvwm/touchpadOn.sh
 
 #####
 # Basic Bindings
@@ -541,24 +543,24 @@ AddToFunc QuickMenu
 #key/mouse:key/button:context:modifier:function
 #context R-root window S-window side,top,bottom A-all(except titlebar buttons)
 #  T-window title 0-9-title bar buttons
-#  F-window frame corners  W-application window I-icons 
+#  F-window frame corners  W-application window I-icons
 #modifier S-shift M-alt C-ctrl N-none L-capslock A-all
 
 #Open an app
 #Key Super_L A A Menu QuickMenu
 #Key Super_L A A MultiKeyStroke
 Key Super_L A A QuickMenu
-#Key Menu A A Exec exec /home/daren/.fvwm/touchpadOn.sh 
+#Key Menu A A Exec exec /home/daren/.fvwm/touchpadOn.sh
 
 ##use xev for key names or key mappings
-#Key XF86AudioRaiseVolume A A Exec exec /usr/bin/amixer sset Master,0 10%+,10%+ 
-#Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%- 
+#Key XF86AudioRaiseVolume A A Exec exec /usr/bin/amixer sset Master,0 10%+,10%+
+#Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%-
 #Key XF86AudioMute A A Exec exec /usr/bin/amixer sset Master,0 toggle
 Key XF86AudioMute A A        Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
-Key XF86AudioLowerVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus 
+Key XF86AudioLowerVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
 Key XF86AudioRaiseVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
 Key F10 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
-Key F11 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus 
+Key F11 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
 Key F12 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
 
 Key XF86Messenger A A FvwmSkype
@@ -573,14 +575,14 @@ Key XF86Sleep A A Exec exec sudo pm-suspend
 Key Super_R A CM
 
 #Flip pages
-Key h A CM CursorMove -5 +0 
-Key l A CM CursorMove +5 +0 
-Key k A CM CursorMove +0 -5 
-Key j A CM CursorMove +0 +5 
-Key h A SCM CursorMove -50 +0 
-Key l A SCM CursorMove +50 +0 
-Key k A SCM CursorMove +0 -50 
-Key j A SCM CursorMove +0 +50 
+Key h A CM CursorMove -5 +0
+Key l A CM CursorMove +5 +0
+Key k A CM CursorMove +0 -5
+Key j A CM CursorMove +0 +5
+Key h A SCM CursorMove -50 +0
+Key l A SCM CursorMove +50 +0
+Key k A SCM CursorMove +0 -50
+Key j A SCM CursorMove +0 +50
 
 #Flip desktop
 Key Left A CM GotoDesk -1 0 0 2
@@ -622,7 +624,7 @@ Colorset 5 fg #444444, bg Black
 ###########
 DestroyDecor MyDecor
 AddToDecor   MyDecor
-+ TitleStyle LeftJustified Height 10 
++ TitleStyle LeftJustified Height 10
 + ButtonStyle 1 ActiveUp Vector 4 30x30@3 60x60@3 60x30@4 30x60@3 -- Flat
 + ButtonStyle 1 ActiveDown Vector 4 30x30@3 60x60@3 60x30@4 30x60@3 -- Flat
 + ButtonStyle 1 Inactive Vector 4 30x30@3 60x60@3 60x30@4 30x60@3 -- Flat
@@ -825,7 +827,7 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "%menu/window.xpm%Window Screenshot"  Pick (CirculateHit) FvwmWindowScreenshot
 + "%menu/display.xpm%Screenshot" FvwmDesktopScreenshot 5
 + "" Nop
-+ "x&3" MoveToDesk 0 -1 
++ "x&3" MoveToDesk 0 -1
 + "Identify%menu/window-identify.xpm%"  Module FvwmIdent
 
 #####
