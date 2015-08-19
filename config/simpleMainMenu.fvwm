@@ -1,0 +1,18 @@
+#link to ~/.fvwm/mainMenu.fvwm
+DestroyMenu QuickMenu
+AddToMenu   QuickMenu "Quick Menu" Title
++ "&Firefox" FvwmFireFox
++ "&Chrome" FvwmChrome
++ "&Volume" exec pavucontrol
++ "" Nop
++ "&Office" Menu OfficeMenu
++ "&Games" Menu GameMenu
++ "&System" Menu SystemMenu
++ "" Nop
++ "&Pager" FuncPager
++ "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
++ "&Window Ops" Menu FvwmWindowOpsMenu
++ "&Restart FVWM%menu/restart.png%"  Restart
++ "Quit FVWM%menu/quit.png%"  Quit
+
+

@@ -1,0 +1,132 @@
+DestroyMenu GameMenu
+AddToMenu GameMenu
++ "Scratch Programming " exec scratch
++ "TypingTutor" exec tuxtype
++ "TuxMath" exec tuxmath
++ "Blinken" exec blinken
+
++ "========Gameboy\ Advance========" Nop
++ "=When a game does not work go ==" Nop
++ "=>Options>Emulator>SaveType>====" Nop
++ "=and change between eeprom/flash===" Nop
++ "Legend of Zelda" exec gvba /opt/game/vba/Classic\ NES\ Series\ -\ Legend\ of\ Zelda\ \(USA,\ Europe\).zip
++ "Zelda II (E" exec gvba /opt/game/vba/Classic\ NES\ Series\ -\ Zelda\ II\ -\ The\ Adventure\ of\ Link\ \(USA,\ Europe\).zip
++ "Finding Nemo" exec gvba /opt/game/vba/Finding\ Nemo\ \(USA,\ Europe\).zip
++ "Golden Sun" exec gvba /opt/game/vba/Golden\ Sun\ \(USA,\ Europe\).zip
++ "Golden Sun II" exec gvba /opt/game/vba/Golden\ Sun\ -\ The\ Lost\ Age\ \(USA,\ Europe\).zip
++ "Harry Potter" exec gvba /opt/game/vba/Harry\ Potter\ and\ the\ Chamber\ of\ Secrets\ \(USA,\ Europe\)\ \(En,Fr,De,Es,It,Nl,Pt,Sv,No,Da\).zip
++ "HarvestMoon" exec gvba /opt/game/vba/Harvest\ Moon\ -\ Friends\ of\ Mineral\ Town\ \(E\).zip
++ "International Karate" exec gvba /opt/game/vba/International\ Karate\ Plus\ \(Europe\).zip
++ "Zelda - A Link to the Past" exec gvba /opt/game/vba/Legend\ of\ Zelda,\ The\ -\ A\ Link\ to\ the\ Past\ \&\ Four\ Swords\ \(USA,\ Australia\).zip
++ "Zelda - The Minish Cap" exec gvba /opt/game/vba/Legend\ of\ Zelda,\ The\ -\ The\ Minish\ Cap\ \(USA\).zip
++ "Pokemon Emerald" exec gvba /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
++ "Pokemon Fire Red" exec gvba /opt/game/vba/Pokemon\ -\ Fire\ Red\ Version\ \(USA\).zip
++ "Pokemon Ruby" exec gvba /opt/game/vba/Pokemon\ -\ Ruby\ Version\ \(USA\).zip
++ "Pokemon Saphire" exec gvba /opt/game/vba/Pokemon\ -\ Sapphire\ Version\ \(USA\).zip
+#+ "HarvestMoon" exec gvba  /opt/game/vba/Harvest\ Moon\ -\ Friends\ of\ Mineral\ Town\ \(E\).zip
+#+ "PokemonEmerald" exec gvba  /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
+
+
++ "========FPS========" Nop
++ "BzFlag" exec bzflag
++ "nexuiz" exec nexuiz
++ "openarena" exec openarena
++ "redeclipse" exec redeclipse
+
+
++ "========Strategy========" Nop
++ "Net Panzer" exec netpanzer
++ "Crimson" exec crimson
++ "Pioneers" exec pioneers
++ "Pingus" exec pingus
++ "Pax Britannica" exec pax-britannica
++ "HedgeWars" exec hedgewars
++ "SpaceZero" exec spacezero
+
++ "========Others========" Nop
++ "Super Tux Kart" exec supertuxkart
++ "Oolite" exec oolite
++ "Pinball" exec pinball
++ "Kolf" exec kolf
++ "Frozen Bubble" exec frozen-bubble
++ "Pingus" exec pingus
++ "Breakout" exec lbreakout2
++ "Cgoban" exec cgoban
++ "Chess" exec xboard
+#fltk1.3-games
++ "Blocks" exec flblocks
++ "Checkers" exec flcheckers
++ "Sudoku" exec flsudoku
+
++ "========Arcade========" Nop
++ "Airstrike" exec airstrike
++ "Adanaxis" exec adanaxisgpl
++ "Balazar Brothers" exec balazar_brothers
++ "a7xpg" exec a7xpg
++ "alienblaster" exec alienblaster
++ "antigravitaattori" exec antigrav
++ "asylum" exec asylum
++ "armagetronad" exec armagetronad
+#+ "balder2d" exec balder2
++ "ballerburg" exec ballerburg
++ "barrage" exec barrage
++ "bomberman" exec bomberclone
++ "btanks" exec btanks
++ "bubbros" exec bubbros
++ "chromium" exec chromium-bsu
++ "freedroid" exec freedroid
+#+ "gunroar" exec gunroar
++ "xpilot-ng-server" exec xterm -hold -e xpilot-ng-server
++ "xpilot-ng" exec xpilot-ng-x11
+
++ "========Adventure========" Nop
++ "Beneath a Steel Sky" exec sky
++ "Drascula" exec drascula
++ "Flight of the Amazon Queen" exec queen
++ "Dink Smallwood" exec freedink
++ "Lure of the Temptress" exec lure
+
++ "========BSD Games (simple text games) ========" Nop
++ "adventure" exec xterm -hold -e /usr/games/adventure
++ "arithmetic"   exec xterm -hold -e /usr/games/arithmetic
++ "air traffic control (man atc)"   exec xterm -hold -e /usr/games/atc
++ "backgammon"   exec xterm -hold -e /usr/games/backgammon
++ "battlestar"   exec xterm -hold -e /usr/games/battlestar
++ "boggle    "   exec xterm -hold -e /usr/games/boggle
++ "canfield  "   exec xterm -hold -e /usr/games/canfield
++ "cribbage  "   exec xterm -hold -e /usr/games/cribbage
++ "dab (man dab)"   exec xterm -hold -e /usr/games/dab
++ "go-fish   "   exec xterm -hold -e /usr/games/go-fish
++ "gomoku    "   exec xterm -hold -e /usr/games/gomoku
++ "hack      "   exec xterm -hold -e /usr/games/hack
++ "hangman   "   exec xterm -hold -e /usr/games/hangman
++ "Hunt (man 6 hunt)" exec xterm -hold -e /usr/games/hunt
++ "mille     "   exec xterm -hold -e /usr/games/mille
++ "monop   (monopoly)"   exec xterm -hold -e /usr/games/monop
++ "phantasia "   exec xterm -hold -e /usr/games/phantasia
++ "Phase of Moon (man 6 pom)"   exec xterm -hold -e /usr/games/pom
++ "quiz      "   exec xterm -hold -e /usr/games/quiz
++ "robots    "   exec xterm -hold -e /usr/games/robots
++ "sail (man 6 sail)"   exec xterm -hold -e /usr/games/sail
++ "snake (man 6 snake)"   exec xterm -hold -e /usr/games/snake
++ "tetris    "   exec xterm -hold -e /usr/games/tetris
++ "trek      "   exec xterm -hold -e /usr/games/trek
++ "worm      "   exec xterm -hold -e /usr/games/worm
++ "wump (man 6 wump)"   exec xterm -hold -e /usr/games/wump
+
+#+ "countmail "   exec xterm -hold -e /usr/games/countmail
+#+ "number    "   exec xterm -hold -e /usr/games/number
+#+ "pig       "   exec xterm -hold -e /usr/games/pig
+#+ "primes    "   exec xterm -hold -e /usr/games/primes
+#+ "random    "   exec xterm -hold -e /usr/games/random
+#+ "rain      "   exec xterm -hold -e /usr/games/rain
+#+ "rot13     "   exec xterm -hold -e /usr/games/rot13
+#+ "worms     "   exec xterm -hold -e /usr/games/worms
+#+ "wtf       "   exec xterm -hold -e /usr/games/wtf
+#+ "morse     "   exec xterm -hold -e /usr/games/morse
+#+ "bcd       "   exec xterm -hold -e /usr/games/bcd
+#+ "ppt       "   exec xterm -hold -e /usr/games/ppt
+#+ "caesar    "   exec xterm -hold -e /usr/games/caesar
+
++ "========Last========" Nop
++ "Atomix" exec atomix

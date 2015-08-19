@@ -1,0 +1,15 @@
+DestroyMenu OfficeMenu
+AddToMenu   OfficeMenu "Office Menu" Title
++ "&Nautilus Navigator" exec nautilus
++ "&Pdf-evince" exec evince
++ "Simple Spreadsheet" exec gnumeric
++ "Simple Document" exec abiword
++ "Office Suite" exec libreoffice
++ "&Calibre-ebook" calibre
++ "&Gimp%menu/gimp.png%" FvwmGimp
++ "T&otem"  FvwmTotem
++ "&Mplayer" exec smplayer
++ "&Xterm" FvwmXTerm
+
+
+

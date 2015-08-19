@@ -19,6 +19,11 @@
 # 'D' stands for "Double-click".  The action 'I' causes an action to be performed
 #       on the button-press, if the function is invoked with prior knowledge of which
 #       window to act on.
+Read custom.fvwm
+Read mainMenu.fvwm
+Read systemMenu.fvwm
+Read ../bin/shellscripts/config/officeMenu.fvwm
+Read ../bin/shellscripts/config/gameMenu.fvwm
 
 #####
 # Set Environment variables
@@ -309,6 +314,10 @@ DestroyFunc FvwmGajim
 AddToFunc   FvwmGajim
 + I Exec exec gajim
 
+DestroyFunc FvwmPsi
+AddToFunc   FvwmPsi
++ I Exec exec psi-plus
+
 DestroyFunc FvwmLinphone
 AddToFunc   FvwmLinphone
 + I Exec exec linphone --iconified
@@ -321,7 +330,7 @@ AddToFunc   FvwmMumble
 DestroyFunc FvwmSkype
 AddToFunc   FvwmSkype
 # does note need alltray
-+ I Exec exec skype
+#+ I Exec exec skype
 
 #DestroyFunc FvwmEmpathy
 #AddToFunc   FvwmEmpathy
@@ -378,7 +387,7 @@ AddToFunc   InitFunction
 #+ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
 + I Schedule 100 FvwmSkype
 + I Schedule 200 FvwmLinphone
-+ I Schedule 300 FvwmGajim
++ I Schedule 300 FvwmPsi
 #+ I Schedule 600 FvwmXClock
 #+ I Schedule 900 FvwmXload
 + I Schedule 2000 FvwmMumble
@@ -451,27 +460,29 @@ addToFunc FuncDisablePager
 
 #DestroyFunc Showall
 #AddToFunc Showall
-#+ I All MoveToPage
+# I All MoveToPage
 
-DestroyMenu QuickMenu
-AddToMenu   QuickMenu "Quick Menu" Title
-+ "&A xterm" FvwmXTerm
-+ "&Xterm" FvwmXTerm
-+ "&Firefox" FvwmFireFox
-+ "&Chrome" FvwmChrome
-+ "&Virtualbox" FvwmVirtualBox
-+ "" Nop
-+ "&Hosts" Menu HostMenu
-+ "&Scripts" Menu ScriptMenu
-+ "&Jconsole" Menu Jconsole
-+ "&Database" Menu DatabaseMenu
-+ "" Nop
-+ "&Menu" Menu AppMenu
-+ "&Pager" FuncPager
-+ "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
-+ "&Window Ops" Menu FvwmWindowOpsMenu
-+ "&Restart FVWM%menu/restart.png%"  Restart
-+ "Quit FVWM%menu/quit.png%"  Quit
+#DestroyMenu QuickMenu
+#AddToMenu   QuickMenu "Quick Menu" Title
+#+ "&A xterm" FvwmXTerm
+#+ "&Xterm" FvwmXTerm
+#+ "&Firefox" FvwmFireFox
+#+ "&Chrome" FvwmChrome
+#+ "&Virtualbox" FvwmVirtualBox
+#+ "" Nop
+#+ "&Hosts" Menu HostMenu
+#+ "&Scripts" Menu ScriptMenu
+#+ "&Jconsole" Menu Jconsole
+#+ "&Database" Menu DatabaseMenu
+#+ "&Office" Menu OfficeMenu
+#+ "&Game" Menu GameMenu
+#+ "" Nop
+#+ "&Menu" Menu AppMenu
+#+ "&Pager" FuncPager
+#+ "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
+#+ "&Window Ops" Menu FvwmWindowOpsMenu
+#+ "&Restart FVWM%menu/restart.png%"  Restart
+#+ "Quit FVWM%menu/quit.png%"  Quit
 
 DestroyMenu AppMenu
 AddToMenu AppMenu
@@ -488,9 +499,6 @@ AddToMenu AppMenu
 + "&Mumble"  FvwmMumble
 + "Net&beans"  FvwmNetbeans
 + "Power&Architect" FvwmPowerArchitect
-#+ "&IReport" FvwmIreport
-+ "&Calibre-ebook"  FvwmCalibre
-+ "&Nautilus"  FvwmNautilus
 + "&VolumeControl" FvwmPavuControl
 
 DestroyMenu DatabaseMenu
@@ -559,6 +567,8 @@ Key Super_L A A QuickMenu
 Key XF86AudioMute A A        Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
 Key XF86AudioLowerVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
 Key XF86AudioRaiseVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
+Key XF86MonBrightnessUp A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
+Key XF86MonBrightnessDown A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
 Key F10 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
 Key F11 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
 Key F12 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus

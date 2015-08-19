@@ -1,0 +1,24 @@
+#link to ~/.fvwm/mainMenu.fvwm
+DestroyMenu QuickMenu
+AddToMenu   QuickMenu "Quick Menu" Title
++ "&A xterm" FvwmXTerm
++ "&Xterm" FvwmXTerm
++ "&Firefox" FvwmFireFox
++ "&Chrome" FvwmChrome
++ "&Virtualbox" FvwmVirtualBox
++ "" Nop
++ "&Hosts" Menu HostMenu
++ "&Scripts" Menu ScriptMenu
++ "&Jconsole" Menu Jconsole
++ "&Database" Menu DatabaseMenu
++ "&Office" Menu OfficeMenu
++ "&System" Menu SystemMenu
++ "" Nop
++ "&Menu" Menu AppMenu
++ "&Pager" FuncPager
++ "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
++ "&Window Ops" Menu FvwmWindowOpsMenu
++ "&Restart FVWM%menu/restart.png%"  Restart
++ "Quit FVWM%menu/quit.png%"  Quit
+
+
