@@ -19,6 +19,7 @@
 # 'D' stands for "Double-click".  The action 'I' causes an action to be performed
 #       on the button-press, if the function is invoked with prior knowledge of which
 #       window to act on.
+Read init.fvwm
 Read custom.fvwm
 Read mainMenu.fvwm
 Read systemMenu.fvwm
@@ -376,21 +377,21 @@ AddToFunc   StartFunction
 #+ I Module FvwmTaskBar
 #+ I Module FvwmButtons MyButtons
 
-DestroyFunc InitFunction
-AddToFunc   InitFunction
+#DestroyFunc InitFunction
+#AddToFunc   InitFunction
 # Setup: ln ~/bin/shellscripts/xxx.sh ~/.fvwm/fvwm.sh
-+ I Exec exec ~/.fvwm/fvwm.sh init
+#+ I Exec exec ~/.fvwm/fvwm.sh init
 
 #+ I FvwmStalonetray
 #+ I Exec exec xclock -digital  -norender -padding -5 -geometry 115x14+3480+0 -strftime  " %a %b %d %Y"
 #+ I Exec exec xterm +sb -g 100x58+1680+0 -fn 6x13
 #+ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
-+ I Schedule 100 FvwmSkype
-+ I Schedule 200 FvwmLinphone
-+ I Schedule 300 FvwmPsi
+#+ I Schedule 100 FvwmSkype
+#+ I Schedule 200 FvwmLinphone
+#+ I Schedule 300 FvwmPsi
 #+ I Schedule 600 FvwmXClock
 #+ I Schedule 900 FvwmXload
-+ I Schedule 2000 FvwmMumble
+#+ I Schedule 2000 FvwmMumble
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
 #+ I Schedule 8000 FvwmEvolution
