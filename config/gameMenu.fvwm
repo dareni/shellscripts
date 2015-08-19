@@ -67,7 +67,7 @@ AddToMenu GameMenu
 + "antigravitaattori" exec antigrav
 + "asylum" exec asylum
 + "armagetronad" exec armagetronad
-#+ "balder2d" exec balder2
++ "balder2d" exec balder2d
 + "ballerburg" exec ballerburg
 + "barrage" exec barrage
 + "bomberman" exec bomberclone
