@@ -9,7 +9,9 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "&Gimp%menu/gimp.png%" FvwmGimp
 + "T&otem"  FvwmTotem
 + "&Mplayer" exec smplayer
++ "GVim%menu/vim.png%" FvwmGVim
 + "&Xterm" FvwmXTerm
+
 
 
 

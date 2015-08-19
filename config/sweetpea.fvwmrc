@@ -228,7 +228,12 @@ AddToFunc   FvwmFireFox
 
 DestroyFunc FvwmChrome
 AddToFunc   FvwmChrome
-+ I Exec exec chromium
++ I PipeRead ' \
+if [ -x `which google-chrome` ]; then \
+    echo "exec google-chrome"; \
+elif [ -x `which chromium` ]; then \
+    echo "exec chromium"; \
+fi'
 
 DestroyFunc FvwmVirtualBox
 AddToFunc   FvwmVirtualBox

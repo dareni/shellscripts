@@ -14,5 +14,6 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "&Window Ops" Menu FvwmWindowOpsMenu
 + "&Restart FVWM%menu/restart.png%"  Restart
 + "Quit FVWM%menu/quit.png%"  Quit
++ "Poweroff" exec sudo poweroff
 
 

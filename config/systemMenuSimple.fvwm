@@ -1,6 +1,6 @@
 #link to ~/.fvwm/systemMenu.fvwm
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu "System Menu" Title
-+ "wireless"  exec xterm -hold -e sudo wpa_gui
++ "wireless" exec sudo wpa_gui
 
 
