@@ -338,6 +338,10 @@ DestroyFunc FvwmLinphone
 AddToFunc   FvwmLinphone
 + I Exec exec linphone --iconified
 
+DestroyFunc FvwmWpagui
+AddToFunc   FvwmWpagui
++ I exec sudo wpa_gui
+
 DestroyFunc FvwmMumble
 AddToFunc   FvwmMumble
 + I SetEnv MUMBLE_ENABLED 0

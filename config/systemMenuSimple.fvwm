@@ -1,6 +1,6 @@
 #link to ~/.fvwm/systemMenu.fvwm
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu "System Menu" Title
-+ "wireless" exec sudo wpa_gui
++ "wireless" FvwmWpagui
 
 
