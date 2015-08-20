@@ -19,6 +19,13 @@
 # 'D' stands for "Double-click".  The action 'I' causes an action to be performed
 #       on the button-press, if the function is invoked with prior knowledge of which
 #       window to act on.
+
+# cd ~/.fvwm
+# ln -s ~/bin/shellscripts/config/sweetpea.sh ./fvwm.sh
+# ln -s ~/bin/shellscripts/config/initSweetpea.fvwm ./init.fvwm
+# ln -s ~/bin/shellscripts/config/mainMenuProg.fvwm ./mainMenu.fvwm
+# ln -s ~/bin/shellscripts/config/systemMenuSimple.fvwm ./systemMenu.fvwm
+
 Read init.fvwm
 Read custom.fvwm
 Read mainMenu.fvwm
@@ -138,6 +145,7 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 #Style *NetBeans* FocusFollowsMouse
 Style Psi* StartIconic
 Style Mumble* StartIconic
+Style wpa_gui StartIconic
 
 #####
 # Events
@@ -381,11 +389,13 @@ AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
 + I Schedule 8000 Style Psi* StartNormal
 + I Schedule 8000 Style Mumble* StartNormal
++ I Schedule 8000 Style wpa_gui* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
 #+ I Module FvwmTaskBar
 #+ I Module FvwmButtons MyButtons
 
+#Now configured in from init.fvwm
 #DestroyFunc InitFunction
 #AddToFunc   InitFunction
 # Setup: ln ~/bin/shellscripts/xxx.sh ~/.fvwm/fvwm.sh
