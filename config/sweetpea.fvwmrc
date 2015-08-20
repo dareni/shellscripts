@@ -126,7 +126,7 @@ Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style stalonetray Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Skype StartIconic
 Style "Buddy List" StartIconic
-Style Mumble EWMHIgnoreStateHints, EWMHIgnoreWindowType
+#Style Mumble EWMHIgnoreStateHints, EWMHIgnoreWindowType
 #Note: netbeans needs sloppyfocus to gain focus to the transient windows.
 Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 #Style Checkout StaysOnTop
@@ -136,6 +136,8 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 #Style "alltray" !Borders, Title, Layer 6
 #Style *NetBeans* FPSortWindowlistByFocus, FPEnterToFocus
 #Style *NetBeans* FocusFollowsMouse
+Style Psi* StartIconic
+Style Mumble* StartIconic
 
 #####
 # Events
@@ -377,6 +379,8 @@ AddToFunc   FvwmViewManPage
 DestroyFunc StartFunction
 AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
++ I Schedule 8000 Style Psi* StartNormal
++ I Schedule 8000 Style Mumble* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
 #+ I Module FvwmTaskBar
@@ -439,12 +443,12 @@ AddToFunc FuncFocusWindow
 + I PipeRead 'if test "${fvwmresource}" = "FvwmPager"; then \
       echo "SetEnv fvwmpagerid \$[w.id]";  fi'
 #Check if the window is mumble, at startup hide it.
-+ I PipeRead 'if test "${fvwmresource}" = "mumble"; then \
-                if test "${MUMBLE_ENABLED:=0}" = "0"; then \
-                    echo "WindowId \$[w.id] Iconify True;";  \
-                    echo "SetEnv MUMBLE_ENABLED 1"; \
-                fi \
-            fi'
+#+ I PipeRead 'if test "${fvwmresource}" = "mumble"; then \
+#                if test "${MUMBLE_ENABLED:=0}" = "0"; then \
+#                    echo "WindowId \$[w.id] Iconify True;";  \
+#                    echo "SetEnv MUMBLE_ENABLED 1"; \
+#                fi \
+#            fi'
 
 DestroyFunc FuncPager
 AddToFunc FuncPager
