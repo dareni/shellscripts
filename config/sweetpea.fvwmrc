@@ -340,7 +340,7 @@ AddToFunc   FvwmLinphone
 
 DestroyFunc FvwmWpagui
 AddToFunc   FvwmWpagui
-+ I exec sudo wpa_gui
++ I exec sudo wpa_gui -t
 
 DestroyFunc FvwmMumble
 AddToFunc   FvwmMumble

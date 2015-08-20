@@ -13,6 +13,7 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "&Database" Menu DatabaseMenu
 + "&Office" Menu OfficeMenu
 + "&System" Menu SystemMenu
++ "&Game" Menu GameMenu
 + "" Nop
 + "&Menu" Menu AppMenu
 + "&Pager" FuncPager

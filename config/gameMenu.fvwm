@@ -42,6 +42,8 @@ AddToMenu GameMenu
 + "Pax Britannica" exec pax-britannica
 + "HedgeWars" exec hedgewars
 + "SpaceZero" exec spacezero
++ "Freeciv" exec freeciv
+
 
 + "========Others========" Nop
 + "Super Tux Kart" exec supertuxkart
