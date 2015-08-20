@@ -13,7 +13,7 @@ AddToFunc   InitFunction
 #+ I Schedule 600 FvwmXClock
 #+ I Schedule 900 FvwmXload
 + I Schedule 2000 FvwmMumble
-+ I Schedule 2000 exec FvwmWpagui
++ I Schedule 2000 FvwmWpagui
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
 #+ I Schedule 8000 FvwmEvolution
