@@ -1,9 +1,12 @@
 DestroyMenu GameMenu
 AddToMenu GameMenu
-+ "Scratch Programming " exec scratch
 + "TypingTutor" exec tuxtype
 + "TuxMath" exec tuxmath
 + "Blinken" exec blinken
+
++ "========Creative========" Nop
++ "Scratch Programming " exec scratch
++ "Minetest" exec minetest
 
 + "========Gameboy\ Advance========" Nop
 + "=When a game does not work go ==" Nop
@@ -27,6 +30,8 @@ AddToMenu GameMenu
 #+ "PokemonEmerald" exec gvba  /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
 
 
+
+
 + "========FPS========" Nop
 + "BzFlag" exec bzflag
 + "nexuiz" exec nexuiz
@@ -43,10 +48,14 @@ AddToMenu GameMenu
 + "HedgeWars" exec hedgewars
 + "SpaceZero" exec spacezero
 + "Freeciv" exec freeciv
-
++ "Boswars" exec boswars
++ "0 A.D." exec 0ad
++ "Seven Kingdoms Ancient Adversaries" exec 7kaa
++ "Pax Britannica" exec pax-britannica
 
 + "========Others========" Nop
 + "Super Tux Kart" exec supertuxkart
++ "Aerial combat simulation" exec acm
 + "Oolite" exec oolite
 + "Pinball" exec pinball
 + "Kolf" exec kolf
@@ -80,6 +89,9 @@ AddToMenu GameMenu
 #+ "gunroar" exec gunroar
 + "xpilot-ng-server" exec xterm -hold -e xpilot-ng-server
 + "xpilot-ng" exec xpilot-ng-x11
++ "Astromenace" exec AstroMenace
++ "Maze of Galious" exec mog
++ "Super Mario Chronicles" exec smc
 
 + "========Adventure========" Nop
 + "Beneath a Steel Sky" exec sky

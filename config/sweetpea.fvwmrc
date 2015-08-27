@@ -391,9 +391,9 @@ AddToFunc   FvwmViewManPage
 DestroyFunc StartFunction
 AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
-+ I Schedule 8000 Style Psi* StartNormal
-+ I Schedule 8000 Style Mumble* StartNormal
-+ I Schedule 8000 Style wpa_gui* StartNormal
++ I Schedule 16000 Style Psi* StartNormal
++ I Schedule 16000 Style Mumble* StartNormal
++ I Schedule 16000 Style wpa_gui* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
 #+ I Module FvwmTaskBar
