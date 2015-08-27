@@ -12,14 +12,14 @@
 #
 # Invocations:
 #
-# sshd-fwscan.sh scan logfile
+# sshd-fwscan.sh scan <logfile>
 # Tail the logfile and adjust host access via pf as required.
 #
-# sshd-fwscan.sh friend logfile hostip ...
+# sshd-fwscan.sh friend <logfile> <hostip> ...
 # Append the host ip(s) to the logfile as a friendly host. ie to remove the
 # host from the pf block list table.
 #
-# sshd-fwscan.sh ip/name/new_host_to_block friendly_hosts .....
+# sshd-fwscan.sh <ip/name/new_host_to_block> <friendly_hosts> .....
 # Invoked by the 'sshd-fwscan.sh scan' invocation.
 # 1. Adjusts the pf host block list table by adding the new_host_to_block
 # name/ip.
