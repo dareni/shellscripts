@@ -9,7 +9,9 @@
 
 #Limitation: Untested with zfs file system names containing spaces.
 
-TEST_CONFIG_FILE=~/.zfsBackupTestConfig
+
+
+CONFIG_FILE=~/.zfsBackup
 G_ZFS_SRC_FS=$1
 G_ZFS_DEST_FS=$2
 G_ZFS_USER_HOST=$3
@@ -18,7 +20,7 @@ G_MAX_SNAPSHOT=""
 G_SNAPSHOT_NAME=""
 ZFS_NO_DATA_MESSAGE="dataset does not exist"
 
-# isValidSnapshot return status.
+# isValidSnapshot return status CONSTANT.
 G_SS_STATUS=0
 
 usage() {
@@ -40,25 +42,27 @@ Usage ./zfsBackup.sh src_zfs dest_zfs user@remote_host
 
     zfsBackup.sh shellTests
 
-3) Create the configuration file $TEST_CONFIG_FILE for zfs tests.
-
-    zfsBackup.sh zfsTestConfigCreate
-
-4) Execute the zfs tests.
+3) Execute the zfs tests.
 
     zfsBackup.sh zfsTests
 
-Note: zremote/bup must exist, remoteUser must have the necessary permissions
+Note:
+
+1) zremote/bup must exist, remoteUser must have the necessary permissions
 for zfs operations ie:
 
 zfs allow -u remoteUser create,destroy,mount,snapshot,receive,send zremote/bup
+
+2) Requires zfs, sh, awk, nc, ssh, cut in the path of the local/remote users.
+
+3) See $CONFIG_FILE for test requirements.
 
 EOF
 }
 
 if [ -z "`which jot`" ]; then
     echo Please install athena-jot\(bsd jot\) the sequence generator.
-    exit
+    exit 1
 fi
 
 ###############################################################################
@@ -303,6 +307,7 @@ doBackup() {
 # return    0 = success
 #           1 = failure and returns the error message
 #
+
     # check the local filesystem for snapshot continuity.
     local ZFS_SRC_FS="$1"
     local ZFS_DEST_FS="$2"
@@ -702,7 +707,7 @@ assertEqual(){
         echo "$testName Test Failure: arg1='$arg1' arg2='$arg2' $errorMesg"
     fi
     if [ "$doExitOnError" = "exit" -a "$arg1" != "$arg2" ]; then
-        exit
+        return 1
     fi
 }
 
@@ -948,9 +953,17 @@ shellTests(){
     ### tests complete ########################################################
 }
 
-## ZFS Test Configuration #####################################################
-zfsTestConfigCreate() {
-(cat <&3  >>${TEST_CONFIG_FILE}) 3<<EOF
+## Configuration creation #####################################################
+configCreate() {
+    if [ -f "${CONFIG_FILE}" ]; then
+        return 0
+    fi
+
+    (cat <&3  >>${CONFIG_FILE}) 3<<EOF
+
+#Set to ZFS_BACKUP_DEBUG=1 to enable debug.
+ZFS_BACKUP_DEBUG=0
+
 #Test configuration for zfsBackup.sh
 
 #TESTER must have:
@@ -958,14 +971,16 @@ zfsTestConfigCreate() {
 # -permissions given by :
 #   zfs allow -u \$TESTER create,destroy,mount,snapshot,receive,send,hold,rollback \$TESTFS
 #   chown \$TESTER:\$TESTER \$TESTFS_MOUNT
-# -host requirement ;
+# -host requirement :
 #   sysctl vfs.usermount=1
 
-TESTER=daren
+TESTER=user
 TESTFS=zroot/tmp/zfsBackupTest
 TESTFS_MOUNT=/tmp/zfsBackupTest
-SSH_LOCALHOST=localhost
+TEST_SSH_LOCALHOST=localhost
 EOF
+
+    echo The default configuration created in ${CONFIG_FILE}
 }
 
 ## ZFS Tests ##################################################################
@@ -973,30 +988,23 @@ zfsTests() {
     echo Start zfs tests.
     if [ ! -x "`which zfs`" ]; then
         echo zfs executable not available!
-        exit
-    elif [ ! -f ${TEST_CONFIG_FILE} ]; then
-            echo -------------------------------------------------------------
-            echo No config file at ${TEST_CONFIG_FILE}
-            echo -------------------------------------------------------------
-            usage
-            exit
+        exit 1
     fi
-    . ${TEST_CONFIG_FILE}
     if [ ! -d ${TESTFS_MOUNT} ]; then
         echo Error \$TESTFS_MOUNT=${TESTFS_MOUNT} does not exist.
-        echo Check ${TEST_CONFIG_FILE}
-        exit
+        echo Check ${CONFIG_FILE}
+        exit 1
     elif [ "$TESTER" != "$USER" ]; then
         echo Error \$TESTER=$TESTER!=${USER}
         echo The configured user is not the user executing the script.
-        echo Check ${TEST_CONFIG_FILE}
-        exit
+        echo Check ${CONFIG_FILE}
+        exit 1
     fi
 
-    RET=`ssh ${TESTER}@${SSH_LOCALHOST} 'echo ok'`
+    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} 'echo ok'`
     assertEqual $RET "ok" "zfsTest0" \
-        "Command failed: ssh ${TESTER}@${SSH_LOCALHOST} \
-         Please check ${TEST_CONFIG_FILE} " exit
+        "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} \
+         Please check ${CONFIG_FILE} " exit
 
     # Test setup
     RET=`zfs list ${TESTFS}`
@@ -1028,7 +1036,7 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@1
     assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
     "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
 
@@ -1044,18 +1052,18 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@2
     assertEqual $? 0 "zfsTest10" "Snapshot creation failed ${TESTFS}/source@2." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit
 
-    # Simulate a failed send of the child filesystem. 
+    # Simulate a failed send of the child filesystem.
     # zfsTest12 caused a headache where the destination file system was not remounted
     # to reflect the most recent snapshot.
     assertEqual $? 0 "zfsTest12" \
         "Could not destroy the child fs ${TESTFS_MOUNT}/dest/source/child" exit
 
     # Backup and check the child@2 snapshot is resent
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit
 
@@ -1064,7 +1072,7 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@3
     assertEqual $? 0 "zfsTest14" "Could not snapshot ${TESTFS}/source" exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
     assertEqual $? 0 "zfsTest15" "Backup snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
@@ -1080,7 +1088,7 @@ zfsTests() {
     assertEqual "$RET" 1 "zfsTest18" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt snapshot2 data does not exist." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
     assertEqual $? 0 "zfsTest19" "Redo backup snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
@@ -1099,20 +1107,24 @@ zfsTests() {
 
 ### MAIN #####################################################################
 
+configCreate
+. ${CONFIG_FILE}
+
 if [ 3 -ne $# ]; then
-    if [ "zfsTestConfigCreate" = "$1" ]; then
-        zfsTestConfigCreate
-        echo Test config created in ${TEST_CONFIG_FILE}
-    elif [ "zfsTests" = "$1" ]; then
+    if [ "zfsTests" = "$1" ]; then
         zfsTests
         echo ZFS tests completed ok.
+        exit 0
     elif [ "shellTests" = "$1" ]; then
         shellTests
         echo Shell tests completed ok.
-    else
-        usage
+        exit 0
     fi
-    exit
+    usage
+    exit 0
+else
+    #Not a test so no use for these:
+    unset TESTER TESTFS TESTFS_MOUNT TEST_SSH_LOCALHOST
 fi
 
 echo ================================================================================
