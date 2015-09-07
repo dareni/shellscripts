@@ -87,13 +87,13 @@ array_clear()
     CNT=`get_avar "$1" 0`
     for i in `jot "-" 0 ${CNT:-"0"} 1`
     do
-        unset $1_$i 
+        unset $1_$i
     done
 }
 
 array_iterator() {
 #
-# Return the elements of an array.    
+# Return the elements of an array.
 #
 # $1 the array name
 #
@@ -104,7 +104,7 @@ array_iterator() {
         exit 1
     fi
     local ARRAYSIZE=`get_avar "$ARRAYNAME" 0`
-    
+
     if [ ! -z "$ARRAYSIZE" ]; then
         for CNT in `jot "-" 1 "$ARRAYSIZE" 1`
         do
@@ -115,7 +115,7 @@ array_iterator() {
 
 array_add() {
 #
-# Add an element to an array.    
+# Add an element to an array.
 #
 # $1 the array name.
 # $2 the element value.
@@ -150,7 +150,7 @@ arrayToList() {
     for ELEMENT in `array_iterator  "$ARRAYNAME"`
     do
         if [ -z "$LIST" ]; then
-            LIST=$ELEMENT 
+            LIST=$ELEMENT
         else
             LIST="$LIST $ELEMENT"
         fi
@@ -166,7 +166,7 @@ listToArray() {
 #   $2 - array name
 #
     local ARRAYLIST="$1"
-    local ARRAY_NAME="$2"    
+    local ARRAY_NAME="$2"
     local CNT=0
 
     for WORD in $ARRAYLIST
@@ -187,10 +187,10 @@ getRemoteFsList() {
 #
 #  return the `zfs list` listing for the target filesystem.
 #
-#           0 = success 
+#           0 = success
 #           1 = failure and returns the error message
 #
-    local REMOTEFS="$1" 
+    local REMOTEFS="$1"
     local USER_HOST="$2"
     CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
 #echo "$CMD" >/dev/stderr
@@ -201,45 +201,45 @@ getRemoteFsList() {
 ###############################################################################
 sendNewRemoteFileSystem() {
 #
-# Send the filesystem to the remote host where it does not exist. 
+# Send the filesystem to the remote host where it does not exist.
 #
 # $1 = the local filesystem for backup.
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
 # $4 = the max snapshot version to send
-# $5 = the min snapshot version to send 
+# $5 = the min snapshot version to send
 #
-# return    0 = success 
+# return    0 = success
 #           1 = failure and returns the error message
 #
     local LOCALFS="$1"
     local REMOTEFS="$2"
 #REMOTEFS=`dirname $REMOTEFS`
     local USER_HOST="$3"
-    local REMOTE_HOST="${USER_HOST#*@}" 
+    local REMOTE_HOST="${USER_HOST#*@}"
     local SNAPSHOT_VERSION="$4"
     local FIRST_SNAPSHOT_VERSION="$5"
 
 #    RECEIVE=`ssh $USER_HOST 'nc -w 120 -l 192.168.1.102 8023 | zfs receive -d zroot/bup' &`
 #    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
 
-#echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS 
+#echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS
     CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -e $REMOTEFS"
 echo $CMD > /dev/stderr
     RXFIFO=/tmp/rx$$.fifo
     TXFIFO=/tmp/tx$$.fifo
-    mkfifo "$RXFIFO" 
-    mkfifo "$TXFIFO" 
+    mkfifo "$RXFIFO"
+    mkfifo "$TXFIFO"
     exec 3<>"$RXFIFO"
     exec 4<>"$TXFIFO"
 
-    ssh $USER_HOST "$CMD" 2>&3 1>&3 & 
+    ssh $USER_HOST "$CMD" 2>&3 1>&3 &
     RXPID=$!
     sleep 2
 #    if [ "$FIRST_SNAPSHOT_VERSION" != "$SNAPSHOT_VERSION" ]; then
 #        SEND_INC="-I @$FIRST_SNAPSHOT_VERSION"
 #    else
-#        SEND_INC=""   
+#        SEND_INC=""
 #    fi
 echo "SEND=zfs send -v $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 " >/dev/stderr
 
@@ -252,7 +252,6 @@ echo "SEND=zfs send -v $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HO
         echo "Sender op: $TXMSG" > /dev/stderr
         echo "Receiver op: $RXMSG" > /dev/stderr
 
-    
     if [ "$RET" -ne 0 -o -n "$TXMSG" -o -n "$RXMSG" ]; then
         echo "Send failed $LOCALFS" > /dev/stderr
         echo "Sender error: $TXMSG" > /dev/stderr
@@ -267,17 +266,17 @@ echo "SEND=zfs send -v $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HO
 ###############################################################################
 sendIncrementalFileSystem() {
 #
-# Send the filesystem to the remote host where it does not exist. 
+# Send the filesystem to the remote host where it does not exist.
 #
 # $1 = the local filesystem for backup.
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
 # $4 = local snapshot version list to send
-# $5 = remote snapsho 
+# $5 = remote snapshot
     local LOCALFS="$1"
     local REMOTEFS="$2"
     local USER_HOST="$3"
-    local REMOTE_HOST="${USER_HOST#*@}" 
+    local REMOTE_HOST="${USER_HOST#*@}"
     local LOCAL_SNAPSHOT_VERSION="$4"
     local REMOTE_SNAPSHOT_VERSION="$5"
 
@@ -286,11 +285,11 @@ sendIncrementalFileSystem() {
         echo "Remote and local snapshot verions match, nothing to do."
     else
         CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS"
-        ssh $USER_HOST "$CMD" & 
+        ssh $USER_HOST "$CMD" &
         RXPID=$!
         sleep 2
         zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION \
-            | nc -w 20 $REMOTE_HOST 8023 
+            | nc -w 20 $REMOTE_HOST 8023
         RET=$?
         if [ $RET -ne 0 ]; then
             kill -9 $RXPID
@@ -306,9 +305,9 @@ doBackup() {
 #
 # $1 = the file system.
 # $2 = the remote file system destination.
-# $3 = user host ie user@remotehost 
+# $3 = user host ie user@remotehost
 #
-# return    0 = success 
+# return    0 = success
 #           1 = failure and returns the error message
 #
     # check the local filesystem for snapshot continuity.
@@ -342,22 +341,22 @@ doBackup() {
     fi
     if [ "`array_size MAIN_EXCEPTIONS_ARRAY`" -ne 0 ]; then
         local M1="Target filesystem snapshot inconsistencies. Please snapshot"
-        local M2=" the target filesystem. The root snapshot" 
+        local M2=" the target filesystem. The root snapshot"
         local M3=" version $MAX_SNAPSHOT is not matched by the child filesystem(s): "
-        echo $M1$M2$M3$G_FILESYSTEM_EXECEPTIONS 
-        return 1 
+        echo $M1$M2$M3$G_FILESYSTEM_EXECEPTIONS
+        return 1
     fi
 
     # loop on the local tree branches
     local FS_CNT=1
     for FILE in `array_iterator MAIN_FS_ARRAY`
-    do 
+    do
         echo "Bup filesystem: $FILE" > /dev/stderr
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
             echo  Error: No snapshot on source file system: $FILE
-            return 1 
+            return 1
         fi
         local LOCALFILE="${FILE%@*}"
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
@@ -367,7 +366,7 @@ doBackup() {
         if [ -z "$REMOTELIST" ]; then
             echo "Remote FS status failure. status: $RET"
         fi
-        DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"` 
+        DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"`
 
         CURRENT_DEST_PATH=$(getRemoteDestination ${ZFS_SRC_FS} ${LOCALFILE}  ${ZFS_DEST_FS})
         # check each remote host branch status
@@ -390,7 +389,7 @@ doBackup() {
             fi
 #echo $REMOTELIST  > /dev/stderr
             # check the REMOTE LIST for the snapshot version.
-            listToArray "$REMOTELIST" arrayREMOTELIST 
+            listToArray "$REMOTELIST" arrayREMOTELIST
             REMOTE_SNAPSHOT_DATA=`getSnapshotData arrayREMOTELIST`
 #echo remotesnapshotdata: $REMOTE_SNAPSHOT_DATA
 #echo $REMOTE_SNAPSHOT_DATA  > /dev/stderr
@@ -404,14 +403,15 @@ doBackup() {
 #sendIncrementalFileSystem "$LOCALFILE" "$ZFS_DEST_FS" \ "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
             sendIncrementalFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" \
             "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
-        fi 
+        fi
 
         FS_CNT=$((FS_CNT+1))
-        echo 
+        echo
     done;
-    #Remount the destination filesystems. ie zfsTest12 where a destination filesystem is repopulated.
-    ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}; for FS in \`zfs list -H -r ${ZFS_DEST_FS} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
-
+    # Remount the destination filesystems. ie zfsTest12 where a destination
+    # filesystem is detroyed and repopulated.
+    ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}; for FS in \
+        \`zfs list -H -r ${ZFS_DEST_FS} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
 }
 
 ###############################################################################
@@ -419,7 +419,7 @@ getRemoteDestination() {
 #
 # Create the path of the remote filesystem.
 #
-# $1 = the target/parent/root filesystem to copy. 
+# $1 = the target/parent/root filesystem to copy.
 # $2 = the current target ie maybe the same as $1 or a child of $1.
 # $3 = the destination filesystem.
 #
@@ -428,17 +428,16 @@ getRemoteDestination() {
     local CHILD_TARGET="$2"
     local DEST="$3"
     local CHILD_DEST=""
-    
+
     if [ "${PARENT_TARGET}" = "${CHILD_TARGET}" ]; then
         CHILD_DEST="${DEST}"
     else
         CHILDFS="${CHILD_TARGET##$PARENT_TARGET}" #/child/baby
         BABYBRANCH="/${CHILDFS##*/}"
         CHILDBRANCH="${CHILDFS%%${BABYBRANCH}}"
-        PARENTFS="${PARENT_TARGET##*/}" 
+        PARENTFS="${PARENT_TARGET##*/}"
         CHILD_DEST="${DEST}/${PARENTFS}${CHILDBRANCH}"
     fi
-
 
     echo "${CHILD_DEST}"
 }
@@ -446,12 +445,12 @@ getRemoteDestination() {
 ###############################################################################
 getSnapshotData() {
 #
-# Get the G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root. 
+# Get the G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root.
 #
 # $1 = name of an array containing `zfs list -d 1 -H -o name -t all zfilesystem`
 #
-# return    G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root. 
-#           0 = success 
+# return    G_MAX_SNAPSHOT G_SNAPSHOT_NAME for the filesystem root.
+#           0 = success
 #           1 = failure and returns the error message
 
     local MAX_SNAPSHOT=""
@@ -468,8 +467,8 @@ getSnapshotData() {
         if [ 0 -eq "$SNAPCNT" ]; then
             if [ -z "$SNAPSHOT_NAME" ]; then
                 SNAPSHOT_NAME="$FS"
-            fi 
-        else        
+            fi
+        else
             if [ -z "$SNAPSHOT_NAME" ]; then
                 SNAPSHOT_NAME="${FS%%@*}"
             fi
@@ -490,7 +489,7 @@ getSnapshotData() {
 ###############################################################################
 sortSnapshotFilesystems() {
 #
-# Adjusts <PREFIX>_FS_ARRAY and <PREFIX>_EXCEPTIONS_ARRAY with the last filesystem. 
+# Adjusts <PREFIX>_FS_ARRAY and <PREFIX>_EXCEPTIONS_ARRAY with the last filesystem.
 #
 # $1 = last filesystem.
 # $2 = current filesystem.
@@ -499,18 +498,18 @@ sortSnapshotFilesystems() {
 #
 # return    <PREFIX>_FS_ARRAY contains all filesystems for the
 #               given snapshot.
-#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without 
+#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without
 #               the given snapshot.
 #           G_SS_STATUS - isValidSnapshot return status.
 #
-#           0 = success 
+#           0 = success
 #           1 = failure and returns the error message
 #
     local LASTFS="$1"
     local CURRENTFS="$2"
     local SSVERSION="$3"
     local AN_PREFIX="$4"
-    isValidSnapshot "$LASTFS" "$CURRENTFS" "$SSVERSION" 
+    isValidSnapshot "$LASTFS" "$CURRENTFS" "$SSVERSION"
     G_SS_STATUS=$?
     if [ $G_SS_STATUS -eq 0 ]; then
         array_add "${AN_PREFIX}_FS_ARRAY" "$LASTFS"
@@ -535,11 +534,11 @@ getSnapshotFilesystems() {
 #
 # return    <PREFIX>_FS_ARRAY contains all filesystems for the
 #               given snapshot.
-#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without 
+#           <PREFIX>_EXCEPTIONS_ARRAY contains all filesystems without
 #               the given snapshot.
 #           <PREFIX>_SS_LIST_ARRAY array contains the snapshot identifiers
 #               for each branch/filesystem in _FS_ARRAY.
-#           0 = success 
+#           0 = success
 #           1 = failure and returns the error message
 #
     local ARRAYNAME="$1"
@@ -568,9 +567,9 @@ getSnapshotFilesystems() {
             fi
             #store the snapshots for each branch
             if [ "$G_SS_STATUS" -eq 2 -o "$G_SS_STATUS" -eq 0 ]; then
-                #is an intermediate or final snapshot so add to the list.   
+                #is an intermediate or final snapshot so add to the list.
                 LASTSS=$(getSnapshotVersion "$LASTLINE")
-                SSLIST=$(get_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT") 
+                SSLIST=$(get_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT")
                 if [ ! -z "$LASTSS" ]; then
                     if [ -z "$SSLIST" ]; then
                         SSLIST="$LASTSS"
@@ -585,7 +584,7 @@ getSnapshotFilesystems() {
                 #Set the branch counter for the next branch
                 BRANCH_CNT=$((BRANCH_CNT+1))
             elif [ $G_SS_STATUS -eq 1 ]; then
-                #is an invalid snapshot collection so clear the list.   
+                #is an invalid snapshot collection so clear the list.
                 set_avar "${AN_PREFIX}_SS_LIST_ARRAY" "$BRANCH_CNT" ""
             fi
         else
@@ -603,7 +602,7 @@ getSnapshotVersion() {
     local TMPSTR="$1"
     local SNAPSHOT="${TMPSTR##*@}"
     if [ "$TMPSTR" = "$SNAPSHOT" ]; then
-        SNAPSHOT="" 
+        SNAPSHOT=""
     fi
     echo "$SNAPSHOT"
     return 0;
@@ -617,7 +616,7 @@ nameValidation() {
 # $1 = last line
 # $2 = current line
 #
-# return    0 = valid 
+# return    0 = valid
 #           1 = invalid
 
     local LASTLINE="$1"
@@ -628,7 +627,7 @@ nameValidation() {
     if [ "$LASTNAME" != "$CURRENTNAME" ]; then
         echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE"
         echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'"
-        return 1;                 
+        return 1;
     fi
     return 0;
 }
@@ -658,15 +657,15 @@ isValidSnapshot() {
     L_HAS_SNAP=`echo "$LASTLINE" | grep -c @`
     local C_HAS_SNAP=""
     C_HAS_SNAP=`echo "$CURRENTLINE" | grep -c @`
-    local LASTNAME="" 
+    local LASTNAME=""
     local CURRENTNAME=""
 
     if [ -z "$LASTLINE" ]; then
         echo LASTLINE can not be empty.
         return 3
     fi
-    if [ $L_HAS_SNAP -eq 0 ]; then 
-        if [ $C_HAS_SNAP -eq 0 ]; then 
+    if [ $L_HAS_SNAP -eq 0 ]; then
+        if [ $C_HAS_SNAP -eq 0 ]; then
             #Snapshot missing on last.
             if [ -z "$SSVERSION" ]; then
                 #No snapshot on last filesystem.
@@ -677,27 +676,27 @@ isValidSnapshot() {
             ret=$(nameValidation "$LASTLINE" "$CURRENTLINE")
             if [ $? -ne 0 ]; then
                 echo $ret
-                return 3;                 
+                return 3;
             fi
             #Current contains the snapshot.
-            return 2;                 
+            return 2;
         fi
     else
-        if [ $C_HAS_SNAP -eq 0 ]; then 
+        if [ $C_HAS_SNAP -eq 0 ]; then
             #Check the last for the correct snapshot version.
             #Current and last names do not need to match.
             LASTSS=$(getSnapshotVersion "$LASTLINE")
-            if [ -z "$SSVERSION"  -o "$LASTSS" = "$SSVERSION"  ]; then 
+            if [ -z "$SSVERSION"  -o "$LASTSS" = "$SSVERSION"  ]; then
                 #Is a valid snapshot.
                 return 0;
             fi
-            return 1;    
-        else    
-            #Check the name is the same ie should be a newer snapshot.        
+            return 1;
+        else
+            #Check the name is the same ie should be a newer snapshot.
             ret=$(nameValidation "$LASTLINE" "$CURRENTLINE")
             if [ $? -ne 0 ]; then
                 echo $ret
-                return 3;                 
+                return 3;
             fi
             return 2;
         fi
@@ -705,7 +704,7 @@ isValidSnapshot() {
 }
 
 ###############################################################################
-assertEqual(){ 
+assertEqual(){
     local arg1="$1"
     local arg2="$2"
     local testName="$3"
@@ -724,11 +723,11 @@ assertEqual(){
 
 ## Shell Tests ################################################################
 shellTests(){
-    ### array tests ########################################################### 
+    ### array tests ###########################################################
     echo
-    array_add tst w  
-    array_add tst x  
-    array_add tst y  
+    array_add tst w
+    array_add tst x
+    array_add tst y
     assertEqual "$tst_0" "3" arrayValidation1
     assertEqual "$tst_1" "w" arrayValidation2
     assertEqual "$tst_2" "x" arrayValidation3
@@ -746,7 +745,7 @@ shellTests(){
     assertEqual "$RET" "Invalid arrayname \"A B\"." arrayValidation10
     echo array_iterator  tests done.
 
-    ### nameValidation tests ################################################## 
+    ### nameValidation tests ##################################################
     RET=$(nameValidation "zpool/data" "zpool/data")
     assertEqual $? 0 "nameValidation1" "$RET"
 
@@ -769,53 +768,53 @@ shellTests(){
     assertEqual $? 1 "nameValidation6" "$RET"
     echo nameValidation tests ok.
 
-    ### isValidSnapshot tests ################################################# 
-    RET=$(isValidSnapshot "zpool/data" "zpool/data" "0") 
+    ### isValidSnapshot tests #################################################
+    RET=$(isValidSnapshot "zpool/data" "zpool/data" "0")
     assertEqual $? 1 "isValidSnapshot0" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "zpool/data/dummy" "0") 
+    RET=$(isValidSnapshot "zpool/data@0" "zpool/data/dummy" "0")
     assertEqual $? 0 "isValidSnapshot1" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "" "0") 
+    RET=$(isValidSnapshot "zpool/data@0" "" "0")
     assertEqual $? 0 "isValidSnapshot2" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "" "1") 
+    RET=$(isValidSnapshot "zpool/data@0" "" "1")
     assertEqual $? 1 "isValidSnapshot3" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data" "zpool/data@0" "0") 
+    RET=$(isValidSnapshot "zpool/data" "zpool/data@0" "0")
     assertEqual $? 2 "isValidSnapshot4" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@2" "zpool/data@3" "0") 
+    RET=$(isValidSnapshot "zpool/data@2" "zpool/data@3" "0")
     assertEqual $? 2 "isValidSnapshot5" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data" "zpool/datablah@3" "0") 
+    RET=$(isValidSnapshot "zpool/data" "zpool/datablah@3" "0")
     assertEqual $? 3 "isValidSnapshot6" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data" "zpool/datablah@3" "0") 
+    RET=$(isValidSnapshot "zpool/data" "zpool/datablah@3" "0")
     assertEqual $? 3 "isValidSnapshot7" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "zpool/datablah@3" "0") 
+    RET=$(isValidSnapshot "zpool/data@0" "zpool/datablah@3" "0")
     assertEqual $? 3 "isValidSnapshot8" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "" "") 
+    RET=$(isValidSnapshot "zpool/data@0" "" "")
     assertEqual $? 0 "isValidSnapshot9" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "zpool/data1" "") 
+    RET=$(isValidSnapshot "zpool/data@0" "zpool/data1" "")
     assertEqual $? 0 "isValidSnapshot10" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "zpool/datablah@3" "") 
+    RET=$(isValidSnapshot "zpool/data@0" "zpool/datablah@3" "")
     assertEqual $? 3 "isValidSnapshot11" "$RET"
 
-    RET=$(isValidSnapshot "zpool/data@0" "zpool/data@3" "") 
+    RET=$(isValidSnapshot "zpool/data@0" "zpool/data@3" "")
     assertEqual $? 2 "isValidSnapshot11" "$RET"
     echo isValidSnapshot tests ok.
 
-    ### getSnapshotFilesystems tests ########################################## 
+    ### getSnapshotFilesystems tests ##########################################
     TEST="zpool/data@0"
     array_clear TEST
     listToArray "$TEST" TEST
     getSnapshotFilesystems TEST 0 G
-    assertEqual $? 0 "getSnapshotFilesystems1" 
+    assertEqual $? 0 "getSnapshotFilesystems1"
     assertEqual "`arrayToList G_FS_ARRAY`" "$TEST" "getSnapshotFilesystems2"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "" "getSnapshotFilesystems3"
     assertEqual "`array_size G_FS_ARRAY`" 1 getSnapshotFilesystems1a
@@ -828,7 +827,7 @@ shellTests(){
     FS="zpool/data@1 zpool/data/test zpool/data/test1"
     FSE=""
     getSnapshotFilesystems TEST "" G
-    assertEqual $? 0 "getSnapshotFilesystems4" 
+    assertEqual $? 0 "getSnapshotFilesystems4"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems5"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems6"
     assertEqual "`array_size G_FS_ARRAY`" 3 getSnapshotFilesystems4a
@@ -845,7 +844,7 @@ shellTests(){
     FS="zpool/data@1 zpool/data/test@1"
     FSE=""
     getSnapshotFilesystems TEST "" G
-    assertEqual $? 0 "getSnapshotFilesystems7" 
+    assertEqual $? 0 "getSnapshotFilesystems7"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems8"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems9"
     assertEqual "`array_size G_FS_ARRAY`" 2 getSnapshotFilesystems7a
@@ -860,7 +859,7 @@ shellTests(){
     FS="zpool/data@1 zpool/data/test@1"
     FSE=""
     getSnapshotFilesystems TEST 1 G
-    assertEqual $? 0 "getSnapshotFilesystems10" 
+    assertEqual $? 0 "getSnapshotFilesystems10"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems11"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems12"
     assertEqual "`array_size G_FS_ARRAY`" 2 getSnapshotFilesystems11a
@@ -875,7 +874,7 @@ shellTests(){
     FS="zpool/data/test@1"
     FSE="zpool/data@0"
     getSnapshotFilesystems TEST 1 G
-    assertEqual $? 0 "getSnapshotFilesystems13" 
+    assertEqual $? 0 "getSnapshotFilesystems13"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems14"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems15"
     assertEqual "`array_size G_FS_ARRAY`" 1 getSnapshotFilesystems13a
@@ -886,7 +885,7 @@ shellTests(){
     array_clear TEST
     listToArray "$TEST" TEST
     getSnapshotFilesystems TEST "" G >/dev/null
-    assertEqual $? 1 "getSnapshotFilesystems16" 
+    assertEqual $? 1 "getSnapshotFilesystems16"
 
     TEST="z/d z/d@0 z/d/a z/d/b z/d/c z/d/c@0"
     array_clear TEST
@@ -894,7 +893,7 @@ shellTests(){
     FS="z/d@0 z/d/a z/d/b z/d/c@0"
     FSE=""
     getSnapshotFilesystems TEST "" G
-    assertEqual $? 0 "getSnapshotFilesystems17" 
+    assertEqual $? 0 "getSnapshotFilesystems17"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems18"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems19"
     assertEqual "`array_size G_FS_ARRAY`" 4 getSnapshotFilesystems17a
@@ -913,7 +912,7 @@ shellTests(){
     FS=""
     FSE="z/d@0 z/d/a z/d/b z/d/c@0"
     getSnapshotFilesystems TEST "1" G
-    assertEqual $? 0 "getSnapshotFilesystems20" 
+    assertEqual $? 0 "getSnapshotFilesystems20"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems21"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems22"
     assertEqual "`array_size G_FS_ARRAY`" "0" getSnapshotFilesystems20a
@@ -924,44 +923,44 @@ shellTests(){
     FS="z/a z/b z/c z/d"
     FSE=""
     getSnapshotFilesystems TEST "" G
-    assertEqual $? 0 "getSnapshotFilesystems23" 
+    assertEqual $? 0 "getSnapshotFilesystems23"
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems24"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems25"
     assertEqual "`array_size G_FS_ARRAY`" 4 getSnapshotFilesystems23a
     echo getSnapshotFilesystems tests ok.
 
-    ### getSnapshotData tests ################################################# 
+    ### getSnapshotData tests #################################################
     array_clear TEST
     listToArray "z/d z/d@0 z/d@1 z/d@2 z/d/c z/d/e" TEST
     SNAPSHOTDATA=`getSnapshotData "TEST"`
-    assertEqual $? 0 "getSnapshotData1" 
-    assertEqual "${SNAPSHOTDATA#*@}" "2" "getSnapshotData2" 
-    assertEqual "${SNAPSHOTDATA%@*}" "z/d" "getSnapshotData3" 
+    assertEqual $? 0 "getSnapshotData1"
+    assertEqual "${SNAPSHOTDATA#*@}" "2" "getSnapshotData2"
+    assertEqual "${SNAPSHOTDATA%@*}" "z/d" "getSnapshotData3"
     echo getSnapshotData tests ok.
 
-    ### getRemoteDestination tests ############################################ 
+    ### getRemoteDestination tests ############################################
     RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/dest`
     assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest" \
-                    "getRemoteDestination1" "" exit 
-    
+                    "getRemoteDestination1" "" exit
+
     RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/source/child/baby \
                          zfszroot/tmp/zfsBackupTest/dest`
-    
+
     assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest/source/child" \
-                    "getRemoteDestination2" "" exit 
-    
+                    "getRemoteDestination2" "" exit
+
     RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/source/child/toddler/baby \
                          zfszroot/tmp/zfsBackupTest/dest`
     assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest/source/child/toddler" \
-                    "getRemoteDestination3" "" exit 
+                    "getRemoteDestination3" "" exit
 
     echo getRemoteDestination tests ok.
 
-    ### tests complete ######################################################## 
+    ### tests complete ########################################################
 }
 
 ## ZFS Test Configuration #####################################################
@@ -969,7 +968,7 @@ zfsTestConfigCreate() {
 (cat <&3  >>${TEST_CONFIG_FILE}) 3<<EOF
 #Test configuration for zfsBackup.sh
 
-#TESTER must have: 
+#TESTER must have:
 # -passwordless ssh access to localhost ie ssh to itself
 # -permissions given by :
 #   zfs allow -u \$TESTER create,destroy,mount,snapshot,receive,send,hold,rollback \$TESTFS
@@ -1000,12 +999,12 @@ zfsTests() {
     . ${TEST_CONFIG_FILE}
     if [ ! -d ${TESTFS_MOUNT} ]; then
         echo Error \$TESTFS_MOUNT=${TESTFS_MOUNT} does not exist.
-        echo Check ${TEST_CONFIG_FILE} 
+        echo Check ${TEST_CONFIG_FILE}
         exit
     elif [ "$TESTER" != "$USER" ]; then
         echo Error \$TESTER=$TESTER!=${USER}
         echo The configured user is not the user executing the script.
-        echo Check ${TEST_CONFIG_FILE} 
+        echo Check ${TEST_CONFIG_FILE}
         exit
     fi
 
@@ -1013,21 +1012,21 @@ zfsTests() {
     assertEqual $RET "ok" "zfsTest0" \
         "Command failed: ssh ${TESTER}@${SSH_LOCALHOST} \
          Please check ${TEST_CONFIG_FILE} " exit
-   
+
     # Test setup
     RET=`zfs list ${TESTFS}`
     assertEqual $? 0 "zfsTest1" \
         "${TESTFS} does not exist." exit
-   
+
     # Cleanup from previous test failure
     # We don't clean up after a failed tests for easy debugging.
     zfs destroy -r ${TESTFS}/dest 2>/dev/null
     zfs destroy -r ${TESTFS}/source 2>/dev/null
-   
+
     RET=`zfs create ${TESTFS}/source`
     assertEqual $? 0 "zfsTest2" \
         "Could not create ${TESTFS}/source " exit
-   
+
     RET=`zfs create ${TESTFS}/dest`
     assertEqual $? 0 "zfsTest3" \
        "Could not create ${TESTFS}/dest" exit
@@ -1042,11 +1041,11 @@ zfsTests() {
         "File ${TESTFS_MOUNT}/source/file1.txt data does not exist." exit
 
     zfs snapshot -r ${TESTFS}/source@1
-    assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit 
+    assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit
 
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
-    "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit 
+    "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
 
     # Test new child file system.
     zfs create ${TESTFS}/source/child
@@ -1058,20 +1057,22 @@ zfsTests() {
         "Could not create file ${TESTFS_MOUNT}/source/child/file2.txt" exit
 
     zfs snapshot -r ${TESTFS}/source@2
-    assertEqual $? 0 "zfsTest10" "Snapshot creation failed ${TESTFS}/source@2." exit 
+    assertEqual $? 0 "zfsTest10" "Snapshot creation failed ${TESTFS}/source@2." exit
 
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
-    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit 
+    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit
 
-    # Simulate a failed send of the child filesystem.
+    # Simulate a failed send of the child filesystem. 
+    # zfsTest12 caused a headache where the destination file system was not remounted
+    # to reflect the most recent snapshot.
     assertEqual $? 0 "zfsTest12" \
         "Could not destroy the child fs ${TESTFS_MOUNT}/dest/source/child" exit
 
-    # Backup and check the child@2 snapshot is resent 
+    # Backup and check the child@2 snapshot is resent
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
-    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit 
+    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit
 
     # Snapshot existing files with updated child data.
     echo data3 > ${TESTFS_MOUNT}/source/child/file2.txt
@@ -1080,7 +1081,6 @@ zfsTests() {
 
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${SSH_LOCALHOST}
     assertEqual $? 0 "zfsTest15" "Backup snapshot 3 failed." exit
-
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
     assertEqual "$RET" 1 "zfsTest16" \
@@ -1112,7 +1112,7 @@ zfsTests() {
         "Could not remove ${TESTFS}/source " exit
 }
 
-### MAIN ##################################################################### 
+### MAIN #####################################################################
 
 if [ 3 -ne $# ]; then
     if [ "zfsTestConfigCreate" = "$1" ]; then
@@ -1130,8 +1130,8 @@ if [ 3 -ne $# ]; then
     exit
 fi
 
-echo ================================================================================ 
+echo ================================================================================
 echo Starting backup ...
 doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
 echo Backup complete.
-echo ================================================================================ 
+echo ================================================================================
