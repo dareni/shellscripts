@@ -284,17 +284,42 @@ sendIncrementalFileSystem() {
         RET=0
         echo "up to date" > /dev/stdout
     else
+        RXFIFO=/tmp/rx$$.fifo
+        TXFIFO=/tmp/tx$$.fifo
+        mkfifo "$RXFIFO"
+        mkfifo "$TXFIFO"
+        exec 3<>"$RXFIFO"
+        exec 4<>"$TXFIFO"
 
         echo "incremental" > /dev/stdout
-        CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS"
-        ssh $USER_HOST "$CMD" &
+        CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS >&3"
+        ssh $USER_HOST "$CMD" 2>&3 1>&3 &
         RXPID=$!
         sleep 2
-        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION \
-            | nc -w 20 $REMOTE_HOST 8023
+        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4\
+            | nc -v -v -w 20 $REMOTE_HOST 8023 2>&4
         RET=$?
-        if [ $RET -ne 0 ]; then
+        RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
+        TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
+        exec 3<&- 4<&-
+        rm $RXFIFO $TXFIFO
+        echo "Sender op: $TXMSG" >&9
+        echo "Receiver op: $RXMSG" >&9
+
+        if [ `echo "$TXMSG" |grep -c "succeeded!$"` -gt 0 ]; then
+            TXMSG=""
+        fi
+        if [ `echo "$RXMSG" |grep -c "received!$"` -gt 0 ]; then
+            RXMSG=""
+        fi
+
+        if [ "$RET" -ne 0 -o -n "$TXMSG" -o -n "$RXMSG" ]; then
+            echo "Send failed $LOCALFS" > /dev/stderr
+            echo "Sender error: $TXMSG" > /dev/stderr
+            echo "Receiver error: $RXMSG" > /dev/stderr
+            echo "Clean up the receiver listener kill PID:$RXPID" > /dev/stderr
             kill -9 $RXPID
+            RET=1
         fi
     fi
     return $RET;
@@ -978,7 +1003,7 @@ TESTER=user
 TESTFS=zroot/tmp/zfsBackupTest
 TESTFS_MOUNT=/tmp/zfsBackupTest
 TEST_SSH_LOCALHOST=localhost
-#Set to TEST_OUTPUT=1 to enable test output. 
+#Set to TEST_OUTPUT=1 to enable test output.
 TEST_OUTPUT=0
 EOF
 
@@ -1124,7 +1149,7 @@ configCreate
 . ${CONFIG_FILE}
 
 if [ "$ZFS_BACKUP_DEBUG" -eq 1 ]; then
-    exec 9<>/dev/stderr 
+    exec 9<>/dev/stderr
 else
     exec 9<>/dev/null
 fi
