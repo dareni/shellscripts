@@ -61,7 +61,8 @@ EOF
 }
 
 if [ -z "`which jot`" ]; then
-    echo Please install athena-jot\(bsd jot\) the sequence generator.
+    echo Please install athena-jot\(bsd jot\) the sequence generator. > \
+        /dev/stderr
     exit 1
 fi
 
@@ -197,7 +198,7 @@ getRemoteFsList() {
     local REMOTEFS="$1"
     local USER_HOST="$2"
     CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
-#echo "$CMD" >/dev/stderr
+    echo getRemoteFsList Cmd: $CMD >&9
     eval $CMD
     return $?;
 }
@@ -217,17 +218,11 @@ sendNewRemoteFileSystem() {
 #
     local LOCALFS="$1"
     local REMOTEFS="$2"
-#REMOTEFS=`dirname $REMOTEFS`
     local USER_HOST="$3"
     local REMOTE_HOST="${USER_HOST#*@}"
     local SNAPSHOT_VERSION="$4"
 
-#    RECEIVE=`ssh $USER_HOST 'nc -w 120 -l 192.168.1.102 8023 | zfs receive -d zroot/bup' &`
-#    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
-
-#echo    RECEIVE=ssh $USER_HOST nc -w 120 -l $REMOTE_HOST 8023  zfs receive -d $REMOTEFS
-    CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -e $REMOTEFS"
-echo $CMD > /dev/stderr
+    echo "new" > /dev/stdout
     RXFIFO=/tmp/rx$$.fifo
     TXFIFO=/tmp/tx$$.fifo
     mkfifo "$RXFIFO"
@@ -235,19 +230,27 @@ echo $CMD > /dev/stderr
     exec 3<>"$RXFIFO"
     exec 4<>"$TXFIFO"
 
+    CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -e $REMOTEFS >&3"
+    echo Listener cmd: $CMD >&9
+
     ssh $USER_HOST "$CMD" 2>&3 1>&3 &
     RXPID=$!
     sleep 2
-echo "SEND=zfs send -v $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 " >/dev/stderr
-
-    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION 2>&4 | nc -w 20 $REMOTE_HOST 8023 2>&4
+    echo "Sender cmd: zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -v -v -w 20 $REMOTE_HOST 8023 2>&4" >&9
+    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION 2>&4 | nc -v -v -w 20 $REMOTE_HOST 8023 2>&4
     RET=$?
     RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
     TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
     exec 3<&- 4<&-
     rm $RXFIFO $TXFIFO
-        echo "Sender op: $TXMSG" > /dev/stderr
-        echo "Receiver op: $RXMSG" > /dev/stderr
+    echo "Sender op: $TXMSG" >&9
+    echo "Receiver op: $RXMSG" >&9
+    if [ `echo "$TXMSG" |grep -c "succeeded!$"` -gt 0 ]; then
+        TXMSG=""
+    fi
+    if [ `echo "$RXMSG" |grep -c "received!$"` -gt 0 ]; then
+        RXMSG=""
+    fi
 
     if [ "$RET" -ne 0 -o -n "$TXMSG" -o -n "$RXMSG" ]; then
         echo "Send failed $LOCALFS" > /dev/stderr
@@ -279,8 +282,10 @@ sendIncrementalFileSystem() {
 
     if [ "$LOCAL_SNAPSHOT_VERSION" = "$REMOTE_SNAPSHOT_VERSION" ]; then
         RET=0
-        echo "Remote and local snapshot verions match, nothing to do."
+        echo "up to date" > /dev/stdout
     else
+
+        echo "incremental" > /dev/stdout
         CMD="nc -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS"
         ssh $USER_HOST "$CMD" &
         RXPID=$!
@@ -321,11 +326,12 @@ doBackup() {
     SNAPSHOT_DATA=`getSnapshotData ROOTLIST`
     local RET="$?"
     if [ $? -ne 0 ]; then
+        echo getSnapshotData failed: $SNAPSHOT_DATA >/dev/stderr
         return $?
     fi
     MAX_SNAPSHOT="${SNAPSHOT_DATA#*@}"
     if [ -z "$MAX_SNAPSHOT" ]; then
-        echo No snapshot id for $ZFS_SRC_FS.
+        echo No snapshot id for $ZFS_SRC_FS. > /dev/stderr
         return 1
     fi
     for FS in `zfs list -r -H -o name -t all $ZFS_SRC_FS`
@@ -341,7 +347,7 @@ doBackup() {
         local M1="Target filesystem snapshot inconsistencies. Please snapshot"
         local M2=" the target filesystem. The root snapshot"
         local M3=" version $MAX_SNAPSHOT is not matched by the child filesystem(s): "
-        echo $M1$M2$M3$G_FILESYSTEM_EXECEPTIONS
+        echo $M1$M2$M3$G_FILESYSTEM_EXECEPTIONSi > /dev/stderr
         return 1
     fi
 
@@ -349,20 +355,21 @@ doBackup() {
     local FS_CNT=1
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do
-        echo "Bup filesystem: $FILE" > /dev/stderr
+        echo -n "$FILE ... " > /dev/stdout
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
-            echo  Error: No snapshot on source file system: $FILE
+            echo  Error: No snapshot on source file system: $FILE > /dev/stderr
             return 1
         fi
         local LOCALFILE="${FILE%@*}"
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
         REMOTELIST=$(getRemoteFsList "$REMOTE_FS" "$USER_HOST")
-        echo remotelist=$REMOTELIST
+        echo remotelist=$REMOTELIST >&9
         local RET="$?"
         if [ -z "$REMOTELIST" ]; then
-            echo "Remote FS status failure. status: $RET"
+            echo "Remote FS status failure. status: $RET" > /dev/stderr
+            return 1
         fi
         DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"`
 
@@ -371,33 +378,26 @@ doBackup() {
         if [ "$DOES_NOT_EXIST" -ne 0 ]; then
             # send new remote filesystem
             #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS"
-            echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+            echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT" >&9
             sendNewRemoteFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" "$USER_HOST" "$MAX_SNAPSHOT"
         else
             if [ $RET -ne 0 ]; then
-                echo "Remote FS status failure. status: $RET error: $REMOTELIST"
+                echo "Remote FS status failure. status: $RET error: $REMOTELIST" > /dev/stderr
             fi
-#echo $REMOTELIST  > /dev/stderr
             # check the REMOTE LIST for the snapshot version.
             listToArray "$REMOTELIST" arrayREMOTELIST
             REMOTE_SNAPSHOT_DATA=`getSnapshotData arrayREMOTELIST`
-#echo remotesnapshotdata: $REMOTE_SNAPSHOT_DATA
-#echo $REMOTE_SNAPSHOT_DATA  > /dev/stderr
             REMOTE_SNAPSHOT_VERSION="${REMOTE_SNAPSHOT_DATA##*@}"
-
-#echo remotesnapshotversion: $REMOTE_SNAPSHOT_VERSION
             SS_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
             SS_VERSIONS_TO_SEND=${LOCAL_BRANCH_VERSION#*$REMOTE_SNAPSHOT_VERSION}
-            echo -n "sendIncrementalFileSystem \"$LOCALFILE\" \"$ZFS_DEST_FS\""
-            echo  "\" $USER_HOST\" \"$MAX_SNAPSHOT\" \"$REMOTE_SNAPSHOT_VERSION\""
-#sendIncrementalFileSystem "$LOCALFILE" "$ZFS_DEST_FS" \ "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
+            echo sendIncrementalFileSystem $LOCALFILE $ZFS_DEST_FS $USER_HOST $MAX_SNAPSHOT $REMOTE_SNAPSHOT_VERSION >&9
             sendIncrementalFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" \
             "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
         fi
 
         FS_CNT=$((FS_CNT+1))
-        echo
     done;
+    echo
     # Remount the destination filesystems. ie zfsTest12 where a destination
     # filesystem is detroyed and repopulated.
     ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}; for FS in \
@@ -615,8 +615,8 @@ nameValidation() {
     local CURRENTNAME="${CURRENTLINE%%@*}"
 
     if [ "$LASTNAME" != "$CURRENTNAME" ]; then
-        echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE"
-        echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'"
+        echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE" >/dev/stderr
+        echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'" >/dev/stderr
         return 1;
     fi
     return 0;
@@ -651,7 +651,7 @@ isValidSnapshot() {
     local CURRENTNAME=""
 
     if [ -z "$LASTLINE" ]; then
-        echo LASTLINE can not be empty.
+        echo LASTLINE can not be empty. >/dev/stderr
         return 3
     fi
     if [ $L_HAS_SNAP -eq 0 ]; then
@@ -704,7 +704,7 @@ assertEqual(){
         errorMesg=error:$errorMesg
     fi
     if [ "$arg1" != "$arg2" ]; then
-        echo "$testName Test Failure: arg1='$arg1' arg2='$arg2' $errorMesg"
+        echo "$testName Test Failure: arg1='$arg1' arg2='$arg2' $errorMesg" >/dev/stderr
     fi
     if [ "$doExitOnError" = "exit" -a "$arg1" != "$arg2" ]; then
         return 1
@@ -978,6 +978,8 @@ TESTER=user
 TESTFS=zroot/tmp/zfsBackupTest
 TESTFS_MOUNT=/tmp/zfsBackupTest
 TEST_SSH_LOCALHOST=localhost
+#Set to TEST_OUTPUT=1 to enable test output. 
+TEST_OUTPUT=0
 EOF
 
     echo The default configuration created in ${CONFIG_FILE}
@@ -999,6 +1001,12 @@ zfsTests() {
         echo The configured user is not the user executing the script.
         echo Check ${CONFIG_FILE}
         exit 1
+    fi
+
+    if [ "$TEST_OUTPUT" -eq 1 -o "$ZFS_BACKUP_DEBUG" -eq 1 ]; then
+        exec 8<>/dev/stdout
+    else
+        exec 8<>/dev/null
     fi
 
     RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} 'echo ok'`
@@ -1036,7 +1044,7 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@1
     assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
     "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
 
@@ -1052,18 +1060,21 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@2
     assertEqual $? 0 "zfsTest10" "Snapshot creation failed ${TESTFS}/source@2." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit
 
     # Simulate a failed send of the child filesystem.
-    # zfsTest12 caused a headache where the destination file system was not remounted
-    # to reflect the most recent snapshot.
+    # zfsTest12 caused a headache where the destination file system was not
+    # remounted to reflect the most recent snapshot. On completion of the backup
+    # the destination filesystems are remounted.
     assertEqual $? 0 "zfsTest12" \
         "Could not destroy the child fs ${TESTFS_MOUNT}/dest/source/child" exit
 
     # Backup and check the child@2 snapshot is resent
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit
 
@@ -1072,7 +1083,8 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@3
     assertEqual $? 0 "zfsTest14" "Could not snapshot ${TESTFS}/source" exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
     assertEqual $? 0 "zfsTest15" "Backup snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
@@ -1088,7 +1100,8 @@ zfsTests() {
     assertEqual "$RET" 1 "zfsTest18" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt snapshot2 data does not exist." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST}
+    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
     assertEqual $? 0 "zfsTest19" "Redo backup snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
@@ -1110,14 +1123,20 @@ zfsTests() {
 configCreate
 . ${CONFIG_FILE}
 
+if [ "$ZFS_BACKUP_DEBUG" -eq 1 ]; then
+    exec 9<>/dev/stderr 
+else
+    exec 9<>/dev/null
+fi
+
 if [ 3 -ne $# ]; then
     if [ "zfsTests" = "$1" ]; then
         zfsTests
-        echo ZFS tests completed ok.
+        echo ZFS tests completed, check the output for errors. >/dev/stdout
         exit 0
     elif [ "shellTests" = "$1" ]; then
         shellTests
-        echo Shell tests completed ok.
+        echo Shell tests completed, check the output for errors. >/dev/stdout
         exit 0
     fi
     usage
