@@ -207,7 +207,6 @@ sendNewRemoteFileSystem() {
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
 # $4 = the max snapshot version to send
-# $5 = the min snapshot version to send
 #
 # return    0 = success
 #           1 = failure and returns the error message
@@ -218,7 +217,6 @@ sendNewRemoteFileSystem() {
     local USER_HOST="$3"
     local REMOTE_HOST="${USER_HOST#*@}"
     local SNAPSHOT_VERSION="$4"
-    local FIRST_SNAPSHOT_VERSION="$5"
 
 #    RECEIVE=`ssh $USER_HOST 'nc -w 120 -l 192.168.1.102 8023 | zfs receive -d zroot/bup' &`
 #    SEND=`zfs send -R zroot/data@3 | nc -w 20 192.168.1.102 8023 &`
@@ -236,11 +234,6 @@ echo $CMD > /dev/stderr
     ssh $USER_HOST "$CMD" 2>&3 1>&3 &
     RXPID=$!
     sleep 2
-#    if [ "$FIRST_SNAPSHOT_VERSION" != "$SNAPSHOT_VERSION" ]; then
-#        SEND_INC="-I @$FIRST_SNAPSHOT_VERSION"
-#    else
-#        SEND_INC=""
-#    fi
 echo "SEND=zfs send -v $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -w 20 $REMOTE_HOST 8023 " >/dev/stderr
 
     zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION 2>&4 | nc -w 20 $REMOTE_HOST 8023 2>&4
@@ -371,18 +364,10 @@ doBackup() {
         CURRENT_DEST_PATH=$(getRemoteDestination ${ZFS_SRC_FS} ${LOCALFILE}  ${ZFS_DEST_FS})
         # check each remote host branch status
         if [ "$DOES_NOT_EXIST" -ne 0 ]; then
-
-            SS_LIST=`get_avar "${LOCAL_ARRAY_PREFIX}_SS_LIST_ARRAY" "$FS_CNT"`
-            MIN_SNAPSHOT=`echo $SS_LIST |awk '{print $1}'`
-            echo minss: $MIN_SNAPSHOT >/dev/stderr
-            echo sslist: $SS_LIST >/dev/stderr
             # send new remote filesystem
             #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS"
-            echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT" "$MIN_SNAPSHOT"
-            #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS" "$USER_HOST" "$MAX_SNAPSHOT"
-            #sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT"
-            sendNewRemoteFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" \
-                "$USER_HOST" "$MAX_SNAPSHOT" "$MIN_SNAPSHOT"
+            echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT"
+            sendNewRemoteFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" "$USER_HOST" "$MAX_SNAPSHOT"
         else
             if [ $RET -ne 0 ]; then
                 echo "Remote FS status failure. status: $RET error: $REMOTELIST"
