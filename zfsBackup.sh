@@ -347,6 +347,29 @@ doBackup() {
         array_add ROOTLIST "$FS"
     done;
 
+    ERROR_SNAP=`echo $ZFS_SRC_FS | grep -c '@'`
+    if [ $ERROR_SNAP -gt 0 ]; then
+        echo "The source filesystem ($ZFS_DEST_FS) may"
+        echo "not contain a snapshot version."
+        return 1
+    fi
+
+    ERROR_SNAP=`echo $ZFS_DEST_FS | grep -c '@'`
+    if [ $ERROR_SNAP -gt 0 ]; then
+        echo "The destination filesystem ($ZFS_DEST_FS) may"
+        echo "not contain a snapshot version."
+        return 1
+    fi
+
+    if [ -z "$3" ]; then
+        ERROR_CHILD=`echo $ZFS_DEST_FS | grep -c '^$ZFS_SRC_FS'`
+        if [ $ERROR_CHILD -eq 1 ]; then
+            echo "The destination filesystem ($ZFS_DEST_FS) may"
+            echo "not be a child of the source filesystem ($ZFS_SRC_FS)."
+            return 1
+        fi
+    fi
+
     local REMOTELIST=""
     SNAPSHOT_DATA=`getSnapshotData ROOTLIST`
     local RET="$?"
@@ -1142,6 +1165,8 @@ zfsTests() {
     RET=`zfs destroy -r ${TESTFS}/source`
     assertEqual $? 0 "zfsTest-1" \
         "Could not remove ${TESTFS}/source " exit
+
+
 }
 
 ### MAIN #####################################################################
@@ -1175,5 +1200,9 @@ fi
 echo ================================================================================
 echo Starting backup ...
 doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
-echo Backup complete.
+if [ $? -ne 0 ]; then
+    echo Backup failure.
+else
+    echo Backup complete.
+fi
 echo ================================================================================
