@@ -640,8 +640,8 @@ nameValidation() {
     local CURRENTNAME="${CURRENTLINE%%@*}"
 
     if [ "$LASTNAME" != "$CURRENTNAME" ]; then
-        echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE" >/dev/stderr
-        echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'" >/dev/stderr
+        echo "Error: nameValidation() Names should match: last:$LASTLINE current:$CURRENTLINE"
+        echo "Error: nameValidation() Names should match: lastname:'$LASTNAME' != currentname:'$CURRENTNAME'"
         return 1;
     fi
     return 0;
@@ -738,6 +738,7 @@ assertEqual(){
 
 ## Shell Tests ################################################################
 shellTests(){
+
     ### array tests ###########################################################
     echo
     array_add tst w
