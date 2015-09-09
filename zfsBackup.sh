@@ -448,8 +448,8 @@ doBackup() {
     echo
     # Remount the destination filesystems. ie zfsTest12 where a destination
     # filesystem is detroyed and repopulated.
-    ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}; for FS in \
-        \`zfs list -H -r ${ZFS_DEST_FS} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
+    ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
+        \`zfs list -H -r ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
 }
 
 ###############################################################################
