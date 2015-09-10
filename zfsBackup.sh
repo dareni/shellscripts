@@ -282,7 +282,7 @@ sendIncrementalFileSystem() {
 
     if [ "$LOCAL_SNAPSHOT_VERSION" = "$REMOTE_SNAPSHOT_VERSION" ]; then
         RET=0
-        echo "up to date" > /dev/stdout
+        echo "... up to date" > /dev/stdout
     else
         RXFIFO=/tmp/rx$$.fifo
         TXFIFO=/tmp/tx$$.fifo
@@ -291,13 +291,17 @@ sendIncrementalFileSystem() {
         exec 3<>"$RXFIFO"
         exec 4<>"$TXFIFO"
 
-        echo "incremental" > /dev/stdout
+        echo "... incremental" > /dev/stdout
         CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS >&3"
         ssh $USER_HOST "$CMD" 2>&3 1>&3 &
+        echo ssh $USER_HOST "$CMD" >&9
         RXPID=$!
         sleep 2
-        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4\
-            | nc -v -v -w 20 $REMOTE_HOST 8023 2>&4
+        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
+            | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4
+        echo "zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
+            | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4" >&9
+        
         RET=$?
         RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
         TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
@@ -393,7 +397,7 @@ doBackup() {
     fi
     if [ "`array_size MAIN_EXCEPTIONS_ARRAY`" -ne 0 ]; then
         local M1="Target filesystem snapshot inconsistencies. Please snapshot"
-        local M2=" the target filesystem. The root snapshot"
+        local M2=" the target filesystem. (ie zfs snapshot -r <zparent>) The root snapshot"
         local M3=" version $MAX_SNAPSHOT is not matched by the child filesystem(s): "
         echo $M1$M2$M3$G_FILESYSTEM_EXECEPTIONSi > /dev/stderr
         return 1
