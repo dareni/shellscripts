@@ -222,7 +222,10 @@ sendNewRemoteFileSystem() {
     local REMOTE_HOST="${USER_HOST#*@}"
     local SNAPSHOT_VERSION="$4"
 
-    echo "new" > /dev/stdout
+    echo -n "new" > /dev/stdout
+    if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
+        echo
+    fi;
     RXFIFO=/tmp/rx$$.fifo
     TXFIFO=/tmp/tx$$.fifo
     mkfifo "$RXFIFO"
@@ -237,6 +240,7 @@ sendNewRemoteFileSystem() {
     RXPID=$!
     sleep 2
     echo "Sender cmd: zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -v -v -w 20 $REMOTE_HOST 8023 2>&4" >&9
+    local SEND_START_TIME=`date +%s`
     zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION 2>&4 | nc -v -v -w 20 $REMOTE_HOST 8023 2>&4
     RET=$?
     RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
@@ -260,6 +264,7 @@ sendNewRemoteFileSystem() {
         kill -9 $RXPID
         RET=1
     fi
+    printStats $SEND_START_TIME $LOCALFS@$SNAPSHOT_VERSION
     return $RET;
 }
 
@@ -279,10 +284,11 @@ sendIncrementalFileSystem() {
     local REMOTE_HOST="${USER_HOST#*@}"
     local LOCAL_SNAPSHOT_VERSION="$4"
     local REMOTE_SNAPSHOT_VERSION="$5"
+    local SEND_START_TIME=""
 
     if [ "$LOCAL_SNAPSHOT_VERSION" = "$REMOTE_SNAPSHOT_VERSION" ]; then
         RET=0
-        echo "... up to date" > /dev/stdout
+        echo "up to date" > /dev/stdout
     else
         RXFIFO=/tmp/rx$$.fifo
         TXFIFO=/tmp/tx$$.fifo
@@ -291,17 +297,21 @@ sendIncrementalFileSystem() {
         exec 3<>"$RXFIFO"
         exec 4<>"$TXFIFO"
 
-        echo "... incremental" > /dev/stdout
+        echo -n "incremental" > /dev/stdout
+        if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
+            echo
+        fi;
         CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS >&3"
         ssh $USER_HOST "$CMD" 2>&3 1>&3 &
         echo ssh $USER_HOST "$CMD" >&9
         RXPID=$!
         sleep 2
+        SEND_START_TIME=`date +%s`
         zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
             | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4
         echo "zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
             | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4" >&9
-        
+
         RET=$?
         RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
         TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
@@ -325,6 +335,7 @@ sendIncrementalFileSystem() {
             kill -9 $RXPID
             RET=1
         fi
+        printStats $SEND_START_TIME $LOCALFS@$LOCAL_SNAPSHOT_VERSION
     fi
     return $RET;
 }
@@ -407,7 +418,7 @@ doBackup() {
     local FS_CNT=1
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do
-        echo -n "$FILE ... " > /dev/stdout
+        echo -n "$FILE..." > /dev/stdout
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
@@ -744,6 +755,24 @@ isValidSnapshot() {
         fi
     fi
 }
+
+###############################################################################
+printStats() {
+    local STARTSECS=$1
+    local SNAPSHOT=$2
+    local ENDSECS=`date +%s`
+    local FS_SIZE=`zfs get -H referenced $SNAPSHOT |cut -f3 -w -`
+    local ELAPSEDSEC=$(($ENDSECS - $STARTSECS))
+
+    local ELAPSED="$(($ELAPSEDSEC/3600))hr.$(($ELAPSEDSEC%3600/60))min.$(($ELAPSEDSEC%60))sec"
+
+    if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
+        echo STATS $SNAPSHOT  $FS_SIZE ... $ELAPSED
+    else
+        echo "...$FS_SIZE...$ELAPSED"
+    fi;
+}
+
 
 ###############################################################################
 assertEqual(){
@@ -1085,6 +1114,19 @@ zfsTests() {
     assertEqual $? 0 "zfsTest3" \
        "Could not create ${TESTFS}/dest" exit
 
+    # printStats() test - dependant on zfs
+    local TMPDEBUG=$ZFS_BACKUP_DEBUG
+    ZFS_BACKUP_DEBUG=0
+    local TIMESTART=`date +%s`
+    TIMESTART="$(($TIMESTART - 3723))"
+    local MSG=`printStats $TIMESTART ${TESTFS}`
+    if [ ! 1 -eq `echo $MSG |grep -c '1hr.2min.3sec$'` ]; then
+        ZFS_BACKUP_DEBUG=$TMPDEBUG
+        echo "printStatusTest1 failed"
+        return 1
+    fi
+    ZFS_BACKUP_DEBUG=$TMPDEBUG
+
     # Test new parent file system.
     echo data1 > ${TESTFS_MOUNT}/source/file1.txt
     assertEqual $? 0 "zfsTest4" \
@@ -1098,6 +1140,7 @@ zfsTests() {
     assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit
 
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    sleep 1 #Reading before the mount is completed, so wait a bit.
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
     "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
 
@@ -1161,7 +1204,65 @@ zfsTests() {
     assertEqual $RET 1 "zfsTest20" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt data does not exist." exit
 
+    #  Snapshot tests
+    echo snapshot test1
+    zfs create ${TESTFS}/source/rename
+    sleep 1
+    touch ${TESTFS_MOUNT}/source/rename/1
+    sleep 1
+    zfs snapshot -r ${TESTFS}/source/rename@1
+    zfsBackup.sh ${TESTFS}/source/rename ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfs rename ${TESTFS}/source/rename ${TESTFS}/source/ren
+    sleep 1
+    zfs rename ${TESTFS}/dest/rename ${TESTFS}/dest/ren
+    zfs umount ${TESTFS}/source/ren
+    zfs mount ${TESTFS}/source/ren
+    sleep 1
+    touch ${TESTFS_MOUNT}/source/ren/2
+    zfs snapshot -r ${TESTFS}/source/ren@2
+    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
+    echo snapshot test2
+    zfs rename ${TESTFS}/dest/ren ${TESTFS}/dest/blah
+    zfs rename ${TESTFS}/dest/blah ${TESTFS}/dest/ren
+    touch ${TESTFS_MOUNT}/source/ren/3
+    zfs snapshot -r ${TESTFS}/source/ren@3
+    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
+    echo snapshot test3
+    touch ${TESTFS_MOUNT}/dest/ren
+    touch ${TESTFS_MOUNT}/source/ren/4
+    zfs snapshot -r ${TESTFS}/source/ren@4
+    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    touch ${TESTFS_MOUNT}/dest/ren/test.touch
+    touch ${TESTFS_MOUNT}/source/ren/5
+    zfs snapshot -r ${TESTFS}/source/ren@5
+    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
+    zfs destroy -r ${TESTFS}/source/ren@1,2,3,4
+    zfs destroy -r ${TESTFS}/dest/ren@1,2,3,4
+
+    zfs snapshot -r ${TESTFS}/source/ren@6
+    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+
+    zfs umount ${TESTFS}/dest/ren
+    zfs mount ${TESTFS}/dest/ren
+
+    if [ -f ${TESTFS_MOUNT}/source/ren/1 -a -f ${TESTFS_MOUNT}/source/ren/2 -a \
+        -f ${TESTFS_MOUNT}/source/ren/3 -a -f ${TESTFS_MOUNT}/source/ren/4 -a \
+        -f ${TESTFS_MOUNT}/source/ren/5 -a -f ${TESTFS_MOUNT}/dest/ren/1 -a \
+        -f ${TESTFS_MOUNT}/dest/ren/2 -a -f ${TESTFS_MOUNT}/dest/ren/3 -a \
+        -f ${TESTFS_MOUNT}/dest/ren/4 -a -f ${TESTFS_MOUNT}/dest/ren/5 ]; then
+        echo Snapshot tests completed ok.
+    else
+        echo Snapshot tests failed.
+        return 1
+    fi
+
+
+
     # Only do the test tear down if all the tests succeed.
+    echo Cleaning up ${TESTFS}/dest ${TESTFS}/source
     RET=`zfs destroy -r ${TESTFS}/dest`
     assertEqual $? 0 "zfsTest-2" \
         "Could not remove ${TESTFS}/dest" exit
@@ -1169,7 +1270,6 @@ zfsTests() {
     RET=`zfs destroy -r ${TESTFS}/source`
     assertEqual $? 0 "zfsTest-1" \
         "Could not remove ${TESTFS}/source " exit
-
 
 }
 
