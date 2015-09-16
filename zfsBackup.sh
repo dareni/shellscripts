@@ -200,7 +200,8 @@ getRemoteFsList() {
     CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
     echo getRemoteFsList Cmd: $CMD >&9
     eval $CMD
-    return $?;
+    local RET=$?
+    return $RET;
 }
 
 ###############################################################################
@@ -223,7 +224,14 @@ sendNewRemoteFileSystem() {
     local SNAPSHOT_VERSION="$4"
 
     echo -n "new" > /dev/stdout
-    printSSSize $LOCALFS@$SNAPSHOT_VERSION
+    FS_SIZE=`getSSSize "$LOCALFS@$SNAPSHOT_VERSION" full`
+    ERRORMSG=`checkRemoteDiskSpace "$USER_HOST" "$REMOTEFS" "$FS_SIZE"`
+    if [ -n "$ERRORMSG" ]; then
+        echo; echo "$ERRORMSG"
+        return 2
+    fi
+    printSSSize "$FS_SIZE"
+
     RXFIFO=/tmp/rx$$.fifo
     TXFIFO=/tmp/tx$$.fifo
     mkfifo "$RXFIFO"
@@ -288,6 +296,15 @@ sendIncrementalFileSystem() {
         RET=0
         echo "up to date" > /dev/stdout
     else
+        echo -n "incremental" > /dev/stdout
+        FS_SIZE=`getSSSize "$LOCALFS@$LOCAL_SNAPSHOT_VERSION" inc`
+        ERRORMSG=`checkRemoteDiskSpace "$USER_HOST" "$REMOTEFS" "$FS_SIZE"`
+        if [ -n "$ERRORMSG" ]; then
+            echo; echo "$ERRORMSG"
+            return 2
+        fi
+        printSSSize "$FS_SIZE"
+
         RXFIFO=/tmp/rx$$.fifo
         TXFIFO=/tmp/tx$$.fifo
         mkfifo "$RXFIFO"
@@ -295,8 +312,6 @@ sendIncrementalFileSystem() {
         exec 3<>"$RXFIFO"
         exec 4<>"$TXFIFO"
 
-        echo -n "incremental" > /dev/stdout
-        printSSSize $LOCALFS@$LOCAL_SNAPSHOT_VERSION
         CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS >&3"
         ssh $USER_HOST "$CMD" 2>&3 1>&3 &
         echo ssh $USER_HOST "$CMD" >&9
@@ -305,10 +320,10 @@ sendIncrementalFileSystem() {
         SEND_START_TIME=`date +%s`
         zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
             | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4
+        RET=$?
         echo "zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
             | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4" >&9
 
-        RET=$?
         RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
         TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
         exec 3<&- 4<&-
@@ -412,6 +427,7 @@ doBackup() {
 
     # loop on the local tree branches
     local FS_CNT=1
+    local FAILURE=0
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do
         echo -n "$FILE..." > /dev/stdout
@@ -424,13 +440,21 @@ doBackup() {
         local LOCALFILE="${FILE%@*}"
         REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${LOCALFILE##$ZFS_SRC_FS}
         REMOTELIST=$(getRemoteFsList "$REMOTE_FS" "$USER_HOST")
+        local RET=$?
         echo remotelist=$REMOTELIST >&9
-        local RET="$?"
         if [ -z "$REMOTELIST" ]; then
-            echo "Remote FS status failure. status: $RET" > /dev/stderr
+            echo "Remote FS status failure, empty remote list. " > /dev/stderr
             return 1
+        elif [ $RET -ne 0 ]; then
+            DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"`
+            if [ "$DOES_NOT_EXIST" -eq 0 ]; then
+                #Was an error but not the one we were looking for.
+                echo "Remote FS status failure status:$RET error:$REMOTELIST" > /dev/stderr
+                return 1
+            fi
+        else
+            DOES_NOT_EXIST=0
         fi
-        DOES_NOT_EXIST=`echo "$REMOTELIST" | grep -c "$ZFS_NO_DATA_MESSAGE"`
 
         CURRENT_DEST_PATH=$(getRemoteDestination ${ZFS_SRC_FS} ${LOCALFILE}  ${ZFS_DEST_FS})
         # check each remote host branch status
@@ -439,10 +463,14 @@ doBackup() {
             #sendNewRemoteFileSystem "$LOCALFILE" "$REMOTE_FS"
             echo sendNewRemoteFileSystem "$LOCALFILE" "$ZFS_DEST_FS" "$USER_HOST" "$MAX_SNAPSHOT" >&9
             sendNewRemoteFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" "$USER_HOST" "$MAX_SNAPSHOT"
-        else
-            if [ $RET -ne 0 ]; then
-                echo "Remote FS status failure. status: $RET error: $REMOTELIST" > /dev/stderr
+            RET="$?"
+            if [ $RET -eq 2 ]; then
+                echo Remote is out of space. >/dev/stderr
+                return 1
+            elif [ $RET -ne 0 ]; then
+                FAILURE=1
             fi
+        else
             # check the REMOTE LIST for the snapshot version.
             listToArray "$REMOTELIST" arrayREMOTELIST
             REMOTE_SNAPSHOT_DATA=`getSnapshotData arrayREMOTELIST`
@@ -452,15 +480,22 @@ doBackup() {
             echo sendIncrementalFileSystem $LOCALFILE $ZFS_DEST_FS $USER_HOST $MAX_SNAPSHOT $REMOTE_SNAPSHOT_VERSION >&9
             sendIncrementalFileSystem "$LOCALFILE" "$CURRENT_DEST_PATH" \
             "$USER_HOST" "$MAX_SNAPSHOT" "$REMOTE_SNAPSHOT_VERSION"
+            RET="$?"
+            if [ $RET -eq 2 ]; then
+                echo Remote is out of space. >/dev/stderr
+                return 1
+            elif [ $RET -ne 0 ]; then
+                FAILURE=1
+            fi
         fi
 
         FS_CNT=$((FS_CNT+1))
     done;
-    echo
     # Remount the destination filesystems. ie zfsTest12 where a destination
     # filesystem is detroyed and repopulated.
     ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
         \`zfs list -H -r ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
+    return $FAILURE
 }
 
 ###############################################################################
@@ -753,13 +788,103 @@ isValidSnapshot() {
 }
 
 ###############################################################################
-printSSSize() {
+checkRemoteDiskSpace() {
+    local USER_HOST=$1
+    local REMOTEFS=$2
+    local REQUIRED_SIZE=$3
+    local AVA_STR=`ssh $USER_HOST zfs get -H available $REMOTEFS 2>&1`
+    RET1=$?
+    if [ 0 -ne $RET1 ]; then
+        echo "Could not retrieve accessible space at $USER_HOST $REMOTEFS error: $AVA_STR"
+        return 1
+    else
+        local REMOTE_SIZE=`echo $AVA_STR |cut -f3 -w -`
+    fi
+    REQUIRED_SIZE_BYTES=`convertToBytes $REQUIRED_SIZE`
+    RET2=$?
+    if [ 0 -ne $RET2 ]; then
+        echo "Could not required size:'$REQUIRED_SIZE' to bytes error: $REQUIRED_SIZE_BYTES"
+        return 1
+    else
+        local REMOTE_SIZE=`echo $AVA_STR |cut -f3 -w -`
+    fi
+
+    REMOTE_SIZE_BYTES=`convertToBytes $REMOTE_SIZE`
+    RET3=$?
+    if [ 0 -ne $RET2 ]; then
+        echo "Could not remote fs size:'$REMOTE_SIZE' to bytes error: $REMOTE_SIZE_BYTES"
+        return 1
+    else
+        local REMOTE_SIZE=`echo $AVA_STR |cut -f3 -w -`
+    fi
+
+
+    if [ "$REQUIRED_SIZE_BYTES" -gt "$REMOTE_SIZE_BYTES" ]; then
+        echo "Backup requires $REQUIRED_SIZE not available, remaining:$REMOTE_SIZE on $REMOTEFS."
+        return 1
+    fi
+    return 0
+}
+
+###############################################################################
+convertToBytes() {
+    local VAL=$1
+    local BYTES=""
+    if  echo ${VAL} | grep -q [[:digit:]]$ ; then
+        BYTES=$VAL
+    elif  echo $VAL | grep -q K$; then
+        NO_UNIT=`cutEnd "${VAL}"`
+        BYTES=`echo ${NO_UNIT}*1000/1 |bc`
+    elif  echo $VAL | grep -q M$; then
+        NO_UNIT=`cutEnd "${VAL}"`
+        BYTES=`echo ${NO_UNIT}*1000000/1 |bc`
+    elif  echo $VAL | grep -q G$; then
+        NO_UNIT=`cutEnd "${VAL}"`
+        BYTES=`echo ${NO_UNIT}*1000000000/1 |bc`
+    elif  echo $VAL | grep -q T$; then
+        NO_UNIT=`cutEnd "${VAL}"`
+        BYTES=`echo ${NO_UNIT}*1000000000000/1 |bc`
+    else
+        echo "convertToBytes() error - unknown unit suffix for $VAL"
+        return 1
+    fi
+    echo $BYTES
+    return 0
+}
+
+###############################################################################
+cutEnd() {
+    local STR="$1"
+    local STRLEN=${#STR}
+    local CUTLEN=$((${STRLEN}-1))
+    local NUMB=`echo $STR |cut -c 1-${CUTLEN}`
+    echo $NUMB
+    return 0
+}
+
+###############################################################################
+getSSSize() {
     local SNAPSHOT=$1
-    local FS_SIZE=`zfs get -H written $SNAPSHOT |cut -f3 -w -`
+    local TYPE=$2
+
+    if [ "$2" = "full" ]; then
+        local FS_SIZE=`zfs get -H refer $SNAPSHOT |cut -f3 -w -`
+    else
+        local FS_SIZE=`zfs get -H written $SNAPSHOT |cut -f3 -w -`
+    fi
+    echo $FS_SIZE
+    return 0
+}
+
+###############################################################################
+printSSSize() {
+    local FS_SIZE=$1
+
     echo -n "...$FS_SIZE..." > /dev/stdout
     if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
         echo > /dev/stdout
     fi;
+    return 0
 }
 
 ###############################################################################
@@ -774,6 +899,7 @@ printElapsed() {
     else
         echo "$ELAPSED" > /dev/stdout
     fi;
+    return 0
 }
 
 ###############################################################################
@@ -799,6 +925,7 @@ shellTests(){
 
     ### array tests ###########################################################
     echo
+    echo "Test: array_add()"
     array_add tst w
     array_add tst x
     array_add tst y
@@ -807,19 +934,19 @@ shellTests(){
     assertEqual "$tst_2" "x" arrayValidation3
     assertEqual "$tst_3" "y" arrayValidation4
     assertEqual "$tst_4" "" arrayValidation5
-    echo array add test done.
+    echo "Test: array_clear()"
     array_clear tst
     assertEqual "`array_size  tst`" "0"
     assertEqual "$tst_0" "" arrayValidation6
     assertEqual "$tst_1" "" arrayValidation7
     assertEqual "$tst_2" "" arrayValidation8
     assertEqual "$tst_3" "" arrayValidation9
-    echo array clear test done.
+    echo "Test: array_iterator()"
     RET=$(array_iterator "A B" 2>&1)
     assertEqual "$RET" "Invalid arrayname \"A B\"." arrayValidation10
-    echo array_iterator  tests done.
 
     ### nameValidation tests ##################################################
+    echo "Test: nameValidation()"
     RET=$(nameValidation "zpool/data" "zpool/data")
     assertEqual $? 0 "nameValidation1" "$RET"
 
@@ -840,9 +967,9 @@ shellTests(){
 
     RET=$(nameValidation "zpool/" "zpool")
     assertEqual $? 1 "nameValidation6" "$RET"
-    echo nameValidation tests ok.
 
     ### isValidSnapshot tests #################################################
+    echo "Test: isValidSnapshot()"
     RET=$(isValidSnapshot "zpool/data" "zpool/data" "0")
     assertEqual $? 1 "isValidSnapshot0" "$RET"
 
@@ -881,9 +1008,9 @@ shellTests(){
 
     RET=$(isValidSnapshot "zpool/data@0" "zpool/data@3" "")
     assertEqual $? 2 "isValidSnapshot11" "$RET"
-    echo isValidSnapshot tests ok.
 
     ### getSnapshotFilesystems tests ##########################################
+    echo "Test: getSnapshotFilesystems()"
     TEST="zpool/data@0"
     array_clear TEST
     listToArray "$TEST" TEST
@@ -1001,18 +1128,18 @@ shellTests(){
     assertEqual "`arrayToList G_FS_ARRAY`" "$FS" "getSnapshotFilesystems24"
     assertEqual "`arrayToList G_EXCEPTIONS_ARRAY`" "$FSE" "getSnapshotFilesystems25"
     assertEqual "`array_size G_FS_ARRAY`" 4 getSnapshotFilesystems23a
-    echo getSnapshotFilesystems tests ok.
 
     ### getSnapshotData tests #################################################
+    echo "Test: getSnapshotData()"
     array_clear TEST
     listToArray "z/d z/d@0 z/d@1 z/d@2 z/d/c z/d/e" TEST
     SNAPSHOTDATA=`getSnapshotData "TEST"`
     assertEqual $? 0 "getSnapshotData1"
     assertEqual "${SNAPSHOTDATA#*@}" "2" "getSnapshotData2"
     assertEqual "${SNAPSHOTDATA%@*}" "z/d" "getSnapshotData3"
-    echo getSnapshotData tests ok.
 
     ### getRemoteDestination tests ############################################
+    echo "Test: getRemoteDestination()"
     RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/source \
                          zfszroot/tmp/zfsBackupTest/dest`
@@ -1032,9 +1159,7 @@ shellTests(){
     assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest/source/child/toddler" \
                     "getRemoteDestination3" "" exit
 
-    echo getRemoteDestination tests ok.
-
-    # printElapsed() test
+    echo  "Test: printElapsed()"
     local TMPDEBUG=$ZFS_BACKUP_DEBUG
     ZFS_BACKUP_DEBUG=0
     local TIMESTART=`date +%s`
@@ -1047,7 +1172,17 @@ shellTests(){
     fi
     ZFS_BACKUP_DEBUG=$TMPDEBUG
 
-    echo printElapsed test ok.
+    echo "Test: convertToBytes()"
+    local BYTES=`convertToBytes 123`
+    assertEqual "$BYTES" "123" "convertToBytes1" "" exit
+    local BYTES=`convertToBytes 12.3K`
+    assertEqual "$BYTES" "12300" "convertToBytes2" "" exit
+    local BYTES=`convertToBytes 1M`
+    assertEqual "$BYTES" "1000000" "convertToBytes3" "" exit
+    local BYTES=`convertToBytes 1.2G`
+    assertEqual "$BYTES" "1200000000" "convertToBytes4" "" exit
+    local BYTES=`convertToBytes 2.22T`
+    assertEqual "$BYTES" "2220000000000" "convertToBytes5" "" exit
 
     ### tests complete ########################################################
 }
@@ -1068,7 +1203,7 @@ ZFS_BACKUP_DEBUG=0
 #TESTER must have:
 # -passwordless ssh access to localhost ie ssh to itself
 # -permissions given by :
-#   zfs allow -u \$TESTER create,destroy,mount,snapshot,receive,send,hold,rollback \$TESTFS
+#   zfs allow -u \$TESTER create,destroy,mount,snapshot,receive,send,hold,rollback,quota \$TESTFS
 #   chown \$TESTER:\$TESTER \$TESTFS_MOUNT
 # -host requirement :
 #   sysctl vfs.usermount=1
@@ -1086,6 +1221,8 @@ EOF
 
 ## ZFS Tests ##################################################################
 zfsTests() {
+
+
     echo Start zfs tests.
     if [ ! -x "`which zfs`" ]; then
         echo zfs executable not available!
@@ -1131,7 +1268,7 @@ zfsTests() {
     assertEqual $? 0 "zfsTest3" \
        "Could not create ${TESTFS}/dest" exit
 
-    echo Test new parent file system. 
+    echo Test: new parent file system.
     ###########################################################################
     echo data1 > ${TESTFS_MOUNT}/source/file1.txt
     assertEqual $? 0 "zfsTest4" \
@@ -1149,7 +1286,7 @@ zfsTests() {
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
     "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
 
-    echo Test new child file system.
+    echo Test: new child file system.
     ###########################################################################
     zfs create ${TESTFS}/source/child
     assertEqual $? 0 "zfsTest8" \
@@ -1167,7 +1304,7 @@ zfsTests() {
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit
 
-    echo Simulate a failed send of the child filesystem.
+    echo Test: simulate a failed send of the child filesystem.
     ###########################################################################
     # zfsTest12 caused a headache where the destination file system was not
     # remounted to reflect the most recent snapshot. On completion of the backup
@@ -1175,14 +1312,14 @@ zfsTests() {
     assertEqual $? 0 "zfsTest12" \
         "Could not destroy the child fs ${TESTFS_MOUNT}/dest/source/child" exit
 
-    echo Backup and check the child@2 snapshot is resent.
+    echo Test: backup and check the child@2 snapshot is resent.
     ###########################################################################
     zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
     "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit
 
-    echo Snapshot existing files with updated child data.
+    echo Test: snapshot existing files with updated child data.
     ###########################################################################
     echo data3 > ${TESTFS_MOUNT}/source/child/file2.txt
     zfs snapshot -r ${TESTFS}/source@3
@@ -1196,7 +1333,7 @@ zfsTests() {
     assertEqual "$RET" 1 "zfsTest16" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt data does not exist." exit
 
-    echo Simulate a fail send os child@3
+    echo Test: simulate a fail send os child@3
     ###########################################################################
     zfs rollback -r ${TESTFS}/dest/source/child@2
     assertEqual $? 0 "zfsTest17" \
@@ -1214,7 +1351,7 @@ zfsTests() {
     assertEqual $RET 1 "zfsTest20" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt data does not exist." exit
 
-    echo Snapshot test1.
+    echo Test: snapshot test1.
     ###########################################################################
     zfs create ${TESTFS}/source/rename
     sleep 1
@@ -1232,14 +1369,14 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source/ren@2
     zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
-    echo Snapshot test2.
+    echo Test: snapshot test2.
     zfs rename ${TESTFS}/dest/ren ${TESTFS}/dest/blah
     zfs rename ${TESTFS}/dest/blah ${TESTFS}/dest/ren
     touch ${TESTFS_MOUNT}/source/ren/3
     zfs snapshot -r ${TESTFS}/source/ren@3
     zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
-    echo Snapshot test3.
+    echo Test: snapshot test3.
     touch ${TESTFS_MOUNT}/dest/ren
     touch ${TESTFS_MOUNT}/source/ren/4
     zfs snapshot -r ${TESTFS}/source/ren@4
@@ -1269,7 +1406,51 @@ zfsTests() {
         return 1
     fi
 
+    echo Test: remote host free space.
+    zfs destroy -r ${TESTFS}/dest 2>/dev/null
+    zfs destroy -r ${TESTFS}/source 2>/dev/null
+    zfs create ${TESTFS}/source
+    zfs create ${TESTFS}/dest
 
+    RET=`zfs create ${TESTFS}/dest/quotaTest`
+    assertEqual $? 0 "quotaTest1" \
+       "Could not create ${TESTFS}/dest/quotaTest" exit
+    RET=`zfs set quota=10M ${TESTFS}/dest/quotaTest`
+    assertEqual $? 0 "quotaTest2" \
+       "Could not create assign quota for ${TESTFS}/dest/quotaTest" exit
+    RET=`checkRemoteDiskSpace ${TESTER}@${TEST_SSH_LOCALHOST} \
+    ${TESTFS}/dest/quotaTest 100M`
+    assertEqual $? 1 "quotaTest3" \
+       "Call to checkRemoteDiskSpace() failed. return:$RET" exit
+    assertEqual 1 `echo $RET | grep -c '^Backup requires 100M'` \
+    "quotaTest4" "Incorrect return message." exit
+
+    echo Test: new remote FS with no quota.
+    local QUOTA_TEST_FILE=${TESTFS_MOUNT}/source/quota.file
+    RET=`dd if=/dev/random of=$QUOTA_TEST_FILE bs=20M count=1 2>&8`
+    assertEqual $? 0 "quotaTest5" \
+       "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
+    zfs snapshot -r ${TESTFS}/source@1
+    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    assertEqual 1 `echo $RET | grep -c 'Backup requires 20.1M'` \
+    "quotaTest6" "Incorrect return message: \"$RET\"" exit
+
+    echo Test: incremental remote FS update with no quota.
+    zfs destroy -r ${TESTFS}/source@1
+    rm ${QUOTA_TEST_FILE}
+    zfs snapshot -r ${TESTFS}/source@1
+    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    if ! test -d ${TESTFS_MOUNT}/dest/quotaTest/source; then
+       echo  "quotaTest7" "Did not backup source to quota.";
+       return 1
+    fi
+    RET=`dd if=/dev/random of=$QUOTA_TEST_FILE bs=20M count=1 2>&8`
+    assertEqual $? 0 "quotaTest8" \
+       "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
+    zfs snapshot -r ${TESTFS}/source@2
+    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    assertEqual 1 `echo $RET | grep -c 'Backup requires 20.1M'` \
+    "quotaTest9" "Incorrect return message: \"$RET\"" exit
 
     # Only do the test tear down if all the tests succeed.
     echo Cleaning up ${TESTFS}/dest ${TESTFS}/source
@@ -1280,7 +1461,6 @@ zfsTests() {
     RET=`zfs destroy -r ${TESTFS}/source`
     assertEqual $? 0 "zfsTest-1" \
         "Could not remove ${TESTFS}/source " exit
-
 }
 
 ### MAIN #####################################################################
@@ -1312,11 +1492,11 @@ else
 fi
 
 echo ================================================================================
-echo Starting backup ...
+echo "Starting backup `date '+%Y%m%d %H:%M:%S'` ..."
 doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
 if [ $? -ne 0 ]; then
-    echo Backup failure.
+    echo "Backup failure `date '+%Y%m%d %H:%M:%S'`."
 else
-    echo Backup complete.
+    echo "Backup complete`date '+%Y%m%d %H:%M:%S'`."
 fi
 echo ================================================================================
