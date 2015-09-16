@@ -9,8 +9,6 @@
 
 #Limitation: Untested with zfs file system names containing spaces.
 
-
-
 CONFIG_FILE=~/.zfsBackup
 G_ZFS_SRC_FS=$1
 G_ZFS_DEST_FS=$2
@@ -19,6 +17,9 @@ G_ZFS_USER_HOST=$3
 G_MAX_SNAPSHOT=""
 G_SNAPSHOT_NAME=""
 ZFS_NO_DATA_MESSAGE="dataset does not exist"
+G_REMOTE_LISTENER_FAIL=100
+G_SUCCESS=0
+G_FAIL=1
 
 # isValidSnapshot return status CONSTANT.
 G_SS_STATUS=0
@@ -53,7 +54,7 @@ for zfs operations ie:
 
 zfs allow -u remoteUser create,destroy,mount,snapshot,receive,send zremote/bup
 
-2) Requires zfs, sh, awk, nc, ssh, cut in the path of the local/remote users.
+2) Requires zfs, sh, awk, ssh, cut in the path of the local/remote users.
 
 3) See $CONFIG_FILE for test requirements.
 
@@ -197,7 +198,7 @@ getRemoteFsList() {
 #
     local REMOTEFS="$1"
     local USER_HOST="$2"
-    CMD="ssh $USER_HOST zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
+    CMD="ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
     echo getRemoteFsList Cmd: $CMD >&9
     eval $CMD
     local RET=$?
@@ -232,44 +233,12 @@ sendNewRemoteFileSystem() {
     fi
     printSSSize "$FS_SIZE"
 
-    RXFIFO=/tmp/rx$$.fifo
-    TXFIFO=/tmp/tx$$.fifo
-    mkfifo "$RXFIFO"
-    mkfifo "$TXFIFO"
-    exec 3<>"$RXFIFO"
-    exec 4<>"$TXFIFO"
-
-    CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -e $REMOTEFS >&3"
-    echo Listener cmd: $CMD >&9
-
-    ssh $USER_HOST "$CMD" 2>&3 1>&3 &
-    RXPID=$!
-    sleep 2
-    echo "Sender cmd: zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION  nc -v -v -w 20 $REMOTE_HOST 8023 2>&4" >&9
     local SEND_START_TIME=`date +%s`
-    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION 2>&4 | nc -v -v -w 20 $REMOTE_HOST 8023 2>&4
-    RET=$?
-    RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
-    TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
-    exec 3<&- 4<&-
-    rm $RXFIFO $TXFIFO
-    echo "Sender op: $TXMSG" >&9
-    echo "Receiver op: $RXMSG" >&9
-    if [ `echo "$TXMSG" |grep -c "succeeded!$"` -gt 0 ]; then
-        TXMSG=""
-    fi
-    if [ `echo "$RXMSG" |grep -c "received!$"` -gt 0 ]; then
-        RXMSG=""
-    fi
 
-    if [ "$RET" -ne 0 -o -n "$TXMSG" -o -n "$RXMSG" ]; then
-        echo "Send failed $LOCALFS" > /dev/stderr
-        echo "Sender error: $TXMSG" > /dev/stderr
-        echo "Receiver error: $RXMSG" > /dev/stderr
-        echo "Clean up the receiver listener kill PID:$RXPID" > /dev/stderr
-        kill -9 $RXPID
-        RET=1
-    fi
+    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION | ssh -p ${ZFS_BACKUP_SSH_PORT} -c ${ZFS_BACKUP_SSH_CIPHER} \
+    $USER_HOST zfs receive -e $REMOTEFS
+    RET=$?
+
     printElapsed $SEND_START_TIME
     return $RET;
 }
@@ -305,47 +274,11 @@ sendIncrementalFileSystem() {
         fi
         printSSSize "$FS_SIZE"
 
-        RXFIFO=/tmp/rx$$.fifo
-        TXFIFO=/tmp/tx$$.fifo
-        mkfifo "$RXFIFO"
-        mkfifo "$TXFIFO"
-        exec 3<>"$RXFIFO"
-        exec 4<>"$TXFIFO"
-
-        CMD="nc -v -v -w 120 -l $REMOTE_HOST 8023 | zfs receive -F -d $REMOTEFS >&3"
-        ssh $USER_HOST "$CMD" 2>&3 1>&3 &
-        echo ssh $USER_HOST "$CMD" >&9
-        RXPID=$!
-        sleep 2
         SEND_START_TIME=`date +%s`
-        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
-            | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4
+
+        zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION | \
+        ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} -c ${ZFS_BACKUP_SSH_CIPHER}  zfs receive -F -d $REMOTEFS
         RET=$?
-        echo "zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION 2>&4 \
-            | nc -v -v -w 40 $REMOTE_HOST 8023 2>&4" >&9
-
-        RXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&3; echo $pge)
-        TXMSG=$(while read -t 2 line; do pge="$pge $line"; done <&4; echo $pge)
-        exec 3<&- 4<&-
-        rm $RXFIFO $TXFIFO
-        echo "Sender op: $TXMSG" >&9
-        echo "Receiver op: $RXMSG" >&9
-
-        if [ `echo "$TXMSG" |grep -c "succeeded!$"` -gt 0 ]; then
-            TXMSG=""
-        fi
-        if [ `echo "$RXMSG" |grep -c "received!$"` -gt 0 ]; then
-            RXMSG=""
-        fi
-
-        if [ "$RET" -ne 0 -o -n "$TXMSG" -o -n "$RXMSG" ]; then
-            echo "Send failed $LOCALFS" > /dev/stderr
-            echo "Sender error: $TXMSG" > /dev/stderr
-            echo "Receiver error: $RXMSG" > /dev/stderr
-            echo "Clean up the receiver listener kill PID:$RXPID" > /dev/stderr
-            kill -9 $RXPID
-            RET=1
-        fi
         printElapsed $SEND_START_TIME
     fi
     return $RET;
@@ -493,7 +426,7 @@ doBackup() {
     done;
     # Remount the destination filesystems. ie zfsTest12 where a destination
     # filesystem is detroyed and repopulated.
-    ssh $USER_HOST "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
+    ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
         \`zfs list -H -r ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
     return $FAILURE
 }
@@ -792,7 +725,7 @@ checkRemoteDiskSpace() {
     local USER_HOST=$1
     local REMOTEFS=$2
     local REQUIRED_SIZE=$3
-    local AVA_STR=`ssh $USER_HOST zfs get -H available $REMOTEFS 2>&1`
+    local AVA_STR=`ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} zfs get -H available $REMOTEFS 2>&1`
     RET1=$?
     if [ 0 -ne $RET1 ]; then
         echo "Could not retrieve accessible space at $USER_HOST $REMOTEFS error: $AVA_STR"
@@ -1190,6 +1123,9 @@ shellTests(){
 ## Configuration creation #####################################################
 configCreate() {
     if [ -f "${CONFIG_FILE}" ]; then
+        ZFS_BACKUP_DEBUG=0
+        ZFS_BACKUP_SSH_PORT=22
+        ZFS_BACKUP_SSH_CIPHER=blowfish
         return 0
     fi
 
@@ -1197,6 +1133,9 @@ configCreate() {
 
 #Set to ZFS_BACKUP_DEBUG=1 to enable debug.
 ZFS_BACKUP_DEBUG=0
+#This ssh port config is also used for the tests.
+ZFS_BACKUP_SSH_PORT=22
+ZFS_BACKUP_SSH_CIPHER=blowfish
 
 #Test configuration for zfsBackup.sh
 
@@ -1221,8 +1160,7 @@ EOF
 
 ## ZFS Tests ##################################################################
 zfsTests() {
-
-
+    STARTSECS=`date +%s`
     echo Start zfs tests.
     if [ ! -x "`which zfs`" ]; then
         echo zfs executable not available!
@@ -1245,9 +1183,9 @@ zfsTests() {
         exec 8<>/dev/null
     fi
 
-    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} 'echo ok'`
+    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_BACKUP_SSH_PORT} 'echo ok'`
     assertEqual $RET "ok" "zfsTest0" \
-        "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} \
+        "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_BACKUP_SSH_PORT} \
          Please check ${CONFIG_FILE} " exit
 
     # Test setup
@@ -1461,6 +1399,9 @@ zfsTests() {
     RET=`zfs destroy -r ${TESTFS}/source`
     assertEqual $? 0 "zfsTest-1" \
         "Could not remove ${TESTFS}/source " exit
+
+    ENDSECS=`date +%s`
+    echo Test execution time: $(($ENDSECS-$STARTSECS))secs
 }
 
 ### MAIN #####################################################################
