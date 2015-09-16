@@ -3,9 +3,11 @@
 
 # Perform backup of zfs filesystem.
 #  - Backup to a remote host.
-#  - Recursive.
+#  - Recursive backup to the current snapshot.
 #  - Automatic incremental backup.
+#  - Automatic creation of child filesystems at the destination.
 #  - Source snapshot consistency check ie run 'zfs snapshot -r'.
+#  - The backup is not attempted when the destination quota is insufficient. 
 #
 # Allow recursive zfs backup of filesystems to a remote host. The
 # parent and child filesystem snapshot versions are verified with the remote
@@ -64,7 +66,7 @@ for zfs operations ie:
 
 zfs allow -u remoteUser create,destroy,mount,snapshot,receive,send zremote/bup
 
-2) Requires zfs, sh, awk, ssh, cut in the path of the local/remote users.
+2) Requires zfs, sh, awk, ssh, cut, jot in the path of the local/remote users.
 
 3) See $CONFIG_FILE for test requirements.
 
@@ -256,7 +258,7 @@ sendNewRemoteFileSystem() {
 ###############################################################################
 sendIncrementalFileSystem() {
 #
-# Send the filesystem to the remote host where it does not exist.
+# Update the destination filesystem with incremental snapshots. 
 #
 # $1 = the local filesystem for backup.
 # $2 = the location of the filesytem on the remote host.
