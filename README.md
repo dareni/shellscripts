@@ -21,7 +21,7 @@ vbox_restart_pm_utils - Reboot a virtualbox guest on resume from pm-suspend to
 
 zfsBackup.sh - Allow recursive zfs backup of filesystems to a remote host. The
     parent and child filesystem snapshot versions are verified with the remote
-    destination. Implemented with zfs send/receive over netcat (nc).
+    destination. Implemented with zfs send/receive over ssh.
     Each child filesystem is transmitted independently to improve transmission
     efficiency in the case of network outages/errors. ie zfs send/receive does
     not resume a transmission but restarts the transmission of a filesystem

@@ -1,13 +1,23 @@
-#!/bin/sh
+#!/usr/bin/env sh
 # Maintained at: git@github.com:dareni/shellscripts.git
 
 # Perform backup of zfs filesystem.
 #  - Backup to a remote host.
 #  - Recursive.
 #  - Automatic incremental backup.
-#  - Source snapshot consistency check.
+#  - Source snapshot consistency check ie run 'zfs snapshot -r'.
+#
+# Allow recursive zfs backup of filesystems to a remote host. The
+# parent and child filesystem snapshot versions are verified with the remote
+# destination. Implemented with zfs send/receive over ssh.
+# Each child filesystem is transmitted independently to improve transmission
+# efficiency in the case of network outages/errors. ie zfs send/receive does
+# not resume a transmission but restarts the transmission of a filesystem
+# from the beginning. ie Failure during the backup of a filesystem composed of
+# small child filesystems, will only re-transmit the data for the child
+# filesystem processing, at the point in time of the network failure.
 
-#Limitation: Untested with zfs file system names containing spaces.
+#Limitation: zfs file system names must not contain spaces.
 
 CONFIG_FILE=~/.zfsBackup
 G_ZFS_SRC_FS=$1
@@ -364,7 +374,7 @@ doBackup() {
     for FILE in `array_iterator MAIN_FS_ARRAY`
     do
         echo -n "$FILE..." > /dev/stdout
-        REMOTE_FS=${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}
+        REMOTE_FS="${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}${FILE##$ZFS_SRC_FS}"
         HAS_SNAP=`echo $REMOTE_FS| grep -c @`
         if [ 0 -eq "$HAS_SNAP" ]; then
             echo  Error: No snapshot on source file system: $FILE > /dev/stderr
@@ -789,7 +799,7 @@ convertToBytes() {
 cutEnd() {
     local STR="$1"
     local STRLEN=${#STR}
-    local CUTLEN=$((${STRLEN}-1))
+    local CUTLEN=$((STRLEN-1))
     local NUMB=`echo $STR |cut -c 1-${CUTLEN}`
     echo $NUMB
     return 0
@@ -824,7 +834,7 @@ printSSSize() {
 printElapsed() {
     local STARTSECS=$1
     local ENDSECS=`date +%s`
-    local ELAPSEDSEC=$(($ENDSECS - $STARTSECS))
+    local ELAPSEDSEC=$((ENDSECS - STARTSECS))
     local ELAPSED="$(($ELAPSEDSEC/3600))hr.$(($ELAPSEDSEC%3600/60))min.$(($ELAPSEDSEC%60))sec"
 
     if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
@@ -1096,7 +1106,7 @@ shellTests(){
     local TMPDEBUG=$ZFS_BACKUP_DEBUG
     ZFS_BACKUP_DEBUG=0
     local TIMESTART=`date +%s`
-    TIMESTART="$(($TIMESTART - 3723))"
+    TIMESTART="$((TIMESTART - 3723))"
     local MSG=`printElapsed $TIMESTART`
     if [ ! 1 -eq `echo $MSG |grep -c '1hr.2min.3sec$'` ]; then
         ZFS_BACKUP_DEBUG=$TMPDEBUG
@@ -1401,7 +1411,7 @@ zfsTests() {
         "Could not remove ${TESTFS}/source " exit
 
     ENDSECS=`date +%s`
-    echo Test execution time: $(($ENDSECS-$STARTSECS))secs
+    echo Test execution time: $((ENDSECS - STARTSECS))secs
 }
 
 ### MAIN #####################################################################
@@ -1416,11 +1426,11 @@ else
 fi
 
 if [ 3 -ne $# ]; then
-    if [ "zfsTests" = "$1" ]; then
+    if [ "zfstests" = "`echo $1 |tr 'A-Z' 'a-z'`" ]; then
         zfsTests
         echo ZFS tests completed, check the output for errors. >/dev/stdout
         exit 0
-    elif [ "shellTests" = "$1" ]; then
+    elif [ "shelltests" = "`echo $1|tr 'A-Z' 'a-z'`" ]; then
         shellTests
         echo Shell tests completed, check the output for errors. >/dev/stdout
         exit 0
