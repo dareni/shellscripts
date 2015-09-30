@@ -2,9 +2,9 @@
 # Maintained at: git@github.com:dareni/shellscripts.git
 ###############################################################################
 # Scan sshd log file for brute force attacks and block offending hosts by
-# firewall pf. The log file is tailed and hosts are blocked immediately.
-# A list of friendly hosts is kept ie successful login attemtps to avoid
-# the blocking of friendly hosts.
+# firewall pf. The log file is tailed and hosts are blocked immediately after
+# 2 failed login attempts. A list of friendly hosts is kept (ie successful
+# login attemtps) to avoid the blocking of friendly hosts.
 #
 # FREEBSD hosts. Inspired by:
 # http://www.freebsdwiki.net/index.php/Block_repeated_illegal_or_failed_SSH_logins
@@ -31,14 +31,23 @@
 #
 ###############################################################################
 #
-# Configuration example:
-#
-# Add to /etc/crontab:
-#@reboot root sleep 60; /usr/local/etc/sshd-fwscan.sh scan /jail/bud/var/log/auth.log 2>&1 >> /var/log/sshd-fwscan.log
+# Configuration:
 #
 # Add to /etc/pf.conf
-#table <ssh-violations> persist
-#block quick from <ssh-violations>
+#table ssh-violations persist
+#block quick from ssh-violations
+#
+#
+# Either add to /etc/crontab:
+#@reboot root sleep 60; /usr/local/etc/sshd-fwscan.sh scan /var/log/auth.log 2>&1 >> /var/log/sshd-fwscan.log
+#
+# Or jail.conf:
+# exec.poststart="/usr/local/etc/sshd-fwscan.sh scan /jail/jail1/var/log/auth.log 2>&1 >> /var/log/sshd-fwscan.log";
+# exec.prestop="/usr/local/etc/sshd-fwscan.sh stop";
+# Second jail:
+# ln -s /usr/local/etc/sshd-fwscan.sh /usr/local/etc/jail2Scan.sh
+# exec.poststart="/usr/local/etc/jail2Scan.sh scan /jail/jail2/var/log/auth.log 2>&1 >> /var/log/sshd-fwscan.log";
+# exec.prestop="/usr/local/etc/jail2Scan.sh stop";
 #
 ###############################################################################
 #
@@ -51,6 +60,11 @@
 #table <openbl-org> persist file "/var/tmp/openbl.org.txt"
 #block quick from <openbl-org>
 #
+
+PROGME=${0##*/}
+LOCK=/var/run/$PROGME.pid
+PF_SSH_VIOLATIONS=ssh-violations
+
 ###############################################################################
 # shell variable functionality
 ###############################################################################
@@ -170,18 +184,24 @@ listToArray() {
 ###############################################################################
 # main
 ###############################################################################
-PF_SSH_VIOLATIONS=ssh-violations
-PROGME=$0
 if [ "$1" == "scan" ]; then
+    if [ -f $LOCK ]; then
+        RUNNINGPID=`echo ${LOCK}`
+        STATUS=`pgrep -F ${LOCK}`
+        if [ -z "$STATUS" ]; then
+            echo "Old process $RUNNINGPID died. Restarting..."
+        else
+            echo "Already running PID: $RUNNINGPID"
+            exit 1;
+        fi
+    fi
     AUTHLOG=$2
     if [ ! -f "$AUTHLOG" ]; then
         echo "No file: $AUTHLOG"
         return;
     fi
-
-    #cat $AUTHLOG | awk -v progme="$PROGME" --posix  '
-    #tail -n 600 -F $AUTHLOG | awk -v progme="$PROGME" --posix  ' \
-    tail -n 600 -F $AUTHLOG | awk -v progme="$PROGME" ' \
+    echo SCAN START: `date`
+    (tail -n 600 -F $AUTHLOG & echo $! > $LOCK) | awk -v progme="$PROGME" ' \
     function pfcall(foe, friendlist) {
         args=foe
         for (friend in friendlist) {
@@ -240,7 +260,7 @@ if [ "$1" == "scan" ]; then
             }
 
         }
-    }'
+    }'&
 
 elif [ "$1" == "friend" ]; then
     CMDARG=""
@@ -259,10 +279,28 @@ elif [ "$1" == "friend" ]; then
         fi
         echo Friend: $HOST >> $AUTHLOG
     done;
+
+elif [ "$1" == "stop" ]; then
+    if [ -f $LOCK ]; then
+        RUNNINGPID=`cat ${LOCK}`
+        STATUS=`pgrep -F ${LOCK}`
+        if [ -z "$STATUS" ]; then
+            echo "Process $RUNNINGPID already died?"
+        else
+            kill -15 $RUNNINGPID
+            if [ $? -eq 0 ]; then
+                rm ${LOCK}
+            else
+                echo Cleanup of PID:$RUNNINGPID failed. Lock: $LOCK
+            fi
+        fi
+    else
+        echo Not running? no $LOCK
+    fi
 else
-    date +'%y%m%d.%H:%M'
-    SSH_SCAN_PID=`pgrep -af "sshd-fwscan.sh scan"`
-    ps -o rss,cpu,dsiz,ssiz,%mem -p "$SSH_SCAN_PID"
+#    date +'%y%m%d.%H:%M'
+#    SSH_SCAN_PID=`pgrep -F ${LOCK}.awk`
+#    ps -o rss,cpu,dsiz,ssiz,%mem -p "$SSH_SCAN_PID"
     #Convert to ip list.
     NEWFOE=""
     IP=""
