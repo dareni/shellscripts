@@ -245,7 +245,7 @@ sendNewRemoteFileSystem() {
 
     local SEND_START_TIME=`date +%s`
 
-    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION | ssh -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER} \
+    zfs send -p $LOCALFS@$SNAPSHOT_VERSION | ssh -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER} \
     $USER_HOST zfs receive -e $REMOTEFS
     RET=$?
 
@@ -264,6 +264,7 @@ sendIncrementalFileSystem() {
 # $4 = local snapshot version list to send
 # $5 = remote snapshot
     local LOCALFS="$1"
+    local LOCALCHILDNAME=${LOCALFS##*/}
     local REMOTEFS="$2"
     local USER_HOST="$3"
     local REMOTE_HOST="${USER_HOST#*@}"
@@ -287,7 +288,8 @@ sendIncrementalFileSystem() {
         SEND_START_TIME=`date +%s`
 
         zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION | \
-        ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER}  zfs receive -F -d $REMOTEFS
+        ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER} \
+        zfs receive -F -d $REMOTEFS/${LOCALCHILDNAME}
         RET=$?
         printElapsed $SEND_START_TIME
     fi
@@ -1293,7 +1295,7 @@ zfsTests() {
     assertEqual "$RET" 1 "zfsTest16" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt data does not exist." exit
 
-    echo Test: simulate a fail send os child@3
+    echo Test: simulate a fail send of child@3
     ###########################################################################
     zfs rollback -r ${TESTFS}/dest/source/child@2
     assertEqual $? 0 "zfsTest17" \
