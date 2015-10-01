@@ -34,8 +34,8 @@
 # Configuration:
 #
 # Add to /etc/pf.conf
-#table ssh-violations persist
-#block quick from ssh-violations
+#table <ssh-violations> persist
+#block quick from <ssh-violations>
 #
 #
 # Either add to /etc/crontab:
