@@ -1460,6 +1460,6 @@ doDuplication $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
 if [ $? -ne 0 ]; then
     echo "Duplication failure `date '+%Y%m%d %H:%M:%S'`."
 else
-    echo "Duplication complete`date '+%Y%m%d %H:%M:%S'`."
+    echo "Duplication complete `date '+%Y%m%d %H:%M:%S'`."
 fi
 echo ================================================================================
