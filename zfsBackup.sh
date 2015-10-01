@@ -1,27 +1,28 @@
 #!/usr/bin/env sh
 # Maintained at: git@github.com:dareni/shellscripts.git
 
-# Perform backup of zfs filesystem.
-#  - Backup to a remote host.
-#  - Recursive backup to the current snapshot.
-#  - Automatic incremental backup.
+# Perform duplication of zfs filesystem.
+#  - Duplicate zfs to a remote host.
+#  - Recursive duplication to the current snapshot.
+#  - Automatic incremental duplication.
 #  - Automatic creation of child filesystems at the destination.
 #  - Source snapshot consistency check ie run 'zfs snapshot -r'.
-#  - The backup is not attempted when the destination quota is insufficient. 
+#  - The duplication is not attempted when the destination quota
+#    is insufficient.
 #
-# Allow recursive zfs backup of filesystems to a remote host. The
+# Allow recursive duplication of filesystems to a remote host. The
 # parent and child filesystem snapshot versions are verified with the remote
 # destination. Implemented with zfs send/receive over ssh.
 # Each child filesystem is transmitted independently to improve transmission
 # efficiency in the case of network outages/errors. ie zfs send/receive does
 # not resume a transmission but restarts the transmission of a filesystem
-# from the beginning. ie Failure during the backup of a filesystem composed of
-# small child filesystems, will only re-transmit the data for the child
-# filesystem processing, at the point in time of the network failure.
+# from the beginning. ie Failure during the duplication of a filesystem
+# composed of small child filesystems, will only re-transmit the data for
+# the child filesystem processing, at the point in time of the network failure.
 
 #Limitation: zfs file system names must not contain spaces.
 
-CONFIG_FILE=~/.zfsBackup
+CONFIG_FILE=~/.zfsDup
 G_ZFS_SRC_FS=$1
 G_ZFS_DEST_FS=$2
 G_ZFS_USER_HOST=$3
@@ -39,25 +40,25 @@ G_SS_STATUS=0
 usage() {
 cat <<EOF
 
-Usage ./zfsBackup.sh src_zfs dest_zfs user@remote_host
+Usage ./zfsDup.sh src_zfs dest_zfs user@remote_host
 
-1) Perform a backup.
+1) Perform a duplication.
 
     - First snapshot the target filesystem
 
         zfs snapshot -r zroot/zdata@1
 
-    - Execute the backup command
+    - Execute the duplication command
 
-        zfsBackup.sh zroot/data zremote/bup remoteUser@192.168.1.102
+        zfsDup.sh zroot/data zremote/bup remoteUser@192.168.1.102
 
 2) Execute shell script tests.
 
-    zfsBackup.sh shellTests
+    zfsDup.sh shellTests
 
 3) Execute the zfs tests.
 
-    zfsBackup.sh zfsTests
+    zfsDup.sh zfsTests
 
 Note:
 
@@ -198,7 +199,7 @@ listToArray() {
 ###############################################################################
 getRemoteFsList() {
 #
-# Backup the given filesystem.
+# Duplication the given filesystem.
 #
 # $1 = the target filesytem on the remote host.
 # $2 = the target user@host.
@@ -210,7 +211,7 @@ getRemoteFsList() {
 #
     local REMOTEFS="$1"
     local USER_HOST="$2"
-    CMD="ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
+    CMD="ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} zfs list -d 1 -H -o name -t all $REMOTEFS 2>&1"
     echo getRemoteFsList Cmd: $CMD >&9
     eval $CMD
     local RET=$?
@@ -222,7 +223,7 @@ sendNewRemoteFileSystem() {
 #
 # Send the filesystem to the remote host where it does not exist.
 #
-# $1 = the local filesystem for backup.
+# $1 = the local filesystem for duplication ie source.
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
 # $4 = the max snapshot version to send
@@ -247,7 +248,7 @@ sendNewRemoteFileSystem() {
 
     local SEND_START_TIME=`date +%s`
 
-    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION | ssh -p ${ZFS_BACKUP_SSH_PORT} -c ${ZFS_BACKUP_SSH_CIPHER} \
+    zfs send $SEND_INC $LOCALFS@$SNAPSHOT_VERSION | ssh -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER} \
     $USER_HOST zfs receive -e $REMOTEFS
     RET=$?
 
@@ -258,9 +259,9 @@ sendNewRemoteFileSystem() {
 ###############################################################################
 sendIncrementalFileSystem() {
 #
-# Update the destination filesystem with incremental snapshots. 
+# Update the destination filesystem with incremental snapshots.
 #
-# $1 = the local filesystem for backup.
+# $1 = the local filesystem for duplication ie source.
 # $2 = the location of the filesytem on the remote host.
 # $3 = the remote username@hostname
 # $4 = local snapshot version list to send
@@ -289,7 +290,7 @@ sendIncrementalFileSystem() {
         SEND_START_TIME=`date +%s`
 
         zfs send -I @$REMOTE_SNAPSHOT_VERSION $LOCALFS@$LOCAL_SNAPSHOT_VERSION | \
-        ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} -c ${ZFS_BACKUP_SSH_CIPHER}  zfs receive -F -d $REMOTEFS
+        ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} -c ${ZFS_DUP_SSH_CIPHER}  zfs receive -F -d $REMOTEFS
         RET=$?
         printElapsed $SEND_START_TIME
     fi
@@ -297,9 +298,9 @@ sendIncrementalFileSystem() {
 }
 
 ###############################################################################
-doBackup() {
+doDuplication() {
 #
-# Backup the given filesystem.
+# Duplication the given filesystem.
 #
 # $1 = the file system.
 # $2 = the remote file system destination.
@@ -438,7 +439,7 @@ doBackup() {
     done;
     # Remount the destination filesystems. ie zfsTest12 where a destination
     # filesystem is detroyed and repopulated.
-    ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
+    ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} "/bin/sh -c 'zfs unmount ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/}; for FS in \
         \`zfs list -H -r ${ZFS_DEST_FS}/${ZFS_SRC_FS##*/} |cut -f 1 -w - \`; do zfs mount \$FS; done'"
     return $FAILURE
 }
@@ -737,7 +738,7 @@ checkRemoteDiskSpace() {
     local USER_HOST=$1
     local REMOTEFS=$2
     local REQUIRED_SIZE=$3
-    local AVA_STR=`ssh $USER_HOST -p ${ZFS_BACKUP_SSH_PORT} zfs get -H available $REMOTEFS 2>&1`
+    local AVA_STR=`ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} zfs get -H available $REMOTEFS 2>&1`
     RET1=$?
     if [ 0 -ne $RET1 ]; then
         echo "Could not retrieve accessible space at $USER_HOST $REMOTEFS error: $AVA_STR"
@@ -765,7 +766,7 @@ checkRemoteDiskSpace() {
 
 
     if [ "$REQUIRED_SIZE_BYTES" -gt "$REMOTE_SIZE_BYTES" ]; then
-        echo "Backup requires $REQUIRED_SIZE not available, remaining:$REMOTE_SIZE on $REMOTEFS."
+        echo "Duplication requires $REQUIRED_SIZE not available, remaining:$REMOTE_SIZE on $REMOTEFS."
         return 1
     fi
     return 0
@@ -826,7 +827,7 @@ printSSSize() {
     local FS_SIZE=$1
 
     echo -n "...$FS_SIZE..." > /dev/stdout
-    if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
+    if [ $ZFS_DUP_DEBUG -eq 1 ]; then
         echo > /dev/stdout
     fi;
     return 0
@@ -839,7 +840,7 @@ printElapsed() {
     local ELAPSEDSEC=$((ENDSECS - STARTSECS))
     local ELAPSED="$(($ELAPSEDSEC/3600))hr.$(($ELAPSEDSEC%3600/60))min.$(($ELAPSEDSEC%60))sec"
 
-    if [ $ZFS_BACKUP_DEBUG -eq 1 ]; then
+    if [ $ZFS_DUP_DEBUG -eq 1 ]; then
         echo Elapsed $SNAPSHOT...$ELAPSED > /dev/stdout
     else
         echo "$ELAPSED" > /dev/stdout
@@ -1085,37 +1086,37 @@ shellTests(){
 
     ### getRemoteDestination tests ############################################
     echo "Test: getRemoteDestination()"
-    RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
-                         zfszroot/tmp/zfsBackupTest/source \
-                         zfszroot/tmp/zfsBackupTest/dest`
-    assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest" \
+    RET=`getRemoteDestination zfszroot/tmp/zfsDupTest/source \
+                         zfszroot/tmp/zfsDupTest/source \
+                         zfszroot/tmp/zfsDupTest/dest`
+    assertEqual "$RET" "zfszroot/tmp/zfsDupTest/dest" \
                     "getRemoteDestination1" "" exit
 
-    RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
-                         zfszroot/tmp/zfsBackupTest/source/child/baby \
-                         zfszroot/tmp/zfsBackupTest/dest`
+    RET=`getRemoteDestination zfszroot/tmp/zfsDupTest/source \
+                         zfszroot/tmp/zfsDupTest/source/child/baby \
+                         zfszroot/tmp/zfsDupTest/dest`
 
-    assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest/source/child" \
+    assertEqual "$RET" "zfszroot/tmp/zfsDupTest/dest/source/child" \
                     "getRemoteDestination2" "" exit
 
-    RET=`getRemoteDestination zfszroot/tmp/zfsBackupTest/source \
-                         zfszroot/tmp/zfsBackupTest/source/child/toddler/baby \
-                         zfszroot/tmp/zfsBackupTest/dest`
-    assertEqual "$RET" "zfszroot/tmp/zfsBackupTest/dest/source/child/toddler" \
+    RET=`getRemoteDestination zfszroot/tmp/zfsDupTest/source \
+                         zfszroot/tmp/zfsDupTest/source/child/toddler/baby \
+                         zfszroot/tmp/zfsDupTest/dest`
+    assertEqual "$RET" "zfszroot/tmp/zfsDupTest/dest/source/child/toddler" \
                     "getRemoteDestination3" "" exit
 
     echo  "Test: printElapsed()"
-    local TMPDEBUG=$ZFS_BACKUP_DEBUG
-    ZFS_BACKUP_DEBUG=0
+    local TMPDEBUG=$ZFS_DUP_DEBUG
+    ZFS_DUP_DEBUG=0
     local TIMESTART=`date +%s`
     TIMESTART="$((TIMESTART - 3723))"
     local MSG=`printElapsed $TIMESTART`
     if [ ! 1 -eq `echo $MSG |grep -c '1hr.2min.3sec$'` ]; then
-        ZFS_BACKUP_DEBUG=$TMPDEBUG
+        ZFS_DUP_DEBUG=$TMPDEBUG
         echo "printStatusTest1 failed"
         return 1
     fi
-    ZFS_BACKUP_DEBUG=$TMPDEBUG
+    ZFS_DUP_DEBUG=$TMPDEBUG
 
     echo "Test: convertToBytes()"
     local BYTES=`convertToBytes 123`
@@ -1135,21 +1136,21 @@ shellTests(){
 ## Configuration creation #####################################################
 configCreate() {
     if [ -f "${CONFIG_FILE}" ]; then
-        ZFS_BACKUP_DEBUG=0
-        ZFS_BACKUP_SSH_PORT=22
-        ZFS_BACKUP_SSH_CIPHER=blowfish
+        ZFS_DUP_DEBUG=0
+        ZFS_DUP_SSH_PORT=22
+        ZFS_DUP_SSH_CIPHER=blowfish
         return 0
     fi
 
     (cat <&3  >>${CONFIG_FILE}) 3<<EOF
 
-#Set to ZFS_BACKUP_DEBUG=1 to enable debug.
-ZFS_BACKUP_DEBUG=0
+#Set to ZFS_DUP_DEBUG=1 to enable debug.
+ZFS_DUP_DEBUG=0
 #This ssh port config is also used for the tests.
-ZFS_BACKUP_SSH_PORT=22
-ZFS_BACKUP_SSH_CIPHER=blowfish
+ZFS_DUP_SSH_PORT=22
+ZFS_DUP_SSH_CIPHER=blowfish
 
-#Test configuration for zfsBackup.sh
+#Test configuration for zfsDup.sh
 
 #TESTER must have:
 # -passwordless ssh access to localhost ie ssh to itself
@@ -1160,8 +1161,8 @@ ZFS_BACKUP_SSH_CIPHER=blowfish
 #   sysctl vfs.usermount=1
 
 TESTER=user
-TESTFS=zroot/tmp/zfsBackupTest
-TESTFS_MOUNT=/tmp/zfsBackupTest
+TESTFS=zroot/tmp/zfsDupTest
+TESTFS_MOUNT=/tmp/zfsDupTest
 TEST_SSH_LOCALHOST=localhost
 #Set to TEST_OUTPUT=1 to enable test output.
 TEST_OUTPUT=0
@@ -1189,15 +1190,15 @@ zfsTests() {
         exit 1
     fi
 
-    if [ "$TEST_OUTPUT" -eq 1 -o "$ZFS_BACKUP_DEBUG" -eq 1 ]; then
+    if [ "$TEST_OUTPUT" -eq 1 -o "$ZFS_DUP_DEBUG" -eq 1 ]; then
         exec 8<>/dev/stdout
     else
         exec 8<>/dev/null
     fi
 
-    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_BACKUP_SSH_PORT} 'echo ok'`
+    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} 'echo ok'`
     assertEqual $RET "ok" "zfsTest0" \
-        "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_BACKUP_SSH_PORT} \
+        "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} \
          Please check ${CONFIG_FILE} " exit
 
     # Test setup
@@ -1231,10 +1232,10 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@1
     assertEqual $? 0 "zfsTest6" "Snapshot creation failed ${TESTFS}/source@1." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
     sleep 1 #Reading before the mount is completed, so wait a bit.
     assertEqual `ls ${TESTFS_MOUNT}/dest/source/file1.txt`\
-    "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Backup failed." exit
+    "${TESTFS_MOUNT}/dest/source/file1.txt"  1 "zfsTest7" "Duplication failed." exit
 
     echo Test: new child file system.
     ###########################################################################
@@ -1249,25 +1250,25 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@2
     assertEqual $? 0 "zfsTest10" "Snapshot creation failed ${TESTFS}/source@2." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
-    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Backup failed." exit
+    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest11" "Duplication failed." exit
 
     echo Test: simulate a failed send of the child filesystem.
     ###########################################################################
     # zfsTest12 caused a headache where the destination file system was not
-    # remounted to reflect the most recent snapshot. On completion of the backup
-    # the destination filesystems are remounted.
+    # remounted to reflect the most recent snapshot. On completion of the
+    # duplication the destination filesystems are remounted.
     assertEqual $? 0 "zfsTest12" \
         "Could not destroy the child fs ${TESTFS_MOUNT}/dest/source/child" exit
 
-    echo Test: backup and check the child@2 snapshot is resent.
+    echo Test: duplicate and check the child@2 snapshot is resent.
     ###########################################################################
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     assertEqual "`ls ${TESTFS_MOUNT}/dest/source/child/file2.txt`" \
-    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Backup failed." exit
+    "${TESTFS_MOUNT}/dest/source/child/file2.txt" "zfsTest13" "Duplication failed." exit
 
     echo Test: snapshot existing files with updated child data.
     ###########################################################################
@@ -1275,9 +1276,9 @@ zfsTests() {
     zfs snapshot -r ${TESTFS}/source@3
     assertEqual $? 0 "zfsTest14" "Could not snapshot ${TESTFS}/source" exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
-    assertEqual $? 0 "zfsTest15" "Backup snapshot 3 failed." exit
+    assertEqual $? 0 "zfsTest15" "Duplication of snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
     assertEqual "$RET" 1 "zfsTest16" \
@@ -1293,9 +1294,9 @@ zfsTests() {
     assertEqual "$RET" 1 "zfsTest18" \
         "File ${TESTFS_MOUNT}/dest/source/child/file2.txt snapshot2 data does not exist." exit
 
-    zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
-    assertEqual $? 0 "zfsTest19" "Redo backup snapshot 3 failed." exit
+    assertEqual $? 0 "zfsTest19" "Redo duplication snapshot 3 failed." exit
 
     RET=`grep -c data3 ${TESTFS_MOUNT}/dest/source/child/file2.txt`
     assertEqual $RET 1 "zfsTest20" \
@@ -1308,7 +1309,7 @@ zfsTests() {
     touch ${TESTFS_MOUNT}/source/rename/1
     sleep 1
     zfs snapshot -r ${TESTFS}/source/rename@1
-    zfsBackup.sh ${TESTFS}/source/rename ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/rename ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
     zfs rename ${TESTFS}/source/rename ${TESTFS}/source/ren
     sleep 1
     zfs rename ${TESTFS}/dest/rename ${TESTFS}/dest/ren
@@ -1317,30 +1318,30 @@ zfsTests() {
     sleep 1
     touch ${TESTFS_MOUNT}/source/ren/2
     zfs snapshot -r ${TESTFS}/source/ren@2
-    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     echo Test: snapshot test2.
     zfs rename ${TESTFS}/dest/ren ${TESTFS}/dest/blah
     zfs rename ${TESTFS}/dest/blah ${TESTFS}/dest/ren
     touch ${TESTFS_MOUNT}/source/ren/3
     zfs snapshot -r ${TESTFS}/source/ren@3
-    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     echo Test: snapshot test3.
     touch ${TESTFS_MOUNT}/dest/ren
     touch ${TESTFS_MOUNT}/source/ren/4
     zfs snapshot -r ${TESTFS}/source/ren@4
-    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
     touch ${TESTFS_MOUNT}/dest/ren/test.touch
     touch ${TESTFS_MOUNT}/source/ren/5
     zfs snapshot -r ${TESTFS}/source/ren@5
-    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     zfs destroy -r ${TESTFS}/source/ren@1,2,3,4
     zfs destroy -r ${TESTFS}/dest/ren@1,2,3,4
 
     zfs snapshot -r ${TESTFS}/source/ren@6
-    zfsBackup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
+    zfsDup.sh ${TESTFS}/source/ren ${TESTFS}/dest ${TESTER}@${TEST_SSH_LOCALHOST} >&8
 
     zfs umount ${TESTFS}/dest/ren
     zfs mount ${TESTFS}/dest/ren
@@ -1372,7 +1373,7 @@ zfsTests() {
     ${TESTFS}/dest/quotaTest 100M`
     assertEqual $? 1 "quotaTest3" \
        "Call to checkRemoteDiskSpace() failed. return:$RET" exit
-    assertEqual 1 `echo $RET | grep -c '^Backup requires 100M'` \
+    assertEqual 1 `echo $RET | grep -c '^Duplication requires 100M'` \
     "quotaTest4" "Incorrect return message." exit
 
     echo Test: new remote FS with no quota.
@@ -1381,25 +1382,25 @@ zfsTests() {
     assertEqual $? 0 "quotaTest5" \
        "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
     zfs snapshot -r ${TESTFS}/source@1
-    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
-    assertEqual 1 `echo $RET | grep -c 'Backup requires 20.1M'` \
+    RET=`zfsDup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20.1M'` \
     "quotaTest6" "Incorrect return message: \"$RET\"" exit
 
     echo Test: incremental remote FS update with no quota.
     zfs destroy -r ${TESTFS}/source@1
     rm ${QUOTA_TEST_FILE}
     zfs snapshot -r ${TESTFS}/source@1
-    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    RET=`zfsDup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
     if ! test -d ${TESTFS_MOUNT}/dest/quotaTest/source; then
-       echo  "quotaTest7" "Did not backup source to quota.";
+       echo  "quotaTest7" "Did not duplicate source, no quota.";
        return 1
     fi
     RET=`dd if=/dev/random of=$QUOTA_TEST_FILE bs=20M count=1 2>&8`
     assertEqual $? 0 "quotaTest8" \
        "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
     zfs snapshot -r ${TESTFS}/source@2
-    RET=`zfsBackup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
-    assertEqual 1 `echo $RET | grep -c 'Backup requires 20.1M'` \
+    RET=`zfsDup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
+    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20.1M'` \
     "quotaTest9" "Incorrect return message: \"$RET\"" exit
 
     # Only do the test tear down if all the tests succeed.
@@ -1421,7 +1422,7 @@ zfsTests() {
 configCreate
 . ${CONFIG_FILE}
 
-if [ "$ZFS_BACKUP_DEBUG" -eq 1 ]; then
+if [ "$ZFS_DUP_DEBUG" -eq 1 ]; then
     exec 9<>/dev/stderr
 else
     exec 9<>/dev/null
@@ -1445,11 +1446,11 @@ else
 fi
 
 echo ================================================================================
-echo "Starting backup `date '+%Y%m%d %H:%M:%S'` ..."
-doBackup $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
+echo "Starting duplication `date '+%Y%m%d %H:%M:%S'` ..."
+doDuplication $G_ZFS_SRC_FS $G_ZFS_DEST_FS $G_ZFS_USER_HOST
 if [ $? -ne 0 ]; then
-    echo "Backup failure `date '+%Y%m%d %H:%M:%S'`."
+    echo "Duplication failure `date '+%Y%m%d %H:%M:%S'`."
 else
-    echo "Backup complete`date '+%Y%m%d %H:%M:%S'`."
+    echo "Duplication complete`date '+%Y%m%d %H:%M:%S'`."
 fi
 echo ================================================================================
