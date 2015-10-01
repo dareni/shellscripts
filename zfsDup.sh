@@ -339,6 +339,18 @@ doDuplication() {
         fi
     fi
 
+    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} 'echo ok' 2>&1`
+
+    RET=`ssh $USER_HOST -p ${ZFS_DUP_SSH_PORT} 'echo ok' 2>&1`
+    if [ "$RET" != "ok" ]; then
+        echo "SSH Connection test failure."
+        echo "SSH test return string != 'ok'"
+        echo "SSH return string was: $RET"
+        echo "Command: ssh ${USER_HOST} -p ${ZFS_DUP_SSH_PORT} 'echo ok'"
+        echo "Please check ${CONFIG_FILE} and ssh connection."
+        return 1
+    fi
+
     local REMOTELIST=""
     SNAPSHOT_DATA=`getSnapshotData ROOTLIST`
     local RET="$?"
@@ -859,7 +871,7 @@ assertEqual(){
         echo "$testName Test Failure: arg1='$arg1' arg2='$arg2' $errorMesg" >/dev/stderr
     fi
     if [ "$doExitOnError" = "exit" -a "$arg1" != "$arg2" ]; then
-        return 1
+        exit 1
     fi
 }
 
@@ -1193,8 +1205,8 @@ zfsTests() {
         exec 8<>/dev/null
     fi
 
-    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} 'echo ok'`
-    assertEqual $RET "ok" "zfsTest0" \
+    RET=`ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} 'echo ok' 2>&1`
+    assertEqual "$RET" "ok" "zfsTest0" \
         "Command failed: ssh ${TESTER}@${TEST_SSH_LOCALHOST} -p ${ZFS_DUP_SSH_PORT} \
          Please check ${CONFIG_FILE} " exit
 
@@ -1380,7 +1392,7 @@ zfsTests() {
        "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
     zfs snapshot -r ${TESTFS}/source@1
     RET=`zfsDup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
-    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20.1M'` \
+    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20..M'` \
     "quotaTest6" "Incorrect return message: \"$RET\"" exit
 
     echo Test: incremental remote FS update with no quota.
@@ -1397,7 +1409,7 @@ zfsTests() {
        "Could not create assign quota test file:$QUOTA_TEST_FILE" exit
     zfs snapshot -r ${TESTFS}/source@2
     RET=`zfsDup.sh ${TESTFS}/source ${TESTFS}/dest/quotaTest ${TESTER}@${TEST_SSH_LOCALHOST} 2>&8`
-    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20.1M'` \
+    assertEqual 1 `echo $RET | grep -c 'Duplication requires 20..M'` \
     "quotaTest9" "Incorrect return message: \"$RET\"" exit
 
     # Only do the test tear down if all the tests succeed.
