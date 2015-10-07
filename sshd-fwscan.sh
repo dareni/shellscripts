@@ -263,6 +263,7 @@ if [ "$1" == "scan" ]; then
     }'&
 
 elif [ "$1" == "friend" ]; then
+    #Add an entry to AUTHLOG to unblock a friendly.
     CMDARG=""
     AUTHLOG=""
     for ARG in $@; do
@@ -298,13 +299,12 @@ elif [ "$1" == "stop" ]; then
         echo Not running? no $LOCK
     fi
 else
-#    date +'%y%m%d.%H:%M'
-#    SSH_SCAN_PID=`pgrep -F ${LOCK}.awk`
-#    ps -o rss,cpu,dsiz,ssiz,%mem -p "$SSH_SCAN_PID"
+    HOST_LIST="$@"
+    #First host is the foe followed by the friendlies.
     #Convert to ip list.
     NEWFOE=""
     IP=""
-    for HOST in $@; do
+    for HOST in $HOST_LIST; do
         IS_IP=`echo $HOST | egrep -c '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}'`
         if [ "$IS_IP" -eq 1 ]; then
             IP=$HOST
