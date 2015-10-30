@@ -210,7 +210,7 @@ if [ "$1" == "scan" ]; then
         }
         cmd=(progme" "args)
         print "cmd:", cmd
-        system(cmd)
+        print cmd | "/bin/sh"
     }
     {
         TMPHOST=""
