@@ -66,7 +66,6 @@ checkFail $? "Invalid Tomcat home - ${TOMCAT_HOME}/tomcat.env does not exist."
 ssh ${DEPLOYTARGET} "ls ${DEPLOY_STAGE}/deploy" > /dev/null
 checkFail $? "Add empty file ${DEPLOY_STAGE}/deploy to confirm deployment to this location."
 
-#rsync /opt/jenkins/jobs/o4reports/builds/${JOBNUMBER}/archive/o4-reports/o4reports-springmvc-web/target/o4reports-springmvc-web.war ${DEPLOYTARGET}:${DEPLOY_STAGE}
 ssh ${DEPLOYTARGET} "mv -f ${DEPLOY_STAGE}/version.txt ${DEPLOY_STAGE}/version.txt.last; echo ${WAR_LOCATION} > ${DEPLOY_STAGE}/version.txt"
 rsync ${WAR_LOCATION} ${DEPLOYTARGET}:${DEPLOY_STAGE}/${INSTALLATION_NAME}.war
 checkFail $? "Copy war failure."
@@ -89,7 +88,8 @@ else
 fi
 
 #deploy
-ssh ${DEPLOYTARGET} "cp ${DEPLOY_STAGE}/${INSTALLATION_NAME}.war ${TOMCAT_HOME}/webapps"
+ssh ${DEPLOYTARGET} "cp -f ${TOMCAT_HOME}/webapps/${INSTALLATION_NAME}.war ${TOMCAT_HOME}/webapps_old; rm -rf ${TOMCAT_HOME}/webapps/${INSTALLATION_NAME}"
+ssh ${DEPLOYTARGET} "cp -f ${DEPLOY_STAGE}/${INSTALLATION_NAME}.war ${TOMCAT_HOME}/webapps"
 checkFail $? "Deploy war failure."
 
 if [ "$COMMAND" = complete ]; then
@@ -98,7 +98,7 @@ if [ "$COMMAND" = complete ]; then
     checkFail $? "Start tomcat failure."
 
     #remove the deploy marker
-    ssh ${DEPLOYTARGET} "rm ${DEPLOY_STAGE}/deploy" > /dev/null
+    ssh ${DEPLOYTARGET} "rm -f ${DEPLOY_STAGE}/deploy"
     checkFail $? "Deploy marker removal ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy failure."
 fi
 

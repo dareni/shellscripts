@@ -131,12 +131,8 @@ clean() {
     fi
     mkdir -p $CATALINA_BASE/webapps_old
     checkFail $? "Could not create $CATALINA_BASE/webapps_old"
-    mv $CATALINA_BASE/webapps/*war $CATALINA_BASE/webapps_old
+    cp -f $CATALINA_BASE/webapps/*war $CATALINA_BASE/webapps_old
     checkFail $? "Could not backup $CATALINA_BASE/webapps"
-    rm -rf $CATALINA_BASE/webapps
-    checkFail $? "Could not remove $CATALINA_BASE/webapps"
-    mkdir $CATALINA_BASE/webapps
-    checkFail $? "Could not create $CATALINA_BASE/webapps"
     archiveLogs
     clearCache
 }
