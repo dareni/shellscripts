@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PROGNAME=$0
+PROG_PID=$$
 COMMAND=$1
 USERNAME=$2
 PASSWD=$3
@@ -18,13 +20,19 @@ EOF
 }
 
 checkFail() {
-    if [ $1 -ne 0 ]; then
+    local ERRSTAT=$1
+    local ERRLINE=$2
+    local ERRMSG=$3
+
+    if [ $ERRSTAT -ne 0 ]; then
         echo "==== Failure ===="
-        echo $2
-        echo "Removing marker ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy"
-        ssh ${DEPLOYTARGET} "rm ${DEPLOY_STAGE}/deploy" > /dev/null
+        if [ -n "$ERRMSG" ]; then
+            echo $ERRMSG
+        fi
+        echo "$PROGNAME failed at ${ERRLINE}."
         exit 1
     fi
+    return 0
 }
 
 recreate() {
@@ -32,11 +40,11 @@ recreate() {
     DATA="$PARAM2"
     mysql -u ${USERNAME} -p${PASSWD} -e "drop database ${DATABASE}"
     mysql -u ${USERNAME} -p${PASSWD} -e "create database ${DATABASE}"
-    checkFail $? "Create database ${DATABASE} failed."
+    checkFail $? recreate:$LINENO "Create database ${DATABASE} failed."
     mysql -u ${USERNAME} -p${PASSWD} ${DATABASE} < "$SCHEMA"
-    checkFail $? "Script failed: $SCHEMA"
+    checkFail $? recreate:$LINENO "Script failed installing schema: $SCHEMA"
     mysql -u ${USERNAME} -p${PASSWD} ${DATABASE} < "$DATA"
-    checkFail $? "Script failed: $DATA"
+    checkFail $? recreate:$LINENO "Script failed installing data: $DATA"
 }
 
 case $COMMAND in

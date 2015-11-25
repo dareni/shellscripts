@@ -1,6 +1,7 @@
 #!/bin/sh
  # vim: tabstop=4 shiftwidth=4 expandtab:
 
+PROGNAME=$0
 COMMAND=${1}
 TARGET_HOST=${2}
 TARGET_USER=${3}
@@ -50,25 +51,36 @@ isTomcatUp() {
 }
 
 checkFail() {
-    if [ $1 -ne 0 ]; then
+    local ERRSTAT=$1
+    local ERRLINE=$2
+    local ERRMSG=$3
+
+    if [ $ERRSTAT -ne 0 ]; then
         echo "==== Failure ===="
-        echo $2
-        echo "Removing marker ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy"
-        ssh ${DEPLOYTARGET} "rm ${DEPLOY_STAGE}/deploy" > /dev/null
+        if [ -n "$ERRMSG" ]; then
+            echo $ERRMSG
+        fi
+        echo "$PROGNAME failed at ${ERRLINE}."
+
+        (MARKER=`ssh ${DEPLOYTARGET} ls ${DEPLOY_STAGE}/deploy`) > /dev/null 2>/dev/null
+        if [ "$MARKER" == "${DEPLOY_STAGE}/deploy" ]; then
+            echo "Removing marker ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy"
+            ssh ${DEPLOYTARGET} "rm ${DEPLOY_STAGE}/deploy"
+        fi
         exit 1
     fi
 }
 
 ssh ${DEPLOYTARGET} "ls ${TOMCAT_HOME}/tomcat.env" > /dev/null
-checkFail $? "Invalid Tomcat home - ${TOMCAT_HOME}/tomcat.env does not exist."
+checkFail $? $LINENO "Invalid Tomcat home - ${TOMCAT_HOME}/tomcat.env does not exist."
 
 #check for deploy marker
-ssh ${DEPLOYTARGET} "ls ${DEPLOY_STAGE}/deploy" > /dev/null
-checkFail $? "Add empty file ${DEPLOY_STAGE}/deploy to confirm deployment to this location."
+ssh ${DEPLOYTARGET} "ls ${DEPLOY_STAGE}/deploy" > /dev/null 2>/dev/null
+checkFail $? $LINENO "Add empty file ${DEPLOY_STAGE}/deploy to confirm deployment to this location."
 
 ssh ${DEPLOYTARGET} "mv -f ${DEPLOY_STAGE}/version.txt ${DEPLOY_STAGE}/version.txt.last; echo ${WAR_LOCATION} > ${DEPLOY_STAGE}/version.txt"
 rsync ${WAR_LOCATION} ${DEPLOYTARGET}:${DEPLOY_STAGE}/${INSTALLATION_NAME}.war
-checkFail $? "Copy war failure."
+checkFail $? $LINENO "Copy war failure."
 
 STATUS=`isTomcatUp`
 if [ "$STATUS" = "down" ]; then
@@ -82,23 +94,23 @@ if [ "$STATUS" = "down" ]; then
 else
     echo Do shutdown.
     ssh ${DEPLOYTARGET} "tomcatCtl.sh ${TOMCAT_HOME} stop 30"
-    checkFail $? "Shutdown failed."
+    checkFail $? $LINENO "Shutdown failed."
     ssh ${DEPLOYTARGET} "tomcatCtl.sh ${TOMCAT_HOME} clean"
-    checkFail $? "Clean failed."
+    checkFail $? $LINENO "Clean failed."
 fi
 
 #deploy
 ssh ${DEPLOYTARGET} "cp -f ${TOMCAT_HOME}/webapps/${INSTALLATION_NAME}.war ${TOMCAT_HOME}/webapps_old; rm -rf ${TOMCAT_HOME}/webapps/${INSTALLATION_NAME}"
 ssh ${DEPLOYTARGET} "cp -f ${DEPLOY_STAGE}/${INSTALLATION_NAME}.war ${TOMCAT_HOME}/webapps"
-checkFail $? "Deploy war failure."
+checkFail $? $LINENO "Deploy war failure."
 
 if [ "$COMMAND" = complete ]; then
     #tomcat start
     ssh ${DEPLOYTARGET} "tomcatCtl.sh ${TOMCAT_HOME} start"
-    checkFail $? "Start tomcat failure."
+    checkFail $? $LINENO "Start tomcat failure."
 
     #remove the deploy marker
     ssh ${DEPLOYTARGET} "rm -f ${DEPLOY_STAGE}/deploy"
-    checkFail $? "Deploy marker removal ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy failure."
+    checkFail $? $LINENO "Deploy marker removal ${DEPLOYTARGET} ${DEPLOY_STAGE}/deploy failure."
 fi
 

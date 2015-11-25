@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 # Maintained at: git@github.com:dareni/shellscripts.git
-if [[ -z "$1" ]]; then
+if [ -z "$1" ]; then
     echo Usage: infiles.sh search_pattern filetype 
     echo filetype war jar zip
-    exit -1;
+    exit 1;
 fi
 
 SEARCH_PATTERN=$1
 
-if [[ -z "$2" ]]; then
+if [ -z "$2" ]; then
     FILETYPE=jar
 else
     FILETYPE=$2
@@ -30,7 +30,7 @@ do
             count=`grep -c -i $2 $f;`;;
     esac
 
-    if [[ $count -gt 2 ]]; then
+    if [ $count -gt 2 ]; then
         case $FILETYPE in
             war|jar)
                 jar -tvf $f |grep -i "$SEARCH_PATTERN";;
