@@ -2,5 +2,5 @@
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu "System Menu" Title
 + "wireless" FvwmWpagui
-
++ "&VolumeControl" FvwmPavuControl
 

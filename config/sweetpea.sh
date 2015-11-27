@@ -1,7 +1,7 @@
 #!/usr/local/bin/bash
 # Maintained at: git@github.com:dareni/shellscripts.git
 #### sweetpea ####
-# Link to .fvwm/fvwm.sh executed from .fvwmrc by:
+# Link to .fvwm/fvwm.sh executed from init.fvwm by:
 # + I Exec exec ~/.fvwm/fvwm.sh init
 
 CMD=$1

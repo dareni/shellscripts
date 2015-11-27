@@ -350,15 +350,15 @@ AddToFunc   FvwmMumble
 DestroyFunc FvwmSkype
 AddToFunc   FvwmSkype
 # does note need alltray
-#+ I Exec exec skype
++ I Exec exec skype
 
 #DestroyFunc FvwmEmpathy
 #AddToFunc   FvwmEmpathy
 #+ I Exec exec empathy
 
-#DestroyFunc FvwmJitsi
-#AddToFunc   FvwmJitsi
-#+ I Exec exec jitsi
+DestroyFunc FvwmJitsi
+AddToFunc   FvwmJitsi
++ I Exec exec jitsi
 
 #DestroyFunc FvwmPnmixer
 #AddToFunc   FvwmPnmixer
@@ -508,22 +508,17 @@ addToFunc FuncDisablePager
 #+ "&Restart FVWM%menu/restart.png%"  Restart
 #+ "Quit FVWM%menu/quit.png%"  Quit
 
-DestroyMenu AppMenu
-AddToMenu AppMenu
+DestroyMenu ProgMenu
+AddToMenu ProgMenu
 + "&Lock"  FvwmLock
 #+ "&GnomeControlCenter"  FvwmGnomeControlCenter
 #+ "&Soapui"  FvwmSoapui
-+ "&Pdf-x" FvwmXpdf
-+ "&Pdf-evince" FvwmEvince
-+ "X&mms%menu/xmms.png%"  FvwmXmms
+#+ "X&mms%menu/xmms.png%"  FvwmXmms
 + "&Gimp%menu/gimp.png%" FvwmGimp
-+ "T&otem"  FvwmTotem
 + "&Evolution"  FvwmEvolution
-+ "Sk&ype"  FvwmSkype
 + "&Mumble"  FvwmMumble
 + "Net&beans"  FvwmNetbeans
 + "Power&Architect" FvwmPowerArchitect
-+ "&VolumeControl" FvwmPavuControl
 
 DestroyMenu DatabaseMenu
 AddToMenu DatabaseMenu
@@ -551,6 +546,7 @@ AddToMenu HostMenu
 DestroyMenu Jconsole
 AddToMenu Jconsole
 + "local&1 " Exec exec  jconsole 192.168.1.4:9010
++ "bud&2 " Exec exec  jconsole 192.168.1.6:8904
 
 DestroyFunc QuickMenu
 AddToFunc QuickMenu
