@@ -12,10 +12,10 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "&Jconsole" Menu Jconsole
 + "&Database" Menu DatabaseMenu
 + "&Office" Menu OfficeMenu
-+ "&System" Menu SystemMenu
++ "S&ystem" Menu SystemMenu
 + "&Game" Menu GameMenu
 + "" Nop
-+ "&Menu" Menu AppMenu
++ "Prog&Menu" Menu ProgMenu
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
 + "&Window Ops" Menu FvwmWindowOpsMenu

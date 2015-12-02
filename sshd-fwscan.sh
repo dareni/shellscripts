@@ -211,6 +211,7 @@ if [ "$1" == "scan" ]; then
         cmd=(progme" "args)
         print "cmd:", cmd
         print cmd | "/bin/sh"
+        close ("/bin/sh")
     }
     {
         TMPHOST=""
@@ -258,7 +259,6 @@ if [ "$1" == "scan" ]; then
                     }
                 }
             }
-
         }
     }'&
 
@@ -300,6 +300,7 @@ elif [ "$1" == "stop" ]; then
     fi
 else
     HOST_LIST="$@"
+    echo "FOE PROCESSING $@"
     #First host is the foe followed by the friendlies.
     #Convert to ip list.
     NEWFOE=""
@@ -333,6 +334,7 @@ else
     done;
 
     #Remove friends from the router foe list.
+    FOE_CNT=0
     for FOE in `pfctl -t $PF_SSH_VIOLATIONS -T show 2>/dev/null`; do
         for FRIEND in `arrayToList FRIENDLIST`; do
             if [ "$FRIEND" = "$FOE" ]; then
@@ -341,19 +343,24 @@ else
             fi
         done;
         if [ "$FOE" = "$NEWFOE" ]; then
+            echo "Clear new foe. FOE $FOE already in pf_ssh_violations table."
             NEWFOE=""
         fi
+        FOE_CNT=$((FOE_CNT + 1))
     done
+    echo Foe count: $FOE_CNT
 
     for FRIEND in `arrayToList FRIENDLIST`; do
         if [ "$FRIEND" = "$NEWFOE" ]; then
+            echo "Clear new foe. $FOE is in the friend list."
             NEWFOE=""
         fi
     done;
     if [ -n "$NEWFOE" ]; then
-        echo pfctl -t $PF_SSH_VIOLATIONS -T add $NEWFOE
+        echo "pfctl -t $PF_SSH_VIOLATIONS -T add $NEWFOE"
         pfctl -t $PF_SSH_VIOLATIONS -T add $NEWFOE
     fi
+    exit 0
 fi
 
 #vim:ts=4:sw=4:expandtab:tw=78:ft=vim:fdm=marker:

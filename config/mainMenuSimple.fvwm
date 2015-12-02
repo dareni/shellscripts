@@ -7,7 +7,7 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "" Nop
 + "&Office" Menu OfficeMenu
 + "&Games" Menu GameMenu
-+ "&System" Menu SystemMenu
++ "S&ystem" Menu SystemMenu
 + "" Nop
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
