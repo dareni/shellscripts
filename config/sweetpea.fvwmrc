@@ -239,9 +239,9 @@ AddToFunc   FvwmFireFox
 DestroyFunc FvwmChrome
 AddToFunc   FvwmChrome
 + I PipeRead ' \
-if [ -x `which google-chrome` ]; then \
+if [ -x "`which google-chrome`" ]; then \
     echo "exec google-chrome"; \
-elif [ -x `which chromium` ]; then \
+elif [ -x "`which chromium`" ]; then \
     echo "exec chromium"; \
 fi'
 
@@ -515,6 +515,7 @@ AddToMenu ProgMenu
 #+ "&Soapui"  FvwmSoapui
 #+ "X&mms%menu/xmms.png%"  FvwmXmms
 + "&Gimp%menu/gimp.png%" FvwmGimp
++ "&Inkscape" exec inkscape
 + "&Evolution"  FvwmEvolution
 + "&Mumble"  FvwmMumble
 + "Net&beans"  FvwmNetbeans
