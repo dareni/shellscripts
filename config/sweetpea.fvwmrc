@@ -285,7 +285,7 @@ AddToFunc   FvwmEvolution
 
 DestroyFunc FvwmNetbeans
 AddToFunc   FvwmNetbeans
-+ I Exec exec /bin/bash /opt/dev/netbeans-8.0/bin/netbeans
++ I Exec exec /bin/bash /opt/dev/netbeans-8.1/bin/netbeans
 
 DestroyFunc FvwmPowerArchitect
 AddToFunc   FvwmPowerArchitect

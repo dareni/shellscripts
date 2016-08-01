@@ -7,7 +7,7 @@
 CMD=$1
 
 do_init() {
-    xbacklight -set 0 &
+    xbacklight -set 20 &
     #Top right 1920-70-115
     TIME_POS=185
     DATE_POS=120
