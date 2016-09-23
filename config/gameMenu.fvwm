@@ -48,6 +48,7 @@ AddToMenu GameMenu
 + "HedgeWars" exec hedgewars
 + "SpaceZero" exec spacezero
 + "Freeciv" exec freeciv
++ "Freeciv Server" exec freeciv-server
 + "Boswars" exec boswars
 + "0 A.D." exec 0ad
 + "Seven Kingdoms Ancient Adversaries" exec 7kaa

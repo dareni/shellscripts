@@ -20,7 +20,7 @@ fi
 
 for f in `find . -name "*.$FILETYPE"`; 
 do  
-
+    count=0
     case $FILETYPE in
         war|jar)
             count=`jar -tvf $f |grep -c -i "$SEARCH_PATTERN"`;;
@@ -30,17 +30,9 @@ do
             count=`grep -c -i $2 $f;`;;
     esac
 
-    if [ $count -gt 2 ]; then
-        case $FILETYPE in
-            war|jar)
-                jar -tvf $f |grep -i "$SEARCH_PATTERN";;
-            zip)
-                unzip -l $f |grep -i "$SEARCH_PATTERN";;
-            *)
-                grep -H -i "$SEARCH_PATTERN" $f;;
-        esac
+    if [ "$count" -gt 2 ]; then
+        echo $f;
     fi
-
 
 done;
 

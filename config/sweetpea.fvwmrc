@@ -146,6 +146,7 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 Style Psi* StartIconic
 Style Mumble* StartIconic
 Style wpa_gui StartIconic
+Style Jitsi* StartIconic
 
 #####
 # Events
@@ -358,7 +359,7 @@ AddToFunc   FvwmSkype
 
 DestroyFunc FvwmJitsi
 AddToFunc   FvwmJitsi
-+ I Exec exec jitsi
++ I exec /bin/bash -c 'export JDK_NO=8; . jdkenv; jitsi'
 
 #DestroyFunc FvwmPnmixer
 #AddToFunc   FvwmPnmixer
@@ -393,6 +394,7 @@ AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
 + I Schedule 16000 Style Psi* StartNormal
 + I Schedule 16000 Style Mumble* StartNormal
++ I Schedule 16000 Style Jitsi* StartNormal
 + I Schedule 16000 Style wpa_gui* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
@@ -546,8 +548,7 @@ AddToMenu HostMenu
 
 DestroyMenu Jconsole
 AddToMenu Jconsole
-+ "local&1 " Exec exec  jconsole 192.168.1.4:9010
-+ "bud&2 " Exec exec  jconsole 192.168.1.6:8904
++ "local&1 " Exec exec  jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
 
 DestroyFunc QuickMenu
 AddToFunc QuickMenu

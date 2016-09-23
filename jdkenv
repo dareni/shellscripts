@@ -1,6 +1,7 @@
 #!/bin/sh
 # Maintained at: git@github.com:dareni/shellscripts.git
-#
+# For system installed jdks on debian use: update-java-alternatives.
+
 outputDoc() {
     DOC="\
 

@@ -10,11 +10,11 @@ AddToFunc   InitFunction
 #+ I Exec exec xterm +sb -g 100x58+1680+0 -fn 6x13
 #+ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
 + I Schedule 100 FvwmSkype
-+ I Schedule 200 FvwmLinphone
+#+ I Schedule 200 FvwmLinphone
 #+ I Schedule 300 FvwmPsi
 #+ I Schedule 600 FvwmXClock
 #+ I Schedule 900 FvwmXload
-+ I Schedule 2000 FvwmMumble
+#+ I Schedule 2000 FvwmMumble
 + I Schedule 2000 FvwmWpagui
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
