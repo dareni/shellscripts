@@ -191,6 +191,10 @@ initEnv() {
    fi
 }
 
+last() {
+ echo "Complete `date '+%H:%M:%S'`"
+}
+
 ####### main #################################################################
 
 if [ -z "$COMMAND" ]; then
@@ -225,9 +229,11 @@ status)
 up)
     echo upgrading ...
     upgrade
+    last
     exit 0;;
 start)
     start
+    last
     exit 0;;
 stop)
     stop
@@ -237,6 +243,7 @@ restart)
     clearCache
     clearLogs
     start
+    last
     exit 0;;
 clean)
     clean

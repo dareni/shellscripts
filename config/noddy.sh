@@ -29,11 +29,13 @@ do_init() {
     xload -geometry 100x28+$XLOAD_POS+0 -nolabel &
     stalonetray -i 16 --geometry 1x1+$TRAY_POS+0 --grow-gravity NE &
 
-
-
-
-
-
+    #Pop message when on battery.
+    (while [ 1 ]; do
+        if [ `upower -d |grep on-battery |awk '{print $2}'` = yes ]; then
+            (xterm -geometry 100x6-0+0 -fa *courier* -fs 12 -bg darkgray -fg black -e ~/bin/shellscripts/timer.sh 0 "No power!!!!!")&
+        fi;
+        sleep 60
+    done)&
 
     #Allow right margin of 111
     #Width 115 pos=1920-115-70=1735 - 111 = 1624
