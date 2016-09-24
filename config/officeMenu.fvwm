@@ -11,6 +11,8 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "T&otem"  FvwmTotem
 + "&Mplayer" exec smplayer
 + "GVim%menu/vim.png%" FvwmGVim
++ "Guvcview" exec guvcview
++ "Openshot" exec openshot
 + "&Xterm" FvwmXTerm
 
 
