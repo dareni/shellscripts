@@ -6,6 +6,7 @@ AddToMenu GameMenu
 
 + "========Creative========" Nop
 + "Scratch Programming " exec scratch
++ "Scratch2 Programming " exec "/opt/game/scratch2/Scratch 2/bin/Scratch 2"
 + "Minetest" exec minetest
 
 + "========Gameboy\ Advance========" Nop
@@ -95,6 +96,7 @@ AddToMenu GameMenu
 + "Super Mario Chronicles" exec smc
 
 + "========Adventure========" Nop
++ "Stendhal" exec java -jar /opt/game/stendhal/stendhal-starter.jar
 + "Beneath a Steel Sky" exec sky
 + "Drascula" exec drascula
 + "Flight of the Amazon Queen" exec queen
