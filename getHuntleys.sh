@@ -81,7 +81,7 @@ do
    #ver=`printf "%2d" $wknum`
    filename=${YEAR}YMW${ver}.pdf
    if [[ -w $OPDIR/${YEAR} ]]; then
-      if [[ ! -e $OPDIR/${YEAR}/${filename}1 ]]; then
+      if [[ ! -e $OPDIR/${YEAR}/${filename} ]]; then
       echo get the file $OPDIR/${YEAR}/${filename}
         echo $OPDIR/${YEAR}/${filename}
         echo $LINE
