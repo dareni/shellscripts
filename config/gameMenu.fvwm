@@ -38,7 +38,7 @@ AddToMenu GameMenu
 + "nexuiz" exec nexuiz
 + "openarena" exec openarena
 + "redeclipse" exec redeclipse
-
++ "urbanTerror" exec /opt/game/urbanTerrorMaps/ut.sh
 
 + "========Strategy========" Nop
 + "Net Panzer" exec netpanzer

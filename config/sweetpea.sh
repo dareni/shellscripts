@@ -27,6 +27,7 @@ do_init() {
     HOST_NAME=`hostname`
     if [ "${HOST_NAME}" = "sweetpea" \
         -o "${HOST_NAME}" = "noah" \
+        -o "${HOST_NAME}" = "acdc" \
     ]; then
         PADDING=-5
     fi
