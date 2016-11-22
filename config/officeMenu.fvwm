@@ -1,20 +1,17 @@
 DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu "Office Menu" Title
-+ "&Nautilus Navigator" exec nautilus
-+ "&Pdf-evince" exec FvwmEvince
-+ "Simple Spreadsheet" exec gnumeric
-+ "Simple Document" exec abiword
-+ "Office Suite" exec libreoffice
 + "&Calibre-ebook" calibre
 + "&FbReader epub" exec fbreader
 + "&Gimp%menu/gimp.png%" FvwmGimp
-+ "T&otem"  FvwmTotem
-+ "&Mplayer" exec smplayer
-+ "GVim%menu/vim.png%" FvwmGVim
 + "Guvcview" exec guvcview
++ "GVim%menu/vim.png%" FvwmGVim
++ "Istanbul" exec istanbul
++ "&Mplayer" exec smplayer
++ "&Nautilus Navigator" exec nautilus
++ "Office Suite" exec libreoffice
 + "Openshot" exec openshot
++ "&Pdf-evince" exec FvwmEvince
++ "Simple Spreadsheet" exec gnumeric
++ "Simple Document" exec abiword
++ "T&otem"  FvwmTotem
 + "&Xterm" FvwmXTerm
-
-
-
-
