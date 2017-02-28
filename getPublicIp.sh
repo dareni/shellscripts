@@ -5,7 +5,7 @@ NAME=$1
 PASSWORD=$2
 
 if [[ -z "$2" ]]; then
-    Usage getPublicIp.sh [name] [password]
+    echo Usage getPublicIp.sh [name] [password]
     exit;
 fi
 

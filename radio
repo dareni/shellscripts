@@ -1,0 +1,9 @@
+#!/bin/sh
+RADIO=$1
+
+echo jazz24
+
+if [ "$RADIO" = "jazz24" ]; then
+    #mplayer --cache=100 --playlist=http://icy1.abacast.com/kplu-jazz24mp3-32.m3u
+    mplayer --prefer-ipv4 --cache=100 --playlist=http://icy1.abacast.com/kplu-jazz24aac-64.m3u
+fi 
