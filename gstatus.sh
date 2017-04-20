@@ -9,11 +9,11 @@ defaultStatus() {
     BASE=$(git merge-base @ @{u})
 
 
-    if [ $LOCAL = $REMOTE ]; then
+    if [ "$LOCAL" = "$REMOTE" ]; then
          STATUS="Up-to-date"
-    elif [ $LOCAL = $BASE ]; then
+    elif [ "$LOCAL" = "$BASE" ]; then
          STATUS="Need-to-pull"
-    elif [ $REMOTE = $BASE ]; then
+    elif [ "$REMOTE" = "$BASE" ]; then
          STATUS="Need-to-push"
     else
          STATUS="Diverged"
