@@ -27,11 +27,11 @@ do
         zip)
             count=`unzip -l $f |grep -c -i "$SEARCH_PATTERN"`;;
         *)
-            count=`grep -c -i $2 $f;`;;
+            count=`grep -c -i "$SEARCH_PATTERN" $f`;;
     esac
 
-    if [ "$count" -gt 2 ]; then
-        echo $f;
+    if [ $count -gt 0 ]; then
+        echo $count $f;
     fi
 
 done;
