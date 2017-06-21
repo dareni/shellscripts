@@ -1,5 +1,6 @@
 #link to ~/.fvwm/systemMenu.fvwm
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu "System Menu" Title
-+ "&Wireless" FvwmWpagui
++ "&Lock"  FvwmLock
 + "&Volume" FvwmPavucontrol
++ "&Wireless" FvwmWpagui

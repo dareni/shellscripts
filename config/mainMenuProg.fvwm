@@ -9,7 +9,6 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "" Nop
 + "&Hosts" Menu HostMenu
 + "&Scripts" Menu ScriptMenu
-+ "&Jconsole" Menu Jconsole
 + "&Database" Menu DatabaseMenu
 + "&Office" Menu OfficeMenu
 + "S&ystem" Menu SystemMenu

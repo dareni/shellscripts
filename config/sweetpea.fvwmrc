@@ -25,11 +25,13 @@
 # ln -s ~/bin/shellscripts/config/initSweetpea.fvwm ./init.fvwm
 # ln -s ~/bin/shellscripts/config/mainMenuProg.fvwm ./mainMenu.fvwm
 # ln -s ~/bin/shellscripts/config/systemMenuSimple.fvwm ./systemMenu.fvwm
+# ln -s ~/bin/shellscripts/config/progMenu.fvwm .
 
 Read init.fvwm
 Read custom.fvwm
 Read mainMenu.fvwm
 Read systemMenu.fvwm
+Read progMenu.fvwm
 Read ../bin/shellscripts/config/officeMenu.fvwm
 Read ../bin/shellscripts/config/gameMenu.fvwm
 
@@ -510,19 +512,6 @@ addToFunc FuncDisablePager
 #+ "&Restart FVWM%menu/restart.png%"  Restart
 #+ "Quit FVWM%menu/quit.png%"  Quit
 
-DestroyMenu ProgMenu
-AddToMenu ProgMenu
-+ "&Lock"  FvwmLock
-#+ "&GnomeControlCenter"  FvwmGnomeControlCenter
-#+ "&Soapui"  FvwmSoapui
-#+ "X&mms%menu/xmms.png%"  FvwmXmms
-+ "&Gimp%menu/gimp.png%" FvwmGimp
-+ "&Inkscape" exec inkscape
-+ "&Evolution"  FvwmEvolution
-+ "&Mumble"  FvwmMumble
-+ "Net&beans"  FvwmNetbeans
-+ "Power&Architect" FvwmPowerArchitect
-
 DestroyMenu DatabaseMenu
 AddToMenu DatabaseMenu
 + "&localdev" Exec exec xterm -T localDevDb -e ~/bin/localdevdb.sh
@@ -580,6 +569,7 @@ AddToFunc QuickMenu
 #Key Super_L A A Menu QuickMenu
 #Key Super_L A A MultiKeyStroke
 Key Super_L A A QuickMenu
+Key Super_R A A QuickMenu
 #Key Menu A A Exec exec /home/daren/.fvwm/touchpadOn.sh
 
 ##use xev for key names or key mappings
