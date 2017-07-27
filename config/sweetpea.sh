@@ -28,6 +28,7 @@ do_init() {
     if [ "${HOST_NAME}" = "sweetpea" \
         -o "${HOST_NAME}" = "noah" \
         -o "${HOST_NAME}" = "acdc" \
+        -o "${HOST_NAME}" = "ewan" \
     ]; then
         PADDING=-5
     fi
