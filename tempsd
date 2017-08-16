@@ -1,0 +1,256 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Short-Description: Hardware temperature monitor.
+# Description: Hardware temperature monitor.
+# Provides: entry: tempsd
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+### END INIT INFO
+
+# Sysv script with systemd support: run initSystemd.
+#
+# A temperature monitor with shutdown when configured limits are exceeded.
+# Simple configuration / extension for different sensors.
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=tempsd
+PIDFILE=/var/run/$NAME.pid
+DESC="Hardware temperature monitor."
+CONFIG=/usr/local/etc/tempsd.cfg
+LOG=/var/log/tempsd.log
+CHECKLOOP=120
+
+## Sources of temperature data (Raw output dumped on overheat event) ##########
+getNvidiaOp() {
+  if [ -e `which nvidia-settings` ];  then
+    nvidia-settings -q $1/GPUCoreTemp
+  fi
+}
+
+getSensorOp() {
+  sensors
+}
+
+## Possible check functions (extend here) #####################################
+#Calls to these functions are specified in the config file ie
+# the name of the func + args delimited by '_' and the max temp
+# delimited by ':'. Function calls are delimited by ';' eg:
+# temp_1:45;temp_2:45;nvidiaQuadro_0:70'
+#moboTemp
+getMoboTemp() {
+  TEMP=`sensors | grep "MB Temperature" |awk '{print $3}'`
+  TEMP=`echo $TEMP| cut -d + -f 2`
+  TEMP=`echo $TEMP| cut -d . -f 1`
+  echo $TEMP
+}
+#cpuTemp
+getCpuTemp() {
+  TEMP=`getSensorOp | grep "CPU Temperature" |awk '{print $3}'`
+  TEMP=`echo $TEMP| cut -d + -f 2`
+  TEMP=`echo $TEMP| cut -d . -f 1`
+  echo $TEMP
+}
+#temp_?
+getTemp() {
+  #example "temp1:        +44.0°C"
+  TEMP=`getSensorOp | grep "temp${1}:" | awk '{print $2}'`
+  TEMP=`echo $TEMP| cut -d + -f 2`
+  TEMP=`echo $TEMP| cut -d . -f 1`
+  #TEMP=${TEMP#+}
+  #TEMP=${TEMP%.*}
+  echo $TEMP
+}
+#nvidiaQuadro_?
+getNvidiaQuadro() {
+  DISPLAY=:$1
+  export DISPLAY
+  xhost >/dev/null 2>/dev/null
+  X_EXISTS=$?
+  if [ $X_EXISTS -eq 0 ]; then
+    TEMP=`getNvidiaOp :$1 | grep Attribute | cut -d " " -f 6 | sed s'/\.//'`
+    echo $TEMP
+  else
+    echo NO_X
+  fi
+}
+## Main logic #################################################################
+checkTemp() {
+  cfg_data=$1
+  cfg_data_test=$2
+  for sensor in `echo $cfg_data | sed s'/;/ /g'`
+  do
+    limit=`echo $sensor | cut -s -d : -f 2`
+    cmd=`echo $sensor | cut -s -d : -f 1`
+    if [ -z "$cmd" -o -z "$limit" ]; then
+      echo Error: Not of form 'sensorNameA_arg1_arg2:temperatureLimit;sensorNameB_arg1:tempLimit'
+      RET=1;
+    else
+      firstLetter=`echo ${cmd} | cut -c 1 | tr [:lower:] [:upper:]`
+      endCmd=`echo ${cmd} | cut -c 2- | sed s'/_/ /g' `
+      cmd=get$firstLetter$endCmd
+      temp=`$cmd`
+      RET=$?
+      if [ $RET != 0 ]; then
+        msg="Failure to test for SENSOR:$sensor"
+        echo $msg
+      elif [ "$temp" != "NO_X" ]; then
+        if [ -z $temp ]; then
+          msg="WARNING: No temperature returned from SENSOR:$sensor"
+          echo $msg
+          if [ -z "$cfg_data_test" ]; then
+            OVER=true;
+          else
+            RET=1;
+          fi
+        elif [ -z "$cfg_data_test" -a $temp -gt $limit ]; then
+          msg="WARNING: Running hot! LIMIT:$temp SENSOR:$sensor"
+          wall -n $msg
+          OVER=true;
+        fi
+      fi
+    fi
+    if [ $RET -ne 0 ]; then
+      return $RET
+    fi
+  done;
+}
+
+doShutdown() {
+  shutdown -h 0
+}
+
+start() {
+  OVER=FALSE;
+  WARNING_COUNT=0;
+  RET=0;
+  if [ -e "${PIDFILE}" ]; then
+    echo $NAME already running: $PIDFILE exists.
+    RET=1;
+  else
+    TEMPSD_DISPLAY=`head -1 $CONFIG`
+    CFG_DATA=`tail -1 $CONFIG`
+    if [ -z "$CFG_DATA" ]; then
+      echo
+      echo Error no config data in $CONFIG.
+      echo For example set $CONFIG containing:
+      echo ":0"
+      echo "temp_1:49;temp_2:50;temp_3:30;nvidiaQuadro_0:70"
+    else
+       msg=`checkTemp $CFG_DATA test`
+       RET=$?
+       if [ $RET -ne 0 ]; then
+         echo Error in config data in $CONFIG.
+       else
+         (
+           while [ 1 -eq 1 ]; do
+             checkTemp $CFG_DATA
+             if [ "$OVER" = "true" ]; then
+               WARNING_COUNT=$((WARNING_COUNT+1));
+               if [ $WARNING_COUNT -gt 1 ]; then
+                 doShutdown
+               fi
+               echo Shutdown imminent!
+               DISPLAY=$TEMPSD_DISPLAY
+               export DISPLAY
+               xterm -fa *courier* -fs 20  -bg red -fg black -maximized -T "Computer Overheating" -hold \
+                              -e echo "Computer Overheating. Check the operation of fans and water pump." & 2>>$LOG >>$LOG
+               date >> $LOG
+               getSensorOp >> $LOG
+               getNvidiaOp $TPSD_DISPLAY >> $LOG
+             fi
+             sleep $CHECKLOOP;
+           done;
+         )&
+         echo $! > $PIDFILE
+         echo Started $NAME ok.
+       fi
+    fi
+  fi
+  return $RET;
+}
+
+stop() {
+  RET=0
+  if [ -e "${PIDFILE}" ]; then
+    if [ -r "${PIDFILE}" ]; then
+      PID=`cat ${PIDFILE}`
+      MSG=`kill -0 $PID`
+      RET=$?
+      if [ $RET -ne 0 ]; then
+        echo $MSG
+      else
+        MSG=`kill -15 $PID`
+        RET=$?
+        if [ $RET -ne 0 ]; then
+          echo $MSG
+          echo Could not stop process $NAME pid: $PID.
+        else
+          rm ${PIDFILE}
+          echo Stopped $NAME ok.
+        fi
+      fi
+    else
+      echo "No permission to read file ${PIDFILE}."
+      RET=1;
+    fi
+  fi
+  return $RET
+}
+
+SYSTEMD_SERVICE=/etc/systemd/system/tempsd.service
+#SYSTEMD_SERVICE=~/tempsd.service
+initSystemd() {
+  if [ -e $SYSTEMD_SERVICE ]; then
+    echo $SYSTEMD_SERVICE already installed.
+  else
+    touch $SYSTEMD_SERVICE
+    chmod 700 $SYSTEMD_SERVICE
+    SCRIPT_LOC=`readlink -f "$0"`
+    (
+      cat <<EOF
+[Unit]
+Description=Local Host temperature shutdown monitor.
+
+[Service]
+Type=forking
+ExecStart=$SCRIPT_LOC start
+ExecStop=$SCRIPT_LOC stop
+SuccessExitStatus=0
+RestartPreventExitStatus=1 2
+PIDFile=$PIDFILE
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    ) > $SYSTEMD_SERVICE
+    systemctl enable tempsd.service
+    systemctl start tempsd.service
+  fi
+}
+
+case "$1" in
+start)
+  echo Starting $NAME...
+  start
+  ;;
+stop)
+  echo Stopping $NAME...
+  stop
+  ;;
+restart)
+  echo Restarting $NAME...
+  stop
+  start
+  ;;
+initSystemd)
+  echo Installing $SYSTEMD_SERVICE
+  initSystemd
+  ;;
+*)
+  echo "Usage /etc/init.d/$NAME {start|stop|initSystemd}"
+  exit 2;
+  ;;
+esac
+

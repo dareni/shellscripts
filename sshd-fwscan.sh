@@ -288,6 +288,7 @@ elif [ "$1" == "stop" ]; then
         if [ -z "$STATUS" ]; then
             echo "Process $RUNNINGPID already died?"
         else
+            echo "SHUTDOWN"
             kill -15 $RUNNINGPID
             if [ $? -eq 0 ]; then
                 rm ${LOCK}
