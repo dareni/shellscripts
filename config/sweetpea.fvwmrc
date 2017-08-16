@@ -146,9 +146,8 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 #Style *NetBeans* FPSortWindowlistByFocus, FPEnterToFocus
 #Style *NetBeans* FocusFollowsMouse
 Style Psi* StartIconic
-Style Mumble* StartIconic
+#Style Mumble* StartIconic
 Style wpa_gui StartIconic
-Style Jitsi* StartIconic
 
 #####
 # Events
@@ -361,7 +360,7 @@ AddToFunc   FvwmSkype
 
 DestroyFunc FvwmJitsi
 AddToFunc   FvwmJitsi
-+ I exec /bin/bash -c 'export JDK_NO=8; . jdkenv; jitsi'
++ I exec /bin/bash -c 'export JDK_NO=8; . jdkenv; jitsi >/dev/null 2>&1'
 
 #DestroyFunc FvwmPnmixer
 #AddToFunc   FvwmPnmixer
@@ -394,10 +393,10 @@ AddToFunc   FvwmViewManPage
 DestroyFunc StartFunction
 AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
-+ I Schedule 16000 Style Psi* StartNormal
-+ I Schedule 16000 Style Mumble* StartNormal
-+ I Schedule 16000 Style Jitsi* StartNormal
-+ I Schedule 16000 Style wpa_gui* StartNormal
+#+ I Schedule 16000 Style Psi* StartNormal
+#+ I Schedule 16000 Style Mumble* StartNormal
++ I Schedule 16000 FvwmJitsi
+#+ I Schedule 16000 Style wpa_gui* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
 #+ I Module FvwmTaskBar
@@ -453,13 +452,14 @@ AddToFunc   FvwmDesktopScreenshot
 DestroyFunc FuncFocusWindow
 AddToFunc FuncFocusWindow
 #+ I ThisWindow ("My Window") Move 200p 100p
-+ I FlipFocus
-+ I WarpToWindow 50 50
-+ I SetEnv fvwmresource $[w.resource]
-+ I SetEnv fvwmwindowid $[w.id]
-+ I Echo "raise \$[w.id] $[w.resource] $[MUMBLE_ENABLED]"
-+ I PipeRead 'if test "${fvwmresource}" = "FvwmPager"; then \
-      echo "SetEnv fvwmpagerid \$[w.id]";  fi'
+#+ I FlipFocus
+#+ I WarpToWindow 50 50
+#+ I SetEnv fvwmresource $[w.resource]
+#+ I SetEnv fvwmwindowid $[w.id]
+#+ I Echo "raise \$[w.id] $[w.resource]"
++ I PipeRead "~/.fvwm/focusWindow.sh '$[w.resource]' '$[w.name]' '$[w.id]'"
+#+ I PipeRead 'if test "${fvwmresource}" = "FvwmPager"; then \
+#      echo "SetEnv fvwmpagerid \$[w.id]";  fi'
 #Check if the window is mumble, at startup hide it.
 #+ I PipeRead 'if test "${fvwmresource}" = "mumble"; then \
 #                if test "${MUMBLE_ENABLED:=0}" = "0"; then \
@@ -752,19 +752,19 @@ AddToMenu   FvwmRootMenu "Root Menu" Title
 + "FVWM Console%menu/terminal.png%"  Module FvwmConsole
 + "" Nop
 + "Help@menu/help.png@"  Popup FvwmManPagesMenu
-+ "Restart FVWM%menu/restart.png%"  Restart
-+ "Quit FVWM%menu/quit.png%"  Quit
++ "Restart FVWM%icons/menu/restart.png%"  Restart
++ "Quit FVWM%icons/menu/quit.png%"  Quit
 
 #####
 # Programs Menu
 ###########
 DestroyMenu FvwmProgramsMenu
 AddToMenu   FvwmProgramsMenu "Programs" Title
-+ "GVim%menu/vim.png%"  FvwmGVim
-+ "Gimp%menu/gimp.png%"  FvwmGimp
-+ "FireFox%menu/firefox.png%"  FvwmFireFox
-+ "Irssi%menu/irc.png%"  FvwmIrssi
-+ "Xmms%menu/xmms.png%"  FvwmXmms
++ "GVim%icons/menu/vim.png%"  FvwmGVim
++ "Gimp%icons/menu/gimp.png%"  FvwmGimp
++ "FireFox%icons/menu/firefox.png%"  FvwmFireFox
++ "Irssi%icons/menu/irc.png%"  FvwmIrssi
++ "Xmms%icons/menu/xmms.png%"  FvwmXmms
 #+ "XRoach-Invasion%menu/xroach.png%"  XRoachInvasion
 #+ "XRoach-Exterminate%menu/xroach.png%"  XRoachExterminate
 
@@ -930,9 +930,9 @@ DestroyModuleConfig MyButtons: *
   Action(Mouse 3) "FvwmXTerm")
 *MyButtons: (1x5, Frame 0, Icon 48x48/xmms.png, \
   Action(Mouse 1) "FvwmXmms")
-*MyButtons: (1x5, Frame 0, Icon 48x48/vim.png, \
+*MyButtons: (1x5, Frame 0, Icon icons/48x48/vim.png, \
   Action(Mouse 1) "FvwmGvim")
-*MyButtons: (1x5, Frame 0, Icon 48x48/gimp.png, \
+*MyButtons: (1x5, Frame 0, Icon icons/48x48/gimp.png, \
   Action(Mouse 1) "FvwmGimp")
 *MyButtons: (1x5, Frame 0, Icon 48x48/firefox.png, \
   Action(Mosue 1) "FvwmFireFox")
