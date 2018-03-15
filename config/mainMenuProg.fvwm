@@ -2,8 +2,8 @@
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Quick Menu" Title
 + "&A xterm" FvwmXTerm
-+ "&Xterm" FvwmXTerm
-+ "&Firefox" FvwmFireFox
++ "&Xterm%menu/terminal.png%" FvwmXTerm
++ "&Firefox%menu/firefox.png%" FvwmFireFox
 + "&Chrome" FvwmChrome
 + "&Virtualbox" FvwmVirtualBox
 + "" Nop
@@ -18,7 +18,7 @@ AddToMenu   QuickMenu "Quick Menu" Title
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease,OnlyNormal
 + "&Window Ops" Menu FvwmWindowOpsMenu
-+ "&Restart FVWM%icons/menu/restart.png%"  Restart
-+ "Quit FVWM%icons/menu/quit.png%"  Quit
++ "&Restart FVWM%menu/restart.png%"  Restart
++ "Quit FVWM%menu/quit.png%"  Quit
 
 

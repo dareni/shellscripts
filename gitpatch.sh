@@ -11,10 +11,10 @@ if [ y != "$CONTINUE" -a Y != "$CONTINUE" ]; then
 fi
 if [ -d ".git" ]; then
   git add -A
-  git stash save "Patch" 
+  git stash save "Patch"
   DATE=`date +%y%m%d`
   git stash show -p > git.patch.$DATE
   echo "Now use: git apply git.patch"
-else 
-  echo "Must be a git repository."    
+else
+  echo "Must be a git repository."
 fi

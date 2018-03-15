@@ -11,11 +11,11 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "Office Suite" exec libreoffice
 + "Simple Spreadsheet" exec gnumeric
 + "Simple Document" exec abiword
-+ "GVim%icons/menu/vim.png%" FvwmGVim
++ "GVim%menu/vim.png%" FvwmGVim
 + "" Nop
 + "Image Manipulation/Drawing" Nop
 + "" Nop
-+ "&Gimp%icons/menu/gimp.png%" FvwmGimp
++ "&Gimp%menu/gimp.png%" FvwmGimp
 + "&Inkscape" exec inkscape
 + "" Nop
 + "Audiovisual" Nop
@@ -31,4 +31,4 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "&Jitsi"  FvwmJitsi
 + "&Mumble" FvwmMumble
 + "&Nautilus Navigator" exec nautilus
-+ "&Xterm"  FvwmXTerm
++ "&Xterm%menu/terminal.png"  FvwmXTerm

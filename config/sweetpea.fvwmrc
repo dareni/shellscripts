@@ -26,14 +26,8 @@
 # ln -s ~/bin/shellscripts/config/mainMenuProg.fvwm ./mainMenu.fvwm
 # ln -s ~/bin/shellscripts/config/systemMenuSimple.fvwm ./systemMenu.fvwm
 # ln -s ~/bin/shellscripts/config/progMenu.fvwm .
+# ln -s ~/bin/shellscripts/config/focusWindow.sh .
 
-Read init.fvwm
-Read custom.fvwm
-Read mainMenu.fvwm
-Read systemMenu.fvwm
-Read progMenu.fvwm
-Read ../bin/shellscripts/config/officeMenu.fvwm
-Read ../bin/shellscripts/config/gameMenu.fvwm
 
 #####
 # Set Environment variables
@@ -48,6 +42,17 @@ SetEnv fvwm_wallpapers $[fvwm_img]/wallpaper
 # Set the image path
 ###########
 ImagePath $[fvwm_icon]:$[fvwm_icon];.png:+
+
+#####
+# Read config
+###########
+Read init.fvwm
+Read custom.fvwm
+Read mainMenu.fvwm
+Read systemMenu.fvwm
+Read progMenu.fvwm
+Read ../bin/shellscripts/config/officeMenu.fvwm
+Read ../bin/shellscripts/config/gameMenu.fvwm
 
 #####
 # Virtual Desktops
@@ -148,6 +153,7 @@ Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
 Style Psi* StartIconic
 #Style Mumble* StartIconic
 Style wpa_gui StartIconic
+Style Jitsi* StartIconic
 
 #####
 # Events
@@ -395,7 +401,7 @@ AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
 #+ I Schedule 16000 Style Psi* StartNormal
 #+ I Schedule 16000 Style Mumble* StartNormal
-+ I Schedule 16000 FvwmJitsi
+#+ I Schedule 16000 FvwmJitsi
 #+ I Schedule 16000 Style wpa_gui* StartNormal
 
 #+ I Module FvwmPager FvwmPagerWindow 0 2
@@ -458,15 +464,6 @@ AddToFunc FuncFocusWindow
 #+ I SetEnv fvwmwindowid $[w.id]
 #+ I Echo "raise \$[w.id] $[w.resource]"
 + I PipeRead "~/.fvwm/focusWindow.sh '$[w.resource]' '$[w.name]' '$[w.id]'"
-#+ I PipeRead 'if test "${fvwmresource}" = "FvwmPager"; then \
-#      echo "SetEnv fvwmpagerid \$[w.id]";  fi'
-#Check if the window is mumble, at startup hide it.
-#+ I PipeRead 'if test "${fvwmresource}" = "mumble"; then \
-#                if test "${MUMBLE_ENABLED:=0}" = "0"; then \
-#                    echo "WindowId \$[w.id] Iconify True;";  \
-#                    echo "SetEnv MUMBLE_ENABLED 1"; \
-#                fi \
-#            fi'
 
 DestroyFunc FuncPager
 AddToFunc FuncPager
@@ -594,8 +591,6 @@ Key XF86MyComputer A A FvwmNautilus
 Key XF86Calculator A A FvwmCalculator
 Key XF86Sleep A A Exec exec sudo pm-suspend
 
-Key Super_R A CM
-
 #Flip pages
 Key h A CM CursorMove -5 +0
 Key l A CM CursorMove +5 +0
@@ -712,35 +707,18 @@ Style "*" BorderColorset 5
 Style "*" HilightBorderColorset 4
 
 #####
-# Menu Colorsets
+# Menu Colorset
 ###########
-#Colorset 7 fg Black, bg #e6e7d7, shadow Black, hilight #202070
-Colorset 8 fg DarkRed, bg #e6e7d7, shadow Black, hilight #202070
-
-#Colorset 7 RootTransparent, fg Black, bg average, shadow Black, \
-  hi #202070, Tint White 60, bgTint White 60
-
-#Colorset 7 fg Black, Translucent White 75, \
-#  hilight Black, shadow Black
-
-Colorset 7 fg Black, bg Gray 75, \
-  hilight Black, shadow Black
+Colorset 7 fg black, bg steelblue1, hilight lightblue 
 
 #####
 # MenuStyles
 ###########
-MenuStyle * PopupDelayed, PopupDelay 300, PopdownImmediately
-MenuStyle * PopupOffset -5 100, TitleWarpOff
-MenuStyle * TitleUnderlines2, SeparatorsLong, TrianglesSolid
-MenuStyle * AnimationOff, AutomaticHotkeysOff
-MenuStyle * BorderWidth 2
-MenuStyle * PopupAsSubmenu, HoldSubmenus, SubmenusRight
-MenuStyle * ItemFormat "%|%5.5i%1.3l%2.3>%|"
-MenuStyle * VerticalItemSpacing 1 1, VerticalTitleSpacing 2 2
 MenuStyle * MenuColorset 7
-MenuStyle * ActiveFore, Hilight3DOff
-MenuStyle * ActiveColorset 8
-MenuStyle * Font "Shadow=2:xft:Sans:Bold:size=11:antialias=True"
+MenuStyle * HilightBack lightskyblue
+MenuStyle * BorderWidth 3
+MenuStyle * !TrianglesUseFore
+MenuStyle * Font "Shadow=0 0 SE:xft:ZeroHour:Roman:size=11"
 
 #####
 # FvwmRootMenu
@@ -752,19 +730,19 @@ AddToMenu   FvwmRootMenu "Root Menu" Title
 + "FVWM Console%menu/terminal.png%"  Module FvwmConsole
 + "" Nop
 + "Help@menu/help.png@"  Popup FvwmManPagesMenu
-+ "Restart FVWM%icons/menu/restart.png%"  Restart
-+ "Quit FVWM%icons/menu/quit.png%"  Quit
++ "Restart FVWM%menu/restart.png%"  Restart
++ "Quit FVWM%menu/quit.png%"  Quit
 
 #####
 # Programs Menu
 ###########
 DestroyMenu FvwmProgramsMenu
 AddToMenu   FvwmProgramsMenu "Programs" Title
-+ "GVim%icons/menu/vim.png%"  FvwmGVim
-+ "Gimp%icons/menu/gimp.png%"  FvwmGimp
-+ "FireFox%icons/menu/firefox.png%"  FvwmFireFox
-+ "Irssi%icons/menu/irc.png%"  FvwmIrssi
-+ "Xmms%icons/menu/xmms.png%"  FvwmXmms
++ "GVim%menu/vim.png%"  FvwmGVim
++ "Gimp%menu/gimp.png%"  FvwmGimp
++ "FireFox%menu/firefox.png%"  FvwmFireFox
++ "Irssi%menu/irc.png%"  FvwmIrssi
++ "Xmms%menu/xmms.png%"  FvwmXmms
 #+ "XRoach-Invasion%menu/xroach.png%"  XRoachInvasion
 #+ "XRoach-Exterminate%menu/xroach.png%"  XRoachExterminate
 
@@ -930,9 +908,9 @@ DestroyModuleConfig MyButtons: *
   Action(Mouse 3) "FvwmXTerm")
 *MyButtons: (1x5, Frame 0, Icon 48x48/xmms.png, \
   Action(Mouse 1) "FvwmXmms")
-*MyButtons: (1x5, Frame 0, Icon icons/48x48/vim.png, \
+*MyButtons: (1x5, Frame 0, Icon 48x48/vim.png, \
   Action(Mouse 1) "FvwmGvim")
-*MyButtons: (1x5, Frame 0, Icon icons/48x48/gimp.png, \
+*MyButtons: (1x5, Frame 0, Icon 48x48/gimp.png, \
   Action(Mouse 1) "FvwmGimp")
 *MyButtons: (1x5, Frame 0, Icon 48x48/firefox.png, \
   Action(Mosue 1) "FvwmFireFox")

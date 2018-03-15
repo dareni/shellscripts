@@ -9,7 +9,7 @@ AddToFunc   InitFunction
 #+ I Exec exec xclock -digital  -norender -padding -5 -geometry 115x14+3480+0 -strftime  " %a %b %d %Y"
 #+ I Exec exec xterm +sb -g 100x58+1680+0 -fn 6x13
 #+ I Exec exec xterm +sb -g 100x22+1680+772 -fn 6x13
-+ I Schedule 100 FvwmSkype
+#+ I Schedule 100 FvwmSkype
 #+ I Schedule 200 FvwmLinphone
 #+ I Schedule 300 FvwmPsi
 #+ I Schedule 600 FvwmXClock
@@ -19,7 +19,7 @@ AddToFunc   InitFunction
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
 #+ I Schedule 8000 FvwmEvolution
-+ I Schedule 8000 FvwmJitsi
+#+ I Schedule 8000 FvwmJitsi
 #+ I Schedule 8000 FvwmPnmixer
 #+ I Exec exec unclutter -keystroke -exec /home/daren/.fvwm/touchpadOff.sh
 #+ I Exec exec unclutter -keystroke
