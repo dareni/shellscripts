@@ -2,4 +2,5 @@ DestroyMenu ProgMenu
 AddToMenu ProgMenu "Programming Menu" Title
 + "Power&Architect" FvwmPowerArchitect
 + "Net&beans"  FvwmNetbeans
++ "Jasper&Reports" FvwmJasperReports
 + "&Jconsole" Menu Jconsole

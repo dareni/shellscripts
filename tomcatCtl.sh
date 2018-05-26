@@ -115,6 +115,7 @@ stop() {
 }
 
 upgrade() {
+    checkRemoveWebApps
     stop
     rm -rf $CATALINA_BASE/webapps
     mkdir $CATALINA_BASE/webapps
@@ -193,6 +194,16 @@ initEnv() {
 
 last() {
  echo "Complete `date '+%H:%M:%S'`"
+}
+
+checkRemoveWebApps() {
+  CURRENT_PWD=`pwd`
+  WEB_APPS="${CATALINA_BASE}/webapps"
+  IN_CHILD=`echo $CURRENT_PWD |grep -c ${WEB_APPS}`
+  if [ 1 -eq ${IN_CHILD} ]; then
+    echo "Error: Your current path '${WEB_APPS}' is to be removed and will not exist!"
+    exit 1
+  fi
 }
 
 ####### main #################################################################
