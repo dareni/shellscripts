@@ -96,7 +96,7 @@ AddToMenu GameMenu
 + "Super Mario Chronicles" exec smc
 
 + "========Adventure========" Nop
-+ "&Stendhal" exec java -jar /opt/game/stendhal/stendhal-starter.jar
++ "&Stendhal" exec java -Dsun.java2d.opengl.fbobject=false -Dsun.java2d.opengl=true -Dsun.java2d.d3d=false -Dsun.java2d.pmoffscreen=false -jar /opt/game/stendhal/stendhal-starter.jar
 + "Beneath a Steel Sky" exec sky
 + "Drascula" exec drascula
 + "Flight of the Amazon Queen" exec queen
