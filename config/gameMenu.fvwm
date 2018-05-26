@@ -48,7 +48,7 @@ AddToMenu GameMenu
 + "Pax Britannica" exec pax-britannica
 + "HedgeWars" exec hedgewars
 + "SpaceZero" exec spacezero
-+ "Freeciv" exec freeciv
++ "Freeciv" exec freeciv-gtk2
 + "Freeciv Server" exec freeciv-server
 + "Boswars" exec boswars
 + "0 A.D." exec 0ad
