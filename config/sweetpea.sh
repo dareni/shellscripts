@@ -14,10 +14,11 @@ do_init() {
     XLOAD_POS=300
     TRAY_POS=350
 
-    SCR_RES=`xrandr |grep "^Screen 0:" |awk '{print $8" "$10}'`
-    X=${SCR_RES%% *}
-    Y=${SCR_RES##* }
-    Y=${Y%%,}
+    #SCR_RES=`xrandr |grep "^Screen 0:" |awk '{print $8" "$10}'`
+    SCR_RES=`xrandr |grep "*" |head -1 |awk '{print $1}'`
+    X=${SCR_RES%%x*}
+    Y=${SCR_RES##*x}
+    #Y=${Y%%,}
 
     TIME_POS=$(($X-$TIME_POS))
     DATE_POS=$(($X-$DATE_POS))
