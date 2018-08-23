@@ -30,6 +30,7 @@ do_init() {
         -o "${HOST_NAME}" = "noah" \
         -o "${HOST_NAME}" = "acdc" \
         -o "${HOST_NAME}" = "ewan" \
+        -o "${HOST_NAME}" = "linda" \
     ]; then
         PADDING=-5
     fi
