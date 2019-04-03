@@ -1,6 +1,11 @@
 #!/bin/sh
 # Find all rcs files with outstanding commits.
-sudo updatedb
+
+read -p "Run updatedb? y/[N]" UPDATE
+if [ "y" = "$UPDATE" ]; then
+  sudo updatedb
+fi
+
 locate RCS | grep ",v" | awk '{
     segNum=split($0,segs,"/")
     rcsfile=segs[segNum]
