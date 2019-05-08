@@ -4,3 +4,4 @@ AddToMenu   SystemMenu "System Menu" Title
 + "&Lock"  FvwmLock
 + "&Volume" FvwmPavucontrol
 + "&Wireless" FvwmWpagui
++ "BackGround" Menu BGMenu

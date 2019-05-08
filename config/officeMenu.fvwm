@@ -1,5 +1,7 @@
 DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu "Office Menu" Title
++ "&Nautilus Navigator" exec nautilus
++ "&Xterm%menu/terminal.png%"  FvwmXTerm
 + "Document Readers" Nop
 + "" Nop
 + "&Calibre-ebook" calibre
@@ -26,9 +28,8 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "Openshot (video editing)" exec openshot
 + "Istanbul (screen capture)" exec istanbul
 + "" Nop
-+ "System" Nop
++ "Communication" Nop
 + "" Nop
 + "&Jitsi"  FvwmJitsi
 + "&Mumble" FvwmMumble
-+ "&Nautilus Navigator" exec nautilus
-+ "&Xterm%menu/terminal.png"  FvwmXTerm
+

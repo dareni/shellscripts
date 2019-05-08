@@ -1,0 +1,32 @@
+" Maintained at: git@github.com:dareni/shellscripts.git
+" Simple rpi config.
+"the FreeBSD Security Team advises that VIM users
+"use 'set nomodeline' in ~/.vimrc to avoid the possibility of trojaned
+"text files.
+
+set nomodeline
+"set nocompatible	" Use Vim defaults (much better!)
+set directory=~/.cache
+set backupdir=~/.cache
+set tabstop=2
+set shiftwidth=2
+set expandtab
+set ic
+set selectmode=mouse
+"set nowrap
+"set autoindent
+"set cindent
+set foldmethod=marker
+
+color desert
+
+if v:lang =~ "utf8$" || v:lang =~ "UTF-8$"
+   set fileencodings=utf-8,latin1
+endif
+
+set bs=indent,eol,start		" allow backspacing over everything in insert mode
+set viminfo=""
+set history=0
+syntax on
+set hlsearch
+
