@@ -1,0 +1,11 @@
+# Maintained at: git@github.com:dareni/shellscripts.git
+#
+# Environment config for rpi.
+# Call this file from .bashrc eg:
+# . ~/bin/shellscripts/bashpi
+
+set -o vi
+export EDITOR=vi
+export PATH=~/bin/shellscripts:$PATH
+export XAUTHORITY=~/.cache/Xauthority
+export LESSHISTFILE=~/.cache/lesshist

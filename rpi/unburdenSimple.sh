@@ -13,11 +13,13 @@ doTarget() {
   #Create the file in ram.
   if [ "$PTYP" = "d" ]; then
     mkdir -p $TARGETDIR/$PTGT
+    chmod 700 $TARGETDIR/$PTGT
   else
     if [ ! -e $TARGETDIR/$PTGT ]; then
       mkdir -p $TARGETDIR/$PTGT
       rmdir $TARGETDIR/$PTGT
       touch $TARGETDIR/$PTGT
+      chmod 600 $TARGETDIR/$PTGT
     fi
   fi
 
@@ -39,6 +41,8 @@ fi
 
 doTarget .cache d
 doTarget .bash_history f
-doTarget .xsession-errors f
 doTarget .dbus d
-doTarget dbus d
+
+#in /etc/X11/Xsession ERRFILE=~/.cache/xsession-errors
+#in .bashrc export XAUTHORITY=~/.cache/Xauthority
+#in .bashrc export LESSHISTFILE=~/.cache/lesshist
