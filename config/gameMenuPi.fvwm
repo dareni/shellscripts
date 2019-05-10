@@ -1,0 +1,18 @@
+#vim :ft=fvwm
+DestroyMenu GameMenu
+AddToMenu GameMenu
++ "========Creative========" Nop
++ "Snap(Old Scratch Programming)" exec luakit /usr/local/share/applications/snap/default/snap.html
++ "Minetest" exec minetest
+
++ "========Gameboy\ Advance========" Nop
++ "=When a game does not work go ==" Nop
++ "=>Options>Emulator>SaveType>====" Nop
++ "=and change between eeprom/flash===" Nop
++ "Pokemon Emerald" exec gvba /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
++ "Legend of Zelda" exec gvba /opt/game/vba/Classic\ NES\ Series\ -\ Legend\ of\ Zelda\ \(USA,\ Europe\).zip
++ "HarvestMoon" exec gvba /opt/game/vba/Harvest\ Moon\ -\ Friends\ of\ Mineral\ Town\ \(E\).zip
++ "International Karate" exec gvba /opt/game/vba/International\ Karate\ Plus\ \(Europe\).zip
+
++ "========Adventure========" Nop
++ "powder" exec cd /tmp; powder

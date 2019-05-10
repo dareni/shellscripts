@@ -1,26 +1,27 @@
 DestroyMenu OfficeMenu
-AddToMenu   OfficeMenu "Office Menu" Title
+AddToMenu   OfficeMenu  "Office Menu%menu/programs.png%" Title
 + "&Nautilus Navigator" exec nautilus
 + "&Xterm%menu/terminal.png%"  FvwmXTerm
-+ "Document Readers" Nop
++ "" Nop
++                       "Document Readers%menu/programs.png%" Nop
 + "" Nop
 + "&Calibre-ebook" calibre
 + "&FbReader epub" exec fbreader
-+ "&Pdf-evince" exec FvwmEvince
++ "&Pdf" exec FvwmMuPdf
 + "" Nop
-+ "Document Editing" Nop
++                       "Document Editing%menu/programs.png%" Nop
 + "" Nop
 + "Office Suite" exec libreoffice
 + "Simple Spreadsheet" exec gnumeric
 + "Simple Document" exec abiword
 + "GVim%menu/vim.png%" FvwmGVim
 + "" Nop
-+ "Image Manipulation/Drawing" Nop
++                       "Images/Drawing%menu/programs.png%" Nop
 + "" Nop
 + "&Gimp%menu/gimp.png%" FvwmGimp
 + "&Inkscape" exec inkscape
 + "" Nop
-+ "Audiovisual" Nop
++                       "Audiovisual%menu/programs.png%" Nop
 + "" Nop
 + "Guvcview" exec guvcview
 + "&Mplayer" exec smplayer
@@ -28,7 +29,7 @@ AddToMenu   OfficeMenu "Office Menu" Title
 + "Openshot (video editing)" exec openshot
 + "Istanbul (screen capture)" exec istanbul
 + "" Nop
-+ "Communication" Nop
++                       "Communication%menu/programs.png%" Nop
 + "" Nop
 + "&Jitsi"  FvwmJitsi
 + "&Mumble" FvwmMumble

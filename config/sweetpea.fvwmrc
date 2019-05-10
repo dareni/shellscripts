@@ -52,7 +52,7 @@ Read mainMenu.fvwm
 Read systemMenu.fvwm
 Read progMenu.fvwm
 Read ../bin/shellscripts/config/officeMenu.fvwm
-Read ../bin/shellscripts/config/gameMenu.fvwm
+Read gameMenu.fvwm
 
 #####
 # Virtual Desktops
@@ -265,9 +265,9 @@ DestroyFunc FvwmXpdf
 AddToFunc   FvwmXpdf
 + I Exec exec xpdf
 
-DestroyFunc FvwmEvince
-AddToFunc   FvwmEvince
-+ I Exec exec evince
+DestroyFunc FvwmMuPdf
+AddToFunc   FvwmMuPdf
++ I Exec exec mupdf
 
 DestroyFunc FvwmStalonetray
 AddToFunc   FvwmStalonetray

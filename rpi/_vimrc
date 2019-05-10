@@ -25,8 +25,9 @@ if v:lang =~ "utf8$" || v:lang =~ "UTF-8$"
 endif
 
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
-set viminfo=""
-set history=0
+"set viminfo='10,"10,n~/.cache/viminfo
+set viminfo='10,n~/.cache/viminfo
+set history=10
 syntax on
 set hlsearch
 
