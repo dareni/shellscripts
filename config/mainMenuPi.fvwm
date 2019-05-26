@@ -1,11 +1,14 @@
 #link to ~/.fvwm/mainMenu.fvwm
+
+Read ../bin/shellscripts/config/funstuffPiMenu.fvwm
+
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Quick Menu" Title
 + "&Firefox" FvwmFireFox
 + "&LuaKit" FvwmLuaKit
 + "" Nop
 + "&Office" Menu OfficeMenu
-+ "&Games" Menu GameMenu
++ "&Games" Menu funstuffPiMenu
 + "S&ystem" Menu SystemMenu
 + "" Nop
 + "&Pager" FuncPager

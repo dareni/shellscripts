@@ -1,0 +1,754 @@
+#vim ft:fvwm
+#Set the default game location.
+PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/mnt/library}'
+
+DestroyMenu FunstuffPiMenu
+AddToMenu FunstuffPiMenu
++ "========Books===========" Nop
++ "Audio Books" Menu AudioBooksMenu
++ "PDF Comix Library" exec mcomix
++ "EPUB Library" exec fbreader
++ "Dictionary" exec artha
++ "Free Book Websites" exec luakit file://$[LIBRARY_HOME]/book/usefulLinks.html
++ "========Video===========" Nop
++ "Youtube" exec smtube
++ "========Creative========" Nop
++ "Snap Programming (new scratch)" exec luakit file:///usr/local/share/applications/snap/default/snap.html
++ "Snap Manual" exec mupdf /usr/local/share/applications/snap/default/help/SnapManual.pdf
++ "Minetest" exec minetest
++ "========Games===========" Nop
++ "&C64 Games" Menu Commodore64Menu
++ "&Atari2600 Games" Menu AtariMenu
++ "&Gameboy Advance" Menu GameBoyMenu
++ "&PlayStation" Menu PlaystationMenu
++ "Powder" exec powder
++ "Alien Arena" exec openarena
+
+################################### Audio Books ###############################
+DestroyMenu AudioBooksMenu
+AddToMenu AudioBooksMenu
++ "Audio Player Notes" exec xterm -e less "$[LIBRARY_HOME]/audio/audioPlayNotes.txt"
++ "Hitchikers Guide to the Galaxy - audio book" exec mpv --vid=no --player-operation-mode=pseudo-gui $[LIBRARY_HOME]/audio/hitchikersGuide/playlist.m3u
++ "Learn Mandarin/Chinese" Menu LearnMandarinMenu
++ "Ekhart Tolle - The Power of Now" exec mpv --vid=no --player-operation-mode=pseudo-gui $[LIBRARY_HOME]/audio/ekhartTolleThePowerOfNowAudioBook
+
+DestroyMenu LearnMandarinMenu
+AddToMenu LearnMandarinMenu
++ "Table of Contents" exec abiword "$[LIBRARY_HOME]/audio/learnMandarin/Chinese Audio T.O.C..rtf"
++ "Course Book" exec djview "$[LIBRARY_HOME]/audio/learnMandarin/LL Mandarin (Coursebook).djvu"
++ "Dictionary" exec djview "$[LIBRARY_HOME]/audio/learnMandarin/Chinese Dictionary.djvu"
++ "Disk1" exec mpv --vid=no --player-operation-mode=pseudo-gui "$[LIBRARY_HOME]/audio/learnMandarin/Disk 01"
++ "Disk2" exec mpv --vid=no --player-operation-mode=pseudo-gui "$[LIBRARY_HOME]/audio/learnMandarin/Disk 02"
++ "Disk3" exec mpv --vid=no --player-operation-mode=pseudo-gui "$[LIBRARY_HOME]/audio/learnMandarin/Disk 03"
++ "Disk4" exec mpv --vid=no --player-operation-mode=pseudo-gui "$[LIBRARY_HOME]/audio/learnMandarin/Disk 04"
+
+################################### Playstation ##############################
+DestroyMenu PlaystationMenu
+AddToMenu PlaystationMenu
++ "Proskater" exec pcsxr -nogui -cdfile "$[LIBRARY_HOME]/game/pcsxr/proSkater/Tony Hawk's Pro Skater.cue"
++ "Proskater4" exec pcsxr -nogui -cdfile "$[LIBRARY_HOME]/game/pcsxr/proSkater4/Tony Hawk's Pro Skater 4.cue"
++ "Spyro2" exec pcsxr -nogui -cdfile "$[LIBRARY_HOME]/game/pcsxr/spyro2/spyro2.bin"
++ "Harvest Moon - Back to Nature" exec pcsxr -nogui -cdfile "$[LIBRARY_HOME]/game/pcsxr/harvestMoon-BackToNature/Harvest Moon - Back to Nature.bin"
++ "Harvest Moon Manual" exec mupdf "$[LIBRARY_HOME]/game/pcsxr/harvestMoon-BackToNature/manual.pdf"
+
+
+################################### GameboyAdvance ############################
+DestroyMenu GameBoyMenu
+AddToMenu GameBoyMenu
++ "Beyblade G-REvolution" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Beyblade G-Revolution GBA.zip"
++ "Legend of Zelda" exec VisualBoyAdvance --no-show-speed -t 1 "$[LIBRARY_HOME]/game/vba/Classic NES Series - Legend of Zelda (USA, Europe).zip"
++ "Zelda II" exec VisualBoyAdvance --no-show-speed -t 1 "$[LIBRARY_HOME]/game/vba/Classic NES Series - Zelda II - The Adventure of Link (USA, Europe).zip"
++ "Finding Nemo" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Finding Nemo (USA, Europe).zip"
++ "Golden Sun" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Golden Sun (USA, Europe).zip"
++ "Golden Sun II" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Golden Sun - The Lost Age (USA, Europe).zip"
++ "Harry Potter" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Harry Potter and the Chamber of Secrets (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da).zip"
++ "HarvestMoon" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Harvest Moon - Friends of Mineral Town (E).zip"
++ "International Karate" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/International Karate Plus (Europe).zip"
++ "Zelda - A Link to the Past" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Legend of Zelda, The - A Link to the Past & Four Swords (USA, Australia).zip"
++ "Zelda - The Minish Cap" exec VisualBoyAdvance --no-show-speed "$[LIBRARY_HOME]/game/vba/Legend of Zelda, The - The Minish Cap (USA).zip"
++ "Pokemon Emerald" exec VisualBoyAdvance --no-show-speed -t 3 "$[LIBRARY_HOME]/game/vba/Pokemon - Emerald Version (USA, Europe).zip"
++ "Pokemon Fire Red" exec VisualBoyAdvance --no-show-speed -t 3 "$[LIBRARY_HOME]/game/vba/Pokemon - Fire Red Version (USA).zip"
++ "Pokemon Ruby" exec VisualBoyAdvance --no-show-speed -t 0 "$[LIBRARY_HOME]/game/vba/Pokemon - Ruby Version (USA).zip"
++ "Pokemon Saphire" exec VisualBoyAdvance -t 3 --flash-128k "$[LIBRARY_HOME]/game/vba/Pokemon - Sapphire Version (USA).zip"
+
+################################### C64 #######################################
+
+DestroyMenu Commodore64Menu
+AddToMenu Commodore64Menu
++ "README" exec exec xterm -e less "$[LIBRARY_HOME]/game/c64/c64/viceNotes.txt"
++ "Websites" exec luakit file://$[LIBRARY_HOME]/game/c64/c64/usefulLinks.html
++ "2 Player" Menu C64_2Player_Menu
++ "RPG/Adventure" Menu C64_rpg_Menu
++ "Simulators" Menu C64_simulator_Menu
++ "1942" Menu C64_1942_Menu
++ "Airborne Ranger" Menu C64_AirborneRanger_Menu
++ "Alleykat" Menu C64_Alleykat_Menu
++ "Alter Ego" Menu C64_AlterEgo_Menu
++ "Armalyte" Commodore64Func armalyte
++ "Boulder Dash" Menu C64_boulderDash_Menu
++ "Bruce Lee" Menu C64_bruceLee_Menu
++ "California Games" Menu C64_californiaGames_Menu
++ "Creatures" Menu C64_creatures_Menu
++ "Cyberdyne Warrior" Menu C64_cyberdyneWarrior_Menu
++ "Cybernoid" Menu C64_cybernoid_Menu
++ "Defender of the Crown" Menu C64_defenderOfTheCrown_Menu
++ "Donkey Kong" Menu C64_donkeyKong_Menu
++ "Eliminator" Commodore64Func eliminator
++ "Exolon" Commodore64Func exolon
++ "Firelord" Menu C64_firelord_Menu
++ "Galaxian"  Commodore64Func galaxian
++ "Ghosts 'n Goblins" Commodore64Func ghostsAndGoblins
++ "Great Giana Sisters" Menu C64_gianaSisters_Menu
++ "Gyroscope" Menu C64_gyroscope_Menu
++ "Head the Ball" Menu C64_headTheBall_Menu
++ "Hero" Menu C64_hero_Menu
++ "Hero Of The Golden Talisman" Menu C64_heroOfTheGoldenTalisman_Menu
++ "Impossible Mission" Menu C64_impossibleMission_Menu
++ "Jumpman Junior" Menu C64_jumpManJr_Menu
++ "Lode Runner" Menu C64_lodeRunner_Menu
++ "Mad Doctor" Menu C64_madDoctor_Menu
++ "Mercenary" Menu C64_mercenary_Menu
++ "Mr Robot" Commodore64Func mrRobot
++ "Ms Pacman" Commodore64Func msPacman
++ "Nebulus" Menu C64_nebulus_Menu
++ "Netherworld" Menu C64_netherworld_Menu
++ "Neuromancer" Menu C64_neuromancer_Menu
++ "Paradroid" Menu C64_paradroid_Menu
++ "Pirates" Menu C64_pirates_Menu
++ "Pitfall" Menu C64_pitfall_Menu
++ "Pitstop" Menu C64_pitstop_Menu
++ "Project Firestart" Menu C64_projectFirestart_Menu
++ "Radar Rat Race" Menu C64_radarRat_Menu
++ "Raid on Bungeling Bay" Menu C64_raidOnBungelingBay_Menu
++ "Ranarama" Menu C64_ranarama_Menu
++ "River Raid" Commodore64Func riverRaid
++ "R Type" Commodore64Func rType
++ "Samurai Warrior" Menu C64_samuraiWarrior_Menu
++ "Sea Fox" Menu C64_seaFox_Menu
++ "The Sentinel" Menu C64_sentinel_Menu
++ "Sentinel Worlds" Menu C64_sentinelWorlds_Menu
++ "Silicon Warrior" Menu C64_siliconWarrior_Menu
++ "Skate or Die" Menu C64_skateOrDie_Menu
++ "Slither" Commodore64Func slither
++ "Speed Ball" Menu C64_speedBall_Menu
++ "Summer Camp" Menu C64_summerCamp_Menu
++ "Summer Games" Menu C64_summerGames_Menu
++ "Super Mario Bros 64" Menu C64_superMarioBros64_Menu
++ "Supremacy" Menu C64_supremacy_Menu
++ "The Last Ninja" Menu C64_theLastNinja_Menu
++ "Thrust" Commodore64Func thrust
++ "Tracker" Menu C64_tracker_Menu
++ "Turrican" Menu C64_turrican_Menu
++ "Ultimate Wizard" Menu C64_ultimateWizard_Menu
++ "Uridium" Menu C64_uridium_Menu
++ "Wicked" Menu C64_wicked_Menu
++ "Wings of Fury" Menu C64_wingsOfFury_Menu
++ "Golf World Class Leader Board" Menu C64_worldClassLeaderBoard_Menu
++ "Zaxxon" Menu C64_zaxxon_Menu
++ "Zone Ranger" Menu C64_zoneRanger_Menu
++ "Zynaps" Menu C64_zynaps_Menu
+
+DestroyMenu C64_simulator_Menu
+AddToMenu C64_simulator_Menu
++ "Elite" Menu C64_elite_Menu
++ "F14 Tomcat" Menu C64_f14Tomcat_Menu
++ "Gunship" Menu C64_gunship_Menu
++ "Project Stealth Fighter" Menu C64_projectStealthFighter_Menu
++ "Silent Service" Menu C64_silentService_Menu
+
+DestroyMenu C64_2Player_Menu
+AddToMenu C64_2Player_Menu
++ "Bath Time" Commodore64Func bathTime
++ "Bubble Bobble" Menu C64_bubbleBobble_Menu
++ "Druid" Menu C64_druid_Menu
++ "Gauntlet" Menu C64_gauntlet_Menu
++ "Katakis" Menu C64_katakis_Menu
++ "International Karate" Menu C64_internationalKarate_Menu
++ "Marauder" Menu C64_marauder_Menu
++ "Microprose Soccer" Menu C64_microproseSoccer_Menu
++ "Rampage" Menu C64_rampage_Menu
++ "Spy vs Spy" Menu C64_spy_Menu
++ "Wizball" Menu C64_wizball_Menu
+
+DestroyMenu C64_rpg_Menu
+AddToMenu C64_rpg_Menu
++ "D&D Curse of the Azure Bonds" Menu C64_curseOfTheAzureBonds_Menu
++ "Druids Moon" Menu C64_druidsMoon_Menu
++ "Gateway to Aphsai" Menu C64_gatewayToAphsai_Menu
++ "Bards Tale1" Menu C64_BardsTale1_Menu
++ "Bards Tale2" Menu C64_BardsTale2_Menu
++ "Legacy of the Ancients" Menu C64_legacyOfTheAncients_Menu
++ "Maniac Mansion" Menu C64_maniacMansion_Menu
++ "Times of Lore" Menu C64_timesOfLore_Menu
++ "Ultima" Menu C64_ultima_Menu
++ "Wasteland" Menu C64_wasteland_Menu
++ "Zork" Menu C64_zork_Menu
++ "Zak McKracken & The Alien Mindbenders" Menu C64_zak_Menu
+
+#Commodore 64
+#2 player
+# Bubble Bobble
+# Gauntlet
+# Rampage
+# Druid
+# BathTime
+# MicroproseSoccer
+# InternationalKarate
+
+
+DestroyMenu C64_zynaps_Menu
+AddToMenu C64_zynaps_Menu
++ "Zynaps" Commodore64Func zynaps
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/zynaps/manual.txt"
+
+DestroyMenu C64_zork_Menu
+AddToMenu C64_zork_Menu
++ "Zork1" Commodore64Func zork/zork1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/zork/zork1/manual.pdf"
++ "Zork2" Commodore64Func zork/zork2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/zork/zork2/manual.pdf"
++ "Zork3" Commodore64Func zork/zork3
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/zork/zork3/manual.pdf"
+
+DestroyMenu C64_zoneRanger_Menu
+AddToMenu C64_zoneRanger_Menu
++ "Zone Ranger" Commodore64Func zoneRanger
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/zoneRanger/manual.txt"
+
+DestroyMenu C64_zaxxon_Menu
+AddToMenu C64_zaxxon_Menu
++ "Zaxxon" Commodore64Func zaxxon
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/zaxxon/manual.txt"
+
+DestroyMenu C64_zak_Menu
+AddToMenu C64_zak_Menu
++ "Zak McKracken & The Alien Mindbenders" Commodore64Func zak
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/zak/manual.pdf"
++ "Newspaper" exec mupdf "$[LIBRARY_HOME]/game/c64/zak/newspaper.pdf"
+
+DestroyMenu C64_worldClassLeaderBoard_Menu
+AddToMenu C64_worldClassLeaderBoard_Menu
++ "Golf World Class Leader Board" Commodore64Func worldClassLeaderBoard
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/worldClassLeaderBoard/manual.pdf"
+
+DestroyMenu C64_wizball_Menu
+AddToMenu C64_wizball_Menu
++ "Wizball" Commodore64Func wizball
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/wizball/manual.txt"
+
+DestroyMenu C64_wingsOfFury_Menu
+AddToMenu C64_wingsOfFury_Menu
++ "Wings of Fury" Commodore64Func wingsOfFury
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/wingsOfFury/manual.txt"
+
+DestroyMenu C64_wicked_Menu
+AddToMenu C64_wicked_Menu
++ "Wicked" Commodore64Func wicked
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/wicked/manual.pdf"
+
+DestroyMenu C64_wasteland_Menu
+AddToMenu C64_wasteland_Menu
++ "Wasteland" Commodore64Func wasteland
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/wasteland/manual.pdf"
+
+DestroyMenu C64_uridium_Menu
+AddToMenu C64_uridium_Menu
++ "Uridium" Commodore64Func uridium
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/uridium/manual.txt"
+
+DestroyMenu C64_ultimateWizard_Menu
+AddToMenu C64_ultimateWizard_Menu
++ "Ultimate Wizard" Commodore64Func ultimateWizard
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ultimateWizard/manual.pdf"
++ "Summary" exec mupdf "$[LIBRARY_HOME]/game/c64/ultimateWizard/summary.pdf"
++ "Spells and Monsters" exec mupdf "$[LIBRARY_HOME]/game/c64/ultimateWizard/bugsSpellsMonsters.pdf"
+
+DestroyMenu C64_ultima_Menu
+AddToMenu C64_ultima_Menu
++ "Ultima 1" Commodore64Func ultima/ultima1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima1/manual.pdf"
++ "Play Book" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima1/playBook.pdf"
++ "--" nop
++ "Ultima 2" Commodore64Func ultima/ultima2
++ "Quick Start" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima2/quickStart.pdf"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima2/manual.pdf"
++ "Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima2/reference.pdf"
++ "Map" exec feh "$[LIBRARY_HOME]/game/c64/ultima/ultima2/map.jpg"
++ "--" nop
++ "Ultima 3" Commodore64Func ultima/ultima3
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima3/manual.pdf"
++ "Spells" exec xterm -e less "$[LIBRARY_HOME]/game/c64/ultima/ultima3/spells.txt"
++ "--" nop
++ "Ultima 4" Commodore64Func ultima/ultima4 2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima4/manual.pdf"
++ "Quick Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima4/quickReference.pdf"
++ "The Book Of Mystik Wisdom" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima4/theBookOfMystikWisdom.pdf"
++ "The History of Britannia" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima4/theHistoryOfBritannia.pdf"
++ "The Way of the Avatar" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima4/theWayOfTheAvatar.pdf"
++ "--" nop
++ "Ultima 5" Commodore64Func ultima/ultima5 x128
++ "Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima5/reference.pdf"
++ "The Book Of Lore" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima5/theBookOfLore.pdf"
++ "Journal" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima5/journal.pdf"
++ "Paths  Of Destiny" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima5/pathsOfDestiny.pdf"
++ "Quick Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima5/quickReference.pdf"
++ "--" nop
++ "Ultima 6(CopyWriteQ=htl rules)" Commodore64Func ultima/ultima6
++ "Compendium" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima6/compendium.pdf"
++ "Quick Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/ultima/ultima6/quickReference.pdf"
++ "Map" exec feh "$[LIBRARY_HOME]/game/c64/ultima/ultima6/map.jpg"
+
+DestroyMenu C64_turrican_Menu
+AddToMenu C64_turrican_Menu
++ "Turrican 1" Commodore64Func turrican/t1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/turrican/t1/manual.pdf"
++ "Turrican 2" Commodore64Func turrican/t2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/turrican/t2/manual.pdf"
++ "Turrican 3" Commodore64Func turrican/t3
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/turrican/t3/manual.pdf"
+
+DestroyMenu C64_tracker_Menu
+AddToMenu C64_tracker_Menu
++ "Tracker" Commodore64Func tracker
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/tracker/manual.pdf"
+
+DestroyMenu C64_timesOfLore_Menu
+AddToMenu C64_timesOfLore_Menu
++ "Times of Lore" Commodore64Func timesOfLore
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/timesOfLore/manual.pdf"
++ "Map" exec feh "$[LIBRARY_HOME]/game/c64/timesOfLore/map.jpg"
+
+DestroyMenu C64_theLastNinja_Menu
+AddToMenu C64_theLastNinja_Menu
++ "The Last Ninja 1" Commodore64Func theLastNinja/ln1
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/theLastNinja/ln1/manual.txt"
++ "Map" exec feh "$[LIBRARY_HOME]/game/c64/theLastNinja/ln1/map.jpg"
++ "The Last Ninja 2" Commodore64Func theLastNinja/ln2
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/theLastNinja/ln2/manual.txt"
++ "The Last Ninja 3" Commodore64Func theLastNinja/ln3
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/theLastNinja/ln3/manual.txt"
+
+DestroyMenu C64_supremacy_Menu
+AddToMenu C64_supremacy_Menu
++ "Supremacy" Commodore64Func supremacy
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/supremacy/manual.pdf"
+
+DestroyMenu C64_superMarioBros64_Menu
+AddToMenu C64_superMarioBros64_Menu
++ "Super Mario Bros 64" Commodore64Func superMarioBros64
++ "Note" exec xterm -e less "$[LIBRARY_HOME]/game/c64/superMarioBros64/note.txt"
+
+DestroyMenu C64_summerGames_Menu
+AddToMenu C64_summerGames_Menu
++ "Summer Games" Commodore64Func summerGames
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/summerGames/manual.pdf"
+
+DestroyMenu C64_summerCamp_Menu
+AddToMenu C64_summerCamp_Menu
++ "Summer Camp" Commodore64Func summerCamp
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/summerCamp/manual.txt"
+
+DestroyMenu C64_spy_Menu
+AddToMenu C64_spy_Menu
++ "Spy vs Spy 1" Commodore64Func spy/spy1
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/spy/spy1/manual.txt"
++ "Spy vs Spy 2" Commodore64Func spy/spy2
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/spy/spy2/manual.txt"
++ "Spy vs Spy 3" Commodore64Func spy/spy3
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/spy/spy3/manual.txt"
+
+DestroyMenu C64_speedBall_Menu
+AddToMenu C64_speedBall_Menu
++ "Speed Ball" Commodore64Func speedBall
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/speedBall/manual.pdf"
+
+DestroyMenu C64_skateOrDie_Menu
+AddToMenu C64_skateOrDie_Menu
++ "Skate or Die" Commodore64Func skateOrDie
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/skateOrDie/manual.txt"
+
+DestroyMenu C64_siliconWarrior_Menu
+AddToMenu C64_siliconWarrior_Menu
++ "Silicon Warrior" Commodore64Func siliconWarrior
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/siliconWarrior/manual.pdf"
+
+DestroyMenu C64_silentService_Menu
+AddToMenu C64_silentService_Menu
++ "Silent Service" Commodore64Func silentService
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/silentService/manual.pdf"
+
+DestroyMenu C64_sentinelWorlds_Menu
+AddToMenu C64_sentinelWorlds_Menu
++ "Sentinel Worlds" Commodore64Func sentinelWorlds
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/sentinelWorlds/manual.txt"
++ "Paragraphs" exec xterm -e less "$[LIBRARY_HOME]/game/c64/sentinelWorlds/Sentpara.txt"
+
+DestroyMenu C64_sentinel_Menu
+AddToMenu C64_sentinel_Menu
++ "The Sentinel" Commodore64Func sentinel
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/sentinel/manual.txt"
+
+DestroyMenu C64_seafox_Menu
+AddToMenu C64_seafox_Menu
++ "Sea Fox" Commodore64Func seaFox
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/seaFox/manual.pdf"
+
+DestroyMenu C64_samuraiWarrior_Menu
+AddToMenu C64_samuraiWarrior_Menu
++ "Samurai Warrior" Commodore64Func samuraiWarrior
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/samuraiWarrior/manual.pdf"
+
+DestroyMenu C64_ranarama_Menu
+AddToMenu C64_ranarama_Menu
++ "Ranarama" Commodore64Func ranarama
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/ranarama/manual.pdf"
+
+DestroyMenu C64_rampage_Menu
+AddToMenu C64_rampage_Menu
++ "Rampage" Commodore64Func rampage
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/rampage/manual.pdf"
+
+DestroyMenu C64_raidOnBungelingBay_Menu
+AddToMenu C64_raidOnBungelingBay_Menu
++ "Raid on Bungeling Bay" Commodore64Func raidOnBungelingBay
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/raidOnBungelingBay/manual.txt"
+
+DestroyMenu C64_radarRat_Menu
+AddToMenu C64_radarRat_Menu
++ "Radar Rat Race" Commodore64Func radarRat
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/radarRat/manual.pdf"
+
+DestroyMenu C64_projectStealthFighter_Menu
+AddToMenu C64_projectStealthFighter_Menu
++ "Project Stealth Fighter" Commodore64Func projectStealthFighter
++ "Codes" exec feh "$[LIBRARY_HOME]/game/c64/projectStealthFighter/codes.jpg"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/projectStealthFighter/manual.pdf"
++ "Map Central Europe" exec mupdf "$[LIBRARY_HOME]/game/c64/projectStealthFighter/mapCentralEurope.pdf"
++ "Map Libya" exec mupdf "$[LIBRARY_HOME]/game/c64/projectStealthFighter/mapLibya.pdf"
++ "Map North Cape" exec mupdf "$[LIBRARY_HOME]/game/c64/projectStealthFighter/mapNorthCape.pdf"
++ "Map Persian Gulf" exec mupdf "$[LIBRARY_HOME]/game/c64/projectStealthFighter/mapPersianGulf.pdf"
+
+DestroyMenu C64_projectFirestart_Menu
+AddToMenu C64_projectFirestart_Menu
++ "Project Firestart" Commodore64Func projectFirestart
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/projectFirestart/manual.pdf"
+
+DestroyMenu C64_pitstop_Menu
+AddToMenu C64_pitstop_Menu
++ "Pitstop" Commodore64Func pitstop
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/pitstop/manual.pdf"
+
+DestroyMenu C64_pitfall_Menu
+AddToMenu C64_pitfall_Menu
++ "Pitfall" Commodore64Func pitfall/pitfall1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/pitfall/pitfall1/manual.pdf"
++ "Pitfall" Commodore64Func pitfall/pitfall2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/pitfall/pitfall2/manual.pdf"
+
+DestroyMenu C64_pirates_Menu
+AddToMenu C64_pirates_Menu
++ "Pirates" Commodore64Func pirates
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/pirates/manual.pdf"
++ "Dates" exec xterm -e less -S "$[LIBRARY_HOME]/game/c64/pirates/dates.txt"
+
+DestroyMenu C64_paradroid_Menu
+AddToMenu C64_paradroid_Menu
++ "Paradroid" Commodore64Func paradroid
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/paradroid/paradroid.pdf"
+
+DestroyMenu C64_neuromancer_Menu
+AddToMenu C64_neuromancer_Menu
++ "Neuromancer" Commodore64Func neuromancer
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/neuromancer/manual.pdf"
++ "Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/neuromancer/reference.pdf"
++ "Decoder" exec luakit "$[LIBRARY_HOME]/game/c64/neuromancer/Neuromancer PAX Wheel.html"
+
+DestroyMenu C64_netherworld_Menu
+AddToMenu C64_netherworld_Menu
++ "Netherworld" Commodore64Func netherworld
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/netherworld/manual.pdf"
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/netherworld/notes.txt"
+
+DestroyMenu C64_nebulus_Menu
+AddToMenu C64_nebulus_Menu
++ "Nebulus" Commodore64Func nebulus
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/nebulus/manual.txt"
+
+DestroyMenu C64_microproseSoccer_Menu
+AddToMenu C64_microproseSoccer_Menu
++ "Microprose Soccer" Commodore64Func microproseSoccer
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/microproseSoccer/manual.txt"
+
+DestroyMenu C64_mercenary_Menu
+AddToMenu C64_mercenary_Menu
++ "Mercenary" Commodore64Func mercenary
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/mercenary/mercenary.txt"
+
+DestroyMenu C64_marauder_Menu
+AddToMenu C64_marauder_Menu
++ "Marauder" Commodore64Func marauder
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/marauder/marauder.pdf"
+
+DestroyMenu C64_maniacMansion_Menu
+AddToMenu C64_maniacMansion_Menu
++ "Maniac Mansion" Commodore64Func maniacMansion
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/maniacMansion/manual.pdf"
+
+DestroyMenu C64_madDoctor_Menu
+AddToMenu C64_madDoctor_Menu
++ "Mad Doctor" Commodore64Func madDoctor
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/madDoctor/maddoctor.pdf"
+
+DestroyMenu C64_lodeRunner_Menu
+AddToMenu C64_lodeRunner_Menu
++ "Lode Runner" Commodore64Func lodeRunner
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/lodeRunner/manual.pdf"
+
+DestroyMenu C64_legacyOfTheAncients_Menu
+AddToMenu C64_legacyOfTheAncients_Menu
++ "Legacy of the Ancients" Commodore64Func legacyOfTheAncients
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/legacyOfTheAncients/manual.pdf"
++ "Decode Wheel" exec mupdf "$[LIBRARY_HOME]/game/c64/legacyOfTheAncients/wheel.pdf"
+
+DestroyMenu C64_katakis_Menu
+AddToMenu C64_katakis_Menu
++ "Katakis" Commodore64Func katakis
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/katakis/katakis.pdf"
+
+DestroyMenu C64_jumpManJr_Menu
+AddToMenu C64_jumpManJr_Menu
++ "Jumpman Junior" Commodore64Func jumpManJr
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/jumpManJr/manual.pdf"
+
+DestroyMenu C64_internationalKarate_Menu
+AddToMenu C64_internationalKarate_Menu
++ "International Karate" Commodore64Func  internationalKarate/ik
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/internationalKarate/ik/manual.txt"
++ "International Karate+" Commodore64Func  internationalKarate/ik+
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/internationalKarate/ik+/manual.pdf"
+
+DestroyMenu C64_impossibleMission_Menu
+AddToMenu C64_impossibleMission_Menu
++ "Impossible Mission 1" Commodore64Func impossibleMission/im1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/impossibleMission/im1/manual.pdf"
++ "Impossible Mission 2" Commodore64Func impossibleMission/im2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/impossibleMission/im2/manual.pdf"
+
+DestroyMenu C64_heroOfTheGoldenTalisman_Menu
+AddToMenu C64_heroOfTheGoldenTalisman_Menu
++ "Hero Of The Golden Talisman" Commodore64Func heroOfTheGoldenTalisman
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/heroOfTheGoldenTalisman/note.txt"
+
+DestroyMenu C64_hero_Menu
+AddToMenu C64_hero_Menu
++ "Hero" Commodore64Func hero
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/hero/hero.pdf"
+
+DestroyMenu C64_headTheBall_Menu
+AddToMenu C64_headTheBall_Menu
++ "Head the Ball" Commodore64Func headTheBall
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/headTheBall/headTheBall.txt"
+
+DestroyMenu C64_gyroscope_Menu
+AddToMenu C64_gyroscope_Menu
++ "Gyroscope" Commodore64Func gyroscope
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/gyroscope/Gyroscope.txt"
+
+DestroyMenu C64_gunship_Menu
+AddToMenu C64_gunship_Menu
++ "Gunship (passwd=T-74)" Commodore64Func gunship
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/gunship/manual.pdf"
+
+DestroyMenu C64_gianaSisters_Menu
+AddToMenu C64_gianaSisters_Menu
++ "Great Giana Sisters" Commodore64Func gianaSisters
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/gianaSisters/manual.txt"
+
+DestroyMenu C64_gauntlet_Menu
+AddToMenu C64_gauntlet_Menu
++ "Gauntlet" Commodore64Func gauntlet
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/gauntlet/manual.pdf"
+
+DestroyMenu C64_gatewayToAphsai_Menu
+AddToMenu C64_gatewayToAphsai_Menu
++ "Gateway to Aphsai" Commodore64Func gatewayToAphsai
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/gatewayToAphsai/manual.pdf"
+
+DestroyMenu C64_firelord_Menu
+AddToMenu C64_firelord_Menu
++ "Firelord" Commodore64Func firelord
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/firelord/firelord.pdf"
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/firelord/notes.txt"
+
+DestroyMenu C64_f14Tomcat_Menu
+AddToMenu C64_f14Tomcat_Menu
++ "F14 Tomcat" Commodore64Func f14Tomcat
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/f14Tomcat/manual.pdf"
++ "Controls" exec xterm -e less "$[LIBRARY_HOME]/game/c64/f14Tomcat/f-14_tomcat_controls.txt"
+
+DestroyMenu C64_elite_Menu
+AddToMenu C64_elite_Menu
++ "Elite" Commodore64Func elite
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/elite/manual.pdf"
++ "Manual(Text)" exec xterm -e less "$[LIBRARY_HOME]/game/c64/elite/elite.txt"
++ "Keys" exec xterm -e less "$[LIBRARY_HOME]/game/c64/elite/viceKeyboard.txt"
+
+DestroyMenu C64_curseOfTheAzureBonds_Menu
+AddToMenu C64_curseOfTheAzureBonds_Menu
++ "D&&D Curse of the Azure Bonds" Commodore64Func dungeonsAndDragons/curseOfTheAzureBonds
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/dungeonsAndDragons/curseOfTheAzureBonds/manual.pdf"
++ "Quick Reference" exec mupdf "$[LIBRARY_HOME]/game/c64/dungeonsAndDragons/curseOfTheAzureBonds/quickRef.pdf"
++ "Adventurers Journal" exec mupdf "$[LIBRARY_HOME]/game/c64/dungeonsAndDragons/curseOfTheAzureBonds/adventurersJournal.pdf"
++ "Decode Wheel" exec mupdf "$[LIBRARY_HOME]/game/c64/dungeonsAndDragons/curseOfTheAzureBonds/decodeWheel.pdf"
+
+DestroyMenu C64_druidsMoon_Menu
+AddToMenu C64_druidsMoon_Menu
++ "Druids Moon" Commodore64Func druidsMoon
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/druidsMoon/notes.txt"
+
+DestroyMenu C64_druid_Menu
+AddToMenu C64_druid_Menu
++ "Druid1" Commodore64Func druid/druid1
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/druid/druid1/manual.txt"
++ "Druid2" Commodore64Func druid/druid2
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/druid/druid2/manual.txt"
+
+DestroyMenu C64_donkeyKong_Menu
+AddToMenu C64_donkeyKong_Menu
++ "Donkey Kong" Commodore64Func donkeyKong
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/donkeyKong/notes.txt"
+
+DestroyMenu C64_defenderOfTheCrown_Menu
+AddToMenu C64_defenderOfTheCrown_Menu
++ "Defender of the Crown" Commodore64Func defenderOfTheCrown
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/defenderOfTheCrown/notes.txt"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/defenderOfTheCrown/manual.pdf"
+
+DestroyMenu C64_cybernoid_Menu
+AddToMenu C64_cybernoid_Menu
++ "Cybernoid1" Commodore64Func cybernoid/cybernoid1
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/cybernoid/cybernoid1/manual.pdf"
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/cybernoid/cybernoid1/notes.txt"
++ "Cybernoid2" Commodore64Func cybernoid/cybernoid2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/cybernoid/cybernoid2/manual.pdf"
+
+DestroyMenu C64_cyberdyneWarrior_Menu
+AddToMenu C64_cyberdyneWarrior_Menu
++ "Cyberdyne Warrior" Commodore64Func cyberdyneWarrior
++ "Notes" exec xterm -e less "$[LIBRARY_HOME]/game/c64/cyberdyneWarrior/notes.txt"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/cyberdyneWarrior/manual.pdf"
+
+DestroyMenu C64_creatures_Menu
+AddToMenu C64_creatures_Menu
++ "Creatures 1" Commodore64Func creatures/creatures1
++ "Manual" exec xterm -e less "$[LIBRARY_HOME]/game/c64/creatures/creatures1/manual.txt"
++ "Creatures 2" Commodore64Func creatures/creatures2
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/creatures/creatures2/manual.pdf"
+
+DestroyMenu C64_californiaGames_Menu
+AddToMenu C64_californiaGames_Menu
++ "California Games" Commodore64Func  californiaGames
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/californiaGames/manual.pdf"
+
+DestroyMenu C64_bubbleBobble_Menu
+AddToMenu C64_bubbleBobble_Menu
++ "Bubble Bobble" Commodore64Func bubbleBobble
++ "Manual" exec feh "$[LIBRARY_HOME]/game/c64/bubbleBobble/manual.jpg"
+
+DestroyMenu C64_bruceLee_Menu
+AddToMenu C64_bruceLee_Menu
++ "Bruce Lee" Commodore64Func bruceLee
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/bruceLee/manual.pdf"
+
+DestroyMenu C64_boulderDash_Menu
+AddToMenu C64_boulderDash_Menu
++ "Boulder Dash" Commodore64Func boulderDash
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/boulderDash/boulderDash.pdf"
+
+DestroyMenu C64_BardsTale2_Menu
+AddToMenu C64_BardsTale2_Menu
++ "BardsTale2" Commodore64Func bardsTale/bardsTale2
++ "Summary" exec xterm -e less "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale2/summary.txt"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale2/manual.pdf"
++ "Songs" exec xterm -e less "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale2/songs.txt"
++ "PartyEditor" feh "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale2/map.jpg"
+
+DestroyMenu C64_BardsTale1_Menu
+AddToMenu C64_BardsTale1_Menu
++ "BardsTale" Commodore64Func bardsTale/bardsTale1
++ "Guide" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale1/bardsTaleGuide.pdf"
++ "Manual" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale1/bardsTaleManual.pdf"
++ "PartyEditor" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale1/bardsTalePartyEditor.pdf"
++ "SkaraBraeMap" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale1/bardsTaleSkaraBraeMap.pdf"
++ "DetailedManual" exec mupdf "$[LIBRARY_HOME]/game/c64/bardsTale/bardsTale1/bardsTaleDetailedManual.pdf"
+
+DestroyMenu C64_AlterEgo_Menu
+AddToMenu C64_AlterEgo_Menu
++ "Alter Ego" Commodore64Func alterEgoMale
++ "Documentation" exec exec xterm -e less "$[LIBRARY_HOME]/game/c64/alterEgoMale/manual.txt"
+
+DestroyMenu C64_Alleykat_Menu
+AddToMenu C64_Alleykat_Menu
++ "Alleykat" Commodore64Func alleyKat
++ "Documentation" exec mupdf "$[LIBRARY_HOME]/game/c64/alleyKat/alleyKat.pdf"
+
+DestroyMenu C64_AirborneRanger_Menu
+AddToMenu C64_AirborneRanger_Menu
++ "Airborne Ranger" Commodore64Func airborneRanger
++ "Documentation" exec exec xterm -e less "$[LIBRARY_HOME]/game/c64/airborneRanger/airborneRanger.txt"
+
+DestroyMenu C64_1942_Menu
+AddToMenu C64_1942_Menu
++ "1942" Commodore64Func 1942
++ "1942 Doc" exec exec xterm -e less "$[LIBRARY_HOME]/game/c64/1942/1942.txt"
+
+DestroyFunc Commodore64Func
+AddToFunc Commodore64Func
++ I exec sh $[LIBRARY_HOME]/game/c64/c64/runVice.sh "$[LIBRARY_HOME]/game/c64/$0" $1
+
+################################### Atari2600 ################################
+Style stella StartNormal, StartsRaised, !Borders, !Title, !ManualPlacement
+
+DestroyFunc StellaFunc
+AddToFunc StellaFunc
++ I exec exec stella "$[LIBRARY_HOME]/game/atari/ROMS.zip/ROMS/$0"
+
+DestroyMenu AtariMenu
+AddToMenu AtariMenu
++ "README" exec exec xterm -e less "$[LIBRARY_HOME]/game/atari/README"
++ "Game Info" exec luakit http://www.atarimania.com/atari-vcs-2600.html
++ "All Games" exec exec stella -fullscreen 1
++ "Asteroids" StellaFunc  "Asteroids (1981) (Atari, Brad Stewart) (CX2649, CX2649P) (PAL).bin"
++ "Phoenix" StellaFunc "Phoenix (1983) (Atari - GCC, Mike Feinstein, John Mracek) (CX2673, CX2673P) (PAL).bin"
++ "Galaxian" StellaFunc "Galaxian (1983) (Atari - GCC, Mark Ackerman, Tom Calderwood, Glenn Parker) (CX2684, CX2684P) (PAL).bin"
++ "Space Invaders" StellaFunc "Space Invaders (1983) (CCE) (C-820).bin"
++ "Pac-Man" StellaFunc "Pac-Man (Hack) (Unknown) (PAL).bin"
++ "Ms. Pac-Man" StellaFunc "Ms. Pac-Man (CCE).bin"
++ "Millipede" StellaFunc "Millipede (1984) (Atari, Jerome Domurat, Andrew Fuchs, Dave Staugas, Robert Vieira) (CX26118, CX26118P) (PAL).bin"
++ "Centipede" StellaFunc "Centipede (1983) (Atari - GCC) (CX2676) (PAL).bin"
++ "Dig Dug" StellaFunc "Dig Dug (1983) (Atari - GCC, Douglas B. Macrae) (CX2677, CX2677P) (PAL).bin"
++ "Joust" StellaFunc "Joust (1983) (Atari - GCC, Mike Feinstein, Kevin Osborn) (CX2691, CX2691P) (PAL).bin"
++ "Sequest" StellaFunc "Seaquest (1983) (Dynacom).bin"
++ "Q-bert" StellaFunc "Q-bert (1987) (Atari) (CX26150P) (PAL).bin"
++ "Atlantis" StellaFunc "Atlantis (1983) (Dynacom).bin"
++ "Missile Command" StellaFunc "Missile Command (1981) (Atari, Rob Fulop) (CX2638) (PAL).bin"
++ "Defender" StellaFunc "Defender (1982) (Atari, Robert C. Polaro, Alan J. Murphy) (CX2609, CX2609P) (PAL).bin"
++ "Adventure" StellaFunc "Adventure (1980) (Atari, Warren Robinett) (CX2613, CX2613P) (PAL).bin"
++ "E.T." StellaFunc "E.T. - The Extra-Terrestrial (1982) (Atari, Jerome Domurat, Howard Scott Warshaw) (CX2674) (PAL).bin"
++ "Enduro" StellaFunc "Enduro (1984) (Supergame).bin"
++ "Donkey Kong" StellaFunc "Donkey Kong (1987) (Atari) (CX26143).bin"
++ "Megamania" StellaFunc "Megamania (1983) (Digitel).bin"
++ "River Raid" StellaFunc "River Raid (1984) (Supergame) (71).bin"
++ "Keystone Kapers" StellaFunc "Keystone Kapers (1983) (Activision, Garry Kitchen) (AX-025, AX-025-04) ~.bin"
++ "Frogger" StellaFunc "Frogger (1982) (Parker Brothers, Ed English, David Lamkins) (931502) (PAL).bin"
++ "Chopper Command" StellaFunc "Chopper Command (Hack) (208 in 1) (Unknown) (PAL).bin"
++ "RealSports Tennis" StellaFunc "RealSports Tennis (1983) (Atari - GCC) (CX2680, CX2680P) (PAL).bin"
++ "Pitfall" StellaFunc "Pitfall (1983) (CCE) (C-813).bin"
++ "Pitfall Jungle Adventure" StellaFunc "Pitfall!'" - Pitfall Harry's Jungle Adventure (Unknown) (PAL).bin"
++ "Demon Attack" StellaFunc "Demon Attack (Canal 3 - Intellivision) (C 3016).bin"
++ "Moon Patrol" StellaFunc "Moon Patrol (1983) (Atari - GCC, Mark Ackerman, Noellie Alito) (CX2692, CX2692P) (PAL).bin"
++ "Basketball" StellaFunc "Basketball (1978) (Atari, Alan Miller) (CX2624, CX2624P) (PAL).bin"
++ "Freeway" StellaFunc "Freeway - Das verrueckte Huhn (1981) (Activision, David Crane - Ariola) (EAG-009, PAG-009 - 711 009-720) (PAL).bin"
++ "Boxing" StellaFunc "Boxing (1983) (CCE) (C-861).bin"
++ "Zaxxon" StellaFunc "Zaxxon (1983) (Coleco) (2454) ~.bin"
+

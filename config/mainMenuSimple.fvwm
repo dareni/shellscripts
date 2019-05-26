@@ -3,6 +3,7 @@ DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Quick Menu" Title
 + "&Firefox" FvwmFireFox
 + "&Chrome" FvwmChrome
++ "&Luakit" FvwmLuaKit
 + "&Volume" exec pavucontrol
 + "" Nop
 + "&Office" Menu OfficeMenu

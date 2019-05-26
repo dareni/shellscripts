@@ -1,37 +1,12 @@
+#vim ft:fvwm
+Read ../bin/shellscripts/config/funstuffPiMenu.fvwm
+
 DestroyMenu GameMenu
 AddToMenu GameMenu
++ "Funstuff Pi" Menu FunstuffPiMenu
 + "TypingTutor" exec tuxtype
 + "TuxMath" exec tuxmath
 + "Blinken" exec blinken
-
-+ "========Creative========" Nop
-+ "Scratch Programming " exec scratch
-+ "Scratch2 Programming " exec "/opt/game/scratch2/Scratch 2/bin/Scratch 2"
-+ "Minetest" exec minetest
-
-+ "========Gameboy\ Advance========" Nop
-+ "=When a game does not work go ==" Nop
-+ "=>Options>Emulator>SaveType>====" Nop
-+ "=and change between eeprom/flash===" Nop
-+ "Legend of Zelda" exec gvba /opt/game/vba/Classic\ NES\ Series\ -\ Legend\ of\ Zelda\ \(USA,\ Europe\).zip
-+ "Zelda II (E" exec gvba /opt/game/vba/Classic\ NES\ Series\ -\ Zelda\ II\ -\ The\ Adventure\ of\ Link\ \(USA,\ Europe\).zip
-+ "Finding Nemo" exec gvba /opt/game/vba/Finding\ Nemo\ \(USA,\ Europe\).zip
-+ "Golden Sun" exec gvba /opt/game/vba/Golden\ Sun\ \(USA,\ Europe\).zip
-+ "Golden Sun II" exec gvba /opt/game/vba/Golden\ Sun\ -\ The\ Lost\ Age\ \(USA,\ Europe\).zip
-+ "Harry Potter" exec gvba /opt/game/vba/Harry\ Potter\ and\ the\ Chamber\ of\ Secrets\ \(USA,\ Europe\)\ \(En,Fr,De,Es,It,Nl,Pt,Sv,No,Da\).zip
-+ "HarvestMoon" exec gvba /opt/game/vba/Harvest\ Moon\ -\ Friends\ of\ Mineral\ Town\ \(E\).zip
-+ "International Karate" exec gvba /opt/game/vba/International\ Karate\ Plus\ \(Europe\).zip
-+ "Zelda - A Link to the Past" exec gvba /opt/game/vba/Legend\ of\ Zelda,\ The\ -\ A\ Link\ to\ the\ Past\ \&\ Four\ Swords\ \(USA,\ Australia\).zip
-+ "Zelda - The Minish Cap" exec gvba /opt/game/vba/Legend\ of\ Zelda,\ The\ -\ The\ Minish\ Cap\ \(USA\).zip
-+ "Pokemon Emerald" exec gvba /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
-+ "Pokemon Fire Red" exec gvba /opt/game/vba/Pokemon\ -\ Fire\ Red\ Version\ \(USA\).zip
-+ "Pokemon Ruby" exec gvba /opt/game/vba/Pokemon\ -\ Ruby\ Version\ \(USA\).zip
-+ "Pokemon Saphire" exec gvba /opt/game/vba/Pokemon\ -\ Sapphire\ Version\ \(USA\).zip
-#+ "HarvestMoon" exec gvba  /opt/game/vba/Harvest\ Moon\ -\ Friends\ of\ Mineral\ Town\ \(E\).zip
-#+ "PokemonEmerald" exec gvba  /opt/game/vba/Pokemon\ -\ Emerald\ Version\ \(USA,\ Europe\).zip
-
-
-
 
 + "========FPS========" Nop
 + "BzFlag" exec bzflag

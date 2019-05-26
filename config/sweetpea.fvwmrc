@@ -624,7 +624,7 @@ Key Tab A M WindowList Root c c CurrentDesk, NoSticky, NoIcons, CurrentAtEnd
 Key Equal A M WindowList Root c c Desk -1, NoSticky, Icons, CurrentAtEnd
 #removed NoDeskSort
 #Mouse control
-Mouse 1 R A Menu FvwmRootMenu
+Mouse 1 R A Menu QuickMenu
 Mouse 3 R A Menu FvwmWindowOpsMenu
 Mouse 1 1 A FvwmDeleteOrDestroy
 Mouse 1 3 A FvwmIconifyOrShade
