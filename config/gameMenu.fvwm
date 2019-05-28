@@ -1,5 +1,5 @@
 #vim ft:fvwm
-Read ../bin/shellscripts/config/funstuffPiMenu.fvwm
+Read funstuffPiMenu.fvwm
 
 DestroyMenu GameMenu
 AddToMenu GameMenu

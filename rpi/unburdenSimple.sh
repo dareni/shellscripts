@@ -12,8 +12,10 @@ doTarget() {
   PTYP=$2
   #Create the file in ram.
   if [ "$PTYP" = "d" ]; then
-    mkdir -p $TARGETDIR/$PTGT
-    chmod 700 $TARGETDIR/$PTGT
+    if [ ! -e $TARGETDIR/$PTGT ]; then
+      mkdir -p $TARGETDIR/$PTGT
+      chmod 700 $TARGETDIR/$PTGT
+    fi
   else
     if [ ! -e $TARGETDIR/$PTGT ]; then
       mkdir -p $TARGETDIR/$PTGT
@@ -36,7 +38,7 @@ doTarget() {
 }
 
 if [ ! -e $TARGETDIR ]; then
-  mkdir $TARGETDIR
+  mkdir -p $TARGETDIR
 fi
 
 doTarget .cache d

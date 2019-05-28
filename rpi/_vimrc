@@ -4,8 +4,11 @@
 "use 'set nomodeline' in ~/.vimrc to avoid the possibility of trojaned
 "text files.
 
-set nomodeline
-"set nocompatible	" Use Vim defaults (much better!)
+"Note! middle mouse insert requires <SHIFT>
+
+source $VIMRUNTIME/debian.vim
+source $VIMRUNTIME/defaults.vim
+set nocompatible	" Use Vim defaults (much better!)
 set directory=~/.cache
 set backupdir=~/.cache
 set tabstop=2
@@ -20,14 +23,9 @@ set foldmethod=marker
 
 color desert
 
-if v:lang =~ "utf8$" || v:lang =~ "UTF-8$"
-   set fileencodings=utf-8,latin1
-endif
-
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
-"set viminfo='10,"10,n~/.cache/viminfo
-set viminfo='10,n~/.cache/viminfo
-set history=10
+set viminfo='20,<50,s10,h,n~/.cache/viminfo
+set history=20
 syntax on
 set hlsearch
 
