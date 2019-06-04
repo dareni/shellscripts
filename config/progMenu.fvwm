@@ -4,3 +4,4 @@ AddToMenu ProgMenu "Programming Menu" Title
 + "Net&beans"  FvwmNetbeans
 + "Jasper&Reports" FvwmJasperReports
 + "&Jconsole" Menu Jconsole
++ "&Virtualbox" exec virtualbox

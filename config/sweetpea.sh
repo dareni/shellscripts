@@ -38,7 +38,7 @@ do_init() {
     xclock -update 1 -digital -norender -padding $PADDING -geometry 70x14+$TIME_POS+0  -strftime " %H:%M:%S" &
     xclock           -digital -norender -padding $PADDING -geometry 115x14+$DATE_POS+0 -strftime " %a %b %d %Y" &
     xload -geometry 100x28+$XLOAD_POS+0 -nolabel &
-    stalonetray -i 16 --geometry 1x1+$TRAY_POS+0 --grow-gravity NE &
+    stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity NE &
 
 }
 

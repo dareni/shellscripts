@@ -11,30 +11,31 @@ doTarget() {
   PTGT=$1
   PTYP=$2
   #Create the file in ram.
-  if [ "$PTYP" = "d" ]; then
-    if [ ! -e $TARGETDIR/$PTGT ]; then
-      mkdir -p $TARGETDIR/$PTGT
-      chmod 700 $TARGETDIR/$PTGT
-    fi
-  else
-    if [ ! -e $TARGETDIR/$PTGT ]; then
-      mkdir -p $TARGETDIR/$PTGT
-      rmdir $TARGETDIR/$PTGT
-      touch $TARGETDIR/$PTGT
-      chmod 600 $TARGETDIR/$PTGT
-    fi
-  fi
-
-  #Create a link to ram if it does not exist.
-  if [ ! -h $HOME/$PTGT ]; then
-    if [ -d $HOME/$PTGT ]; then
-      if [ -n $PTGT ]; then
-        rm -rf $HOME/$PTGT
+  if [ -e "$PTGT" ]; then
+    if [ "$PTYP" = "d" ]; then
+      if [ ! -e $TARGETDIR/$PTGT ]; then
+        mkdir -p $TARGETDIR/$PTGT
+        chmod 700 $TARGETDIR/$PTGT
+      fi
+    else
+      if [ ! -e $TARGETDIR/$PTGT ]; then
+        mkdir -p $TARGETDIR/$PTGT
+        rmdir $TARGETDIR/$PTGT
+        touch $TARGETDIR/$PTGT
+        chmod 600 $TARGETDIR/$PTGT
       fi
     fi
-    ln -sf $TARGETDIR/$PTGT ~/$PTGT
-  fi
 
+    #Create a link to ram if it does not exist.
+    if [ ! -h $HOME/$PTGT ]; then
+      if [ -d $HOME/$PTGT ]; then
+        if [ -n $PTGT ]; then
+          rm -rf $HOME/$PTGT
+        fi
+      fi
+      ln -sf $TARGETDIR/$PTGT ~/$PTGT
+    fi
+  fi
 }
 
 if [ ! -e $TARGETDIR ]; then
@@ -44,6 +45,7 @@ fi
 doTarget .cache d
 doTarget .bash_history f
 doTarget .dbus d
+doTarget .config/vice/vice.log f
 
 #in /etc/X11/Xsession ERRFILE=~/.cache/xsession-errors
 #in .bashrc export XAUTHORITY=~/.cache/Xauthority

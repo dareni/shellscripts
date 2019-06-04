@@ -1,0 +1,285 @@
+#Overide the fvwm default /usr/share/fvwm/default-config/config
+#Functionality:
+#  +Aim to provide mouseless use.
+#  +Warp to all new windows.
+#  +Center the cursor in the middle of the window(allow resize in all directions by keys.)
+#  +Pager toggle display
+#  +Icon windowlist.
+#  +Maximum screen usage.
+
+############## Customizations ################################################
+
+SetEnv fvwm_home $[HOME]/.fvwm
+SetEnv fvwm_icon $[fvwm_home]/icons
+ImagePath $[fvwm_icon]:$[fvwm_icon];.png:+:$[FVWM_DATADIR]/default-config/images/icons:+:/usr/share/pixmaps/fvwm
+PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
+
+AddToFunc   InitFunction
+# Setup: ln ~/bin/shellscripts/config/xxx.sh ~/.fvwm/fvwm.sh
++ I Exec exec $[fvwm_home]/fvwm.sh init
+
+Read $[fvwm_home]/gameMenu.fvwm
+
+Style * Icon
+Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
+
+Style florence WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
+Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
+Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style stalonetray Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style "*" BorderWidth 1, HandleWidth 1
+TitleStyle Centered Height 10 -- Flat
+DestroyModuleConfig FvwmPager:*
+DestroyModuleConfig RightPanel:*
+
+AddToFunc   StartFunction
++ I FvwmEvent FvwmEvent-NewWindow
+
+EwmhBaseStruts 0 0 0 0
+DesktopSize 1x1
+
+DestroyMenu QuickMenu
+AddToMenu   QuickMenu "Menu" Title
+Test (x chromium) + "&Chromium" Exec exec chromium
+Test (x firefox) + "&Firefox%firefox.png%" Exec exec firefox
+Test (x google-chrome) + "Google-&Chrome" Exec exec google-chrome
+Test (x luakit) + "&Luakit" Exec exec luakit
++ "" Nop
++ "&Office%icons/apps.png%" Popup OfficeMenu
++ "Sound/&Video%mini.sound.xpm%" Popup SoundMenu
++ "S&ystem%icons/programs.png%" Popup SystemMenu
++ "&Game%mini.xsnow.xpm%" Popup GameMenu
++ "M&anual Pages%icons/help.png%" Popup MenuManPages
++ "" Nop
++ "Prog&Menu" Menu ProgMenu
++ "&Pager" FuncPager
++ "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease, OnlyNormal
++ "&Window Ops" Menu FvwmWindowOpsMenu
++ "Refes&h%icons/refresh.png%" Refresh
++ "&Restart FVWM%menu/restart.png%"  Restart
++ "Quit FVWM%menu/quit.png%"  Quit
++ "Poweroff%icons/quit.png%" exec sudo poweroff
+
+DestroyMenu MenuManPages
+AddToMenu   MenuManPages "Manual Pages" Title
++ "Linux for Dummies" exec mupdf $[LIBRARY_HOME]/book/pdf/Linux\ Dummies\ 9th.pdf
++ "Linux Fundamentals" exec mupdf $[LIBRARY_HOME]/book/pdf/linuxfun.pdf
++ "Manual"              ViewManPage man
++ "apropos"             ViewManPage apropos
++ "fvwm"                ViewManPage fvwm
+
+DestroyMenu OfficeMenu
+AddToMenu   OfficeMenu  "Office Menu" Title
+Test (x calibre) + "Calibre-ebook" exec calibre
++ "&FbReader epub" exec fbreader
++ "&Comix" exec mcomix
++ "&Pdf (mupdf)" exec mupdf
++ "Office Suite" exec libreoffice
++ "Simple Spreadsheet" exec gnumeric
++ "Simple Document" exec abiword
++ "GVim%menu/vim.png%" exec gvim
++ "&Gimp%menu/gimp.png%" exec gimp
++ "&Inkscape" exec inkscape
++ "ImageMagick" exec display
++ "Simple Image Viewer" exec feh
++ "Thesaurus" exec artha
+
+DestroyMenu SoundMenu
+AddToMenu   SoundMenu  "Sound/Video" Title
+Test (x pavucontrol) + "&Volume Control" Exec exec pavucontrol
++ "&SmTube (youtube)" exec smtube
+Test (x guvcview) + "Gucview" Exec guvcview
+Test (x discord) + "&Discord" Exec discord
++ "&Media Player" exec mpv --player-operation-mode=pseudo-gui
++ "T&otem"  FvwmTotem
++ "Openshot (video editing)" exec openshot
++ "Istanbul (screen capture)" exec istanbul
+
+DestroyMenu SystemMenu
+AddToMenu   SystemMenu  "System Menu" Title
+Test (x nautilus) + "File Manager (Nautilus)" Exec exec nautilus
+Test (x pcmanfm) + "File Manager" Exec exec pcmanfm
++ "&Xterm" Exec xterm
++ "Virutal Keyboard" Exec florence
++ "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
+
+DestroyMenu FvwmWindowOpsMenu
+AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
++ "M&ove%menu/window-move.xpm%"  Move
++ "&Resize%menu/window-resize.xpm%"  Resize
++ "(De)&Iconify%menu/window-iconify.xpm%"  Iconify
++ "(Un)&Maximize%menu/window-maximize.xpm%"  Maximize
++ "(Un)&Shade%menu/window-shade.xpm%"  WindowShade
++ "(Un)Stick%menu/window-stick.xpm%"  Stick
++ "Restac&k" FvwmWindowRestack
++ "" Nop
++ "MoveToDesk&0" MoveToDesk 0 0
++ "MoveToDesk&1" MoveToDesk 0 1
++ "MoveToDesk&2" MoveToDesk 0 2
++ "" Nop
++ "&Close%menu/window-close.xpm%"  Close
++ "D&elete%menu/window-delete.xpm%"  Delete
++ "&Destroy%menu/window-destroy.xpm%"  Destroy
++ "" Nop
++ "StaysOnTop%menu/window-raise.xpm%"  Pick (CirculateHit) Layer 0 6
++ "Layer +1%menu/window-raise.xpm%"  Pick (CirculateHit) Layer +1
++ "StaysPut%menu/window.xpm%"  Pick (CirculateHit) Layer 0 4
++ "Layer -1%menu/window-lower.xpm%"  Pick (CirculateHit) Layer -1
++ "StaysOnBottom%menu/window-lower.xpm%"  Pick (CirculateHit) Layer 0 2
++ "" Nop
++ "%menu/window.xpm%Window Screenshot"  Pick (CirculateHit) FvwmWindowScreenshot
++ "%menu/display.xpm%Screenshot" FvwmDesktopScreenshot 5
++ "" Nop
++ "x&3" MoveToDesk 0 -1
++ "Identify%menu/window-identify.xpm%"  Module FvwmIdent
+
+Silent Key Super_L A A Menu QuickMenu
+Silent Key Super_R A A Menu QuickMenu
+#Key Menu A A Exec exec /home/daren/.fvwm/touchpadOn.sh
+
+##use xev for key names or key mappings
+#Key XF86AudioRaiseVolume A A Exec exec /usr/bin/amixer sset Master,0 10%+,10%+
+#Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%-
+#Key XF86AudioMute A A Exec exec /usr/bin/amixer sset Master,0 toggle
+Key XF86AudioMute A A        Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
+Key XF86AudioLowerVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
+Key XF86AudioRaiseVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
+Key XF86MonBrightnessUp A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
+Key XF86MonBrightnessDown A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
+Key F10 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
+Key F11 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
+Key F12 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
+
+Key XF86Messenger A A FvwmSkype
+Key XF86HomePage A A FvwmFireFox
+Key XF86Mail A A FvwmEvolution
+Key XF86Documents A A FvwmNautilus
+Key XF86Explorer A A FvwmNautilus
+Key XF86MyComputer A A FvwmNautilus
+Key XF86Calculator A A FvwmCalculator
+Key XF86Sleep A A Exec exec sudo pm-suspend
+
+#Flip pages
+Key h A CM CursorMove -5 +0
+Key l A CM CursorMove +5 +0
+Key k A CM CursorMove +0 -5
+Key j A CM CursorMove +0 +5
+Key h A SCM CursorMove -50 +0
+Key l A SCM CursorMove +50 +0
+Key k A SCM CursorMove +0 -50
+Key j A SCM CursorMove +0 +50
+
+#Flip desktop
+Key Left A CM GotoDesk -1 0 0 2
+Key Right A CM GotoDesk +1 0 0 2
+
+#Activate Menus
+Key F1 A M Menu MenuFvwmRoot
+Key F2 A M Menu FvwmRootMenu
+Key F3 A M Menu QuickMenu
+#Select window
+Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, NoDeskSort, SelectOnRelease Meta_L
+#Key Tab A M WindowList Root c c CurrentDesk, NoSticky, NoIcons, CurrentAtEnd
+
+#Mouse control
+Mouse 1 R A Menu QuickMenu
+Mouse 3 R A Menu FvwmWindowOpsMenu
+Mouse 1 T S WindowShade
+
+##############################
+# Default Functions Overridden
+##############################
+DestroyFunc WindowListFunc
+AddToFunc WindowListFunc
++ I Iconify off
++ I Raise
++ I WarpToWindow 50 50
++ I FlipFocus
+
+##################
+# New Window Event
+##################
+DestroyModuleConfig FvwmEvent-NewWindow: *
+*FvwmEvent-NewWindow: StartDelay 4
+*FvwmEvent-NewWindow: add_window FuncFocusWindow
+
+DestroyFunc FuncFocusWindow
+AddToFunc FuncFocusWindow
++ I PipeRead "~/.fvwm/focusWindow.sh '$[w.resource]' '$[w.name]' '$[w.id]'"
+
+##############
+# Pager Config
+##############
+
+DestroyFunc FuncPager
+AddToFunc FuncPager
+#+ I PipeRead 'if true; then echo "Module FvwmPager FvwmPager 0 2"; fi'
++ I PipeRead 'if test "${FVWMPAGER:=0}" = "1"; then  echo "FuncDisablePager"; \
+            else  echo "FuncEnablePager";  fi'
+
+# Create the pager
+DestroyFunc FuncEnablePager
+AddToFunc FuncEnablePager
++ I SetEnv FVWMPAGER 1
++ I Module FvwmPager FvwmPager 0 2
+
+# Destroy the pager
+DestroyFunc FuncDisablePager
+addToFunc FuncDisablePager
++ I setenv FVWMPAGER 0
++ I WindowId $[fvwmpagerid] Delete
+
+Style "FvwmPager" Title, !Handles, !Borders, Sticky, WindowListSkip, \
+  CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
+
+DestroyModuleConfig FvwmPager: *
+*FvwmPager: Geometry 150x480-0+20
+*FvwmPager: Colorset * 9
+*FvwmPager: HilightColorset * 10
+*FvwmPager: BalloonColorset * 9
+*FvwmPager: WindowColorsets 9 10
+*FvwmPager: Font "xft:Sans:Bold:pixelsize=12:minspace=True:antialias=True"
+*FvwmPager: Balloons All
+*FvwmPager: BalloonFont "xft:Sans:Bold:pixelsize=12:minspace=True:antialias=True"
+*FvwmPager: BallonYOffset +2
+*FvwmPager: Window3dBorders
+*FvwmPager: MiniIcons
+*FvwmPager: UseSkipList
+*FvwmPager: Rows 3
+
+#####
+# Basic Functions
+###########
+DestroyFunc FvwmDeleteOrDestroy
+AddToFunc   FvwmDeleteOrDestroy
++ H Nop
++ M Nop
++ C Delete
++ D Destroy
+
+DestroyFunc FvwmIconifyOrShade
+AddToFunc   FvwmIconifyOrShade
++ C Iconify
++ D WindowShade
+
+DestroyFunc FvwmMaximize
+AddToFunc   FvwmMaximize
++ H Nop
++ M Nop
++ C Maximize $0 $1
+
+DestroyFunc FvwmMoveOrIconify
+AddToFunc   FvwmMoveOrIconify
++ M Move
++ D Iconify
+
+DestroyFunc FvwmWindowShade
+AddToFunc   FvwmWindowShade
++ D WindowShade $0
+
+DestroyFunc FvwmWindowRestack
+AddToFunc   FvwmWindowRestack
+#+ I RestackTransients
++ I Iconify
++ I Iconify
