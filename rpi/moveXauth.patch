@@ -1,0 +1,22 @@
+Index: xdm-1.1.11/xdm/auth.c
+===================================================================
+--- xdm-1.1.11.orig/xdm/auth.c
++++ xdm-1.1.11/xdm/auth.c
+@@ -1317,7 +1317,7 @@ SetUserAuthorization (struct display *d,
+ 	home = getEnv (verify->userEnviron, "HOME");
+ 	lockStatus = LOCK_ERROR;
+ 	if (home) {
+-	    snprintf (home_name, sizeof(home_name), "%s/.Xauthority", home);
++	    snprintf (home_name, sizeof(home_name), "/tmp/.Xauthority");
+ 	    Debug ("XauLockAuth %s\n", home_name);
+ 	    lockStatus = XauLockAuth (home_name, 1, 2, 10);
+ 	    Debug ("Lock is %d\n", lockStatus);
+@@ -1495,7 +1495,7 @@ RemoveUserAuthorization (struct display
+     if (!home)
+ 	return;
+     Debug ("RemoveUserAuthorization\n");
+-    snprintf(name, sizeof(name), "%s/.Xauthority", home);
++    snprintf(name, sizeof(name), "/tmp/.Xauthority");
+     Debug ("XauLockAuth %s\n", name);
+     lockStatus = XauLockAuth (name, 1, 2, 10);
+     Debug ("Lock is %d\n", lockStatus);

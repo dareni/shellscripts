@@ -19,11 +19,12 @@ AddToFunc   InitFunction
 + I Exec exec $[fvwm_home]/fvwm.sh init
 
 Read $[fvwm_home]/gameMenu.fvwm
+Read $[fvwm_home]/funstuffPiMenu.fvwm
 
 Style * Icon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
 
-Style florence WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
+Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style stalonetray Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
@@ -49,7 +50,8 @@ Test (x luakit) + "&Luakit" Exec exec luakit
 + "&Office%icons/apps.png%" Popup OfficeMenu
 + "Sound/&Video%mini.sound.xpm%" Popup SoundMenu
 + "S&ystem%icons/programs.png%" Popup SystemMenu
-+ "&Game%mini.xsnow.xpm%" Popup GameMenu
+PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup FunstuffPiMenu; fi'
+PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup GameMenu; fi'
 + "M&anual Pages%icons/help.png%" Popup MenuManPages
 + "" Nop
 + "Prog&Menu" Menu ProgMenu
@@ -72,16 +74,16 @@ AddToMenu   MenuManPages "Manual Pages" Title
 DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu  "Office Menu" Title
 Test (x calibre) + "Calibre-ebook" exec calibre
-+ "&FbReader epub" exec fbreader
+Test(x fbreader) + "&FbReader epub" exec fbreader
 + "&Comix" exec mcomix
 + "&Pdf (mupdf)" exec mupdf
-+ "Office Suite" exec libreoffice
+Test(x libreoffice) + "Office Suite" exec libreoffice
 + "Simple Spreadsheet" exec gnumeric
 + "Simple Document" exec abiword
 + "GVim%menu/vim.png%" exec gvim
 + "&Gimp%menu/gimp.png%" exec gimp
 + "&Inkscape" exec inkscape
-+ "ImageMagick" exec display
+Test(x display) + "ImageMagick" exec display
 + "Simple Image Viewer" exec feh
 + "Thesaurus" exec artha
 
@@ -100,8 +102,10 @@ DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
 Test (x nautilus) + "File Manager (Nautilus)" Exec exec nautilus
 Test (x pcmanfm) + "File Manager" Exec exec pcmanfm
+Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
++ "System Load" Exec xload
 + "&Xterm" Exec xterm
-+ "Virutal Keyboard" Exec florence
++ "Virutal Keyboard" Exec xvkbd
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
 
 DestroyMenu FvwmWindowOpsMenu

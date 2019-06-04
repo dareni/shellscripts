@@ -17,7 +17,7 @@ doTarget() {
   PTGT=$1
   PTYP=$2
   #Create the file in ram.
-  if [ -e "$PTGT" ]; then
+  if [ -e "$HOME/$PTGT" -o -h "$HOME/$PTGT" ]; then
     if [ "$PTYP" = "d" ]; then
       if [ ! -e $TARGETDIR/$PTGT ]; then
         mkdir -p $TARGETDIR/$PTGT

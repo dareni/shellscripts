@@ -24,7 +24,7 @@ do_init() {
     DATE_POS=$(($X-$DATE_POS))
     XLOAD_POS=$(($X-$XLOAD_POS))
     TRAY_POS=$(($X-$TRAY_POS))
-    PADDING=0
+    PADDING=-5
     HOST_NAME=`hostname`
     if [ "${HOST_NAME}" = "sweetpea" \
         -o "${HOST_NAME}" = "noah" \
