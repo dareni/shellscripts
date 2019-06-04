@@ -5,7 +5,13 @@
 # Call this file from .profile eg:
 # ~/bin/shellscripts/unburdenSimple.sh
 
-TARGETDIR=$XDG_RUNTIME_DIR/unburden
+if [ -z $XDG_RUNTIME_DIR ]; then
+  USERID=`cat /etc/passwd |grep $USER | cut -d: -f 3`
+  TARGETDIR=/run/user/$USERID/unburden
+else
+  TARGETDIR=$XDG_RUNTIME_DIR/unburden
+fi
+
 
 doTarget() {
   PTGT=$1
@@ -40,6 +46,8 @@ doTarget() {
 
 if [ ! -e $TARGETDIR ]; then
   mkdir -p $TARGETDIR
+else
+  exit
 fi
 
 doTarget .cache d
