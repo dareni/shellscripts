@@ -1,13 +1,16 @@
 #!/bin/sh
+# Remove sd card writes by linking to tmpfs files.
+# Logic for fake-hwclock updates.
 #
 # sudo cp ~/bin/shellscripts/read-only-config.sh /etc/systemd/system
 # sudo cp ~/bin/shellscripts/read-only-config.service /etc/systemd/system
-# systemctl enable read-only-config.service
-# Remove sd card writes by linking to tmpfs files.
+# sudo cp ~/bin/shellscripts/read-only-config_stop.service /etc/systemd/system
+# systemctl enable read-only-config.service read-only-config_stop.service
+
+CLOCK_SAVE=/var/tmp/WRITE_CLK
 
 startup() {
-
-  mount -o remount,rw /
+  rm -f $CLOCK_SAVE
 
   touch /tmp/plymouth-boot-duration
   if [ ! -L /var/lib/plymouth/boot-duration ]; then
@@ -34,29 +37,25 @@ startup() {
     ln -sf /tmp/resolv.conf /etc/resolv.conf
   fi
 
-
-  #Mount / as ro so not required.
   #touch /tmp/fake-hwclock.data
   #if [ ! -L /etc/fake-hwclock.data ]; then
   #  ln -sf /tmp/fake-hwclock.data /etc/fake-hwclock.data
   #fi
-
-  mount -o remount,ro /
 }
 
 shutdown() {
-  mount -o remount,rw /
-  fake-hwclock save
-  mount -o remount,ro /
+  if [ -f $CLOCKSAVE ]; then
+    mount -o remount,rw /
+    fake-hwclock save
+    mount -o remount,ro /
+  fi
 }
 
 case "${1:-}" in
   stop|reload|restart|force-reload)
-    echo "Stopping pi so unlink etc..."
     shutdown ;;
 
   start)
-    echo "Starting pi so add links etc..."
     startup ;;
 
   *)

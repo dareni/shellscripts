@@ -43,6 +43,7 @@ DesktopSize 1x1
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
 Test (x chromium) + "&Chromium" Exec exec chromium
+Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
 Test (x firefox) + "&Firefox%firefox.png%" Exec exec firefox
 Test (x google-chrome) + "Google-&Chrome" Exec exec google-chrome
 Test (x luakit) + "&Luakit" Exec exec luakit
@@ -107,6 +108,9 @@ Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "&Xterm" Exec xterm
 + "Virutal Keyboard" Exec xvkbd
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
+Test (F /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
+Test (F /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
+Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title

@@ -9,3 +9,5 @@ export EDITOR=vi
 export PATH=~/bin/shellscripts:$PATH
 export XAUTHORITY=~/.cache/Xauthority
 export LESSHISTFILE=~/.cache/lesshist
+alias rw='sudo mount -o remount,rw /'
+alias ro='sudo mount -o remount,ro /'

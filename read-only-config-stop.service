@@ -1,0 +1,11 @@
+[Unit]
+Description=Shutdown configuration for read only filesytem ie on ssd.
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/etc/systemd/system/read-only-config.sh stop
+
+[Install]
+WantedBy=final.target

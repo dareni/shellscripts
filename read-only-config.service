@@ -1,14 +1,13 @@
 [Unit]
 Description=Configuration for read only filesytem ie on ssd.
 DefaultDependencies=no
-RequiresMountsFor=/etc /tmp
+RequiresMountsFor=/etc /tmp /var
 #After=systemd-remount-fs.service
 After=-.mount tmp.mount
 
 [Service]
 Type=oneshot
 ExecStart=/etc/systemd/system/read-only-config.sh start
-ExecStop=/etc/systemd/system/read-only-config.sh stop
 TimeoutSec=10s
 
 [Install]
