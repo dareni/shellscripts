@@ -1,7 +1,25 @@
 #!/bin/sh
 
 CMD=$1
-if [ -x `which xrandr` ]; then
+DO_PI=0
+if [ -f /sys/class/backlight/rpi_backlight/brightness ]; then
+  DO_PI=`tvservice -s |grep -c "[LCD]"`
+fi
+
+if [ $DO_PI -eq 1 ]; then
+  #Raspberry Pi LCD backlight
+  LEVEL=`cat /sys/class/backlight/rpi_backlight/brightness`
+  if [ ${CMD} = "plus" ]; then
+    if [ $LEVEL -lt 90 ]; then
+      LEVEL=$(($LEVEL+5))
+    fi
+  else
+    if [ $LEVEL -gt 15 ]; then
+      LEVEL=$(($LEVEL-5))
+    fi
+  fi
+  echo $LEVEL | sudo tee /sys/class/backlight/rpi_backlight/brightness
+elif [ -x `which xrandr` ]; then
   OP=`xrandr -q --verbose |awk '{ if (OP != ""){ if ($0 ~ /Brightness:/){BRIGHT=$2; }; } \
     else if ($0 ~ / connected /){OP=$1}} END{print OP" "BRIGHT}'`
   if [ -n "$OP" ]; then
@@ -41,17 +59,4 @@ elif [ -x xbacklight ]; then
         echo dec
     fi
   fi
-elif [ -f /sys/class/backlight/rpi_backlight/brightness ]; then
-  #Raspberry Pi LCD backlight
-  LEVEL=`cat /sys/class/backlight/rpi_backlight/brightness`
-  if [ ${CMD} = "plus" ]; then
-    if [ $LEVEL -lt 90 ]; then
-      LEVEL=$(($LEVEL+5))
-    fi
-  else
-    if [ $LEVEL -gt 15 ]; then
-      LEVEL=$(($LEVEL-5))
-    fi
-  fi
-  echo $LEVEL | sudo tee /sys/class/backlight/rpi_backlight/brightness
 fi

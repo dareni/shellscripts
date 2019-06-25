@@ -64,8 +64,8 @@ Test (x luakit) + "&Luakit" Exec exec luakit
 + "&Office%icons/apps.png%" Popup OfficeMenu
 + "Sound/&Video%mini.sound.xpm%" Popup SoundMenu
 + "S&ystem%icons/programs.png%" Popup SystemMenu
-PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup FunstuffPiMenu; fi'
-PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Funstuff%mini.xsnow.xpm%\" Popup GameMenu; fi'
+PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Funstuff%mini.xsnow.xpm%\" Popup FunstuffPiMenu; fi'
+PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup GameMenu; fi'
 + "M&anual Pages%icons/help.png%" Popup MenuManPages
 + "" Nop
 + "Prog&Menu" Menu ProgMenu
@@ -313,7 +313,7 @@ DestroyModuleConfig ArthaButton:*
 *ArthaButton: Frame 0
 *ArthaButton: Padding 0 0
 *ArthaButton: (Id arthaButton, Icon 12/artha.png, ActionOnPress, \
-    Action Exec artha.sh)
+    Action Exec ~/bin/shellscripts/artha.sh)
 
 Style "ArthaButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
   CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
