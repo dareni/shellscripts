@@ -36,6 +36,19 @@ DestroyModuleConfig RightPanel:*
 
 AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
++ I Module FvwmButtons GBAPanel
++ I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
+
+DestroyModuleConfig GBAPanel:*
+*GBAPanel: Geometry 800x400-20+20
+*GBAPanel: Rows 5
+*GBAPanel: Columns 10
+*GBAPanel: Colorset 10
+*GBAPanel: Frame 0
+*GBAPanel: (Swallow (UseOld) "VisualBoyAdvance" Nop )
+*GBAPanel:  (Id up, Title "", Icon 64/up.png, ActionOnPress, Action (Mouse1), Size 64 64, Geometry +1+0) `Exec exec xterm`
+
+DestroyModuleConfig GBAPanel:*
 
 EwmhBaseStruts 0 0 0 0
 DesktopSize 1x1
@@ -63,6 +76,8 @@ PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm
 + "&Restart FVWM%menu/restart.png%"  Restart
 + "Quit FVWM%menu/quit.png%"  Quit
 + "Poweroff%icons/quit.png%" exec sudo poweroff
++ "" Nop
++ "" Nop
 
 DestroyMenu MenuManPages
 AddToMenu   MenuManPages "Manual Pages" Title
@@ -75,16 +90,16 @@ AddToMenu   MenuManPages "Manual Pages" Title
 DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu  "Office Menu" Title
 Test (x calibre) + "Calibre-ebook" exec calibre
-Test(x fbreader) + "&FbReader epub" exec fbreader
+Test (x fbreader) + "&FbReader epub" exec fbreader
 + "&Comix" exec mcomix
 + "&Pdf (mupdf)" exec mupdf
-Test(x libreoffice) + "Office Suite" exec libreoffice
+Test (x libreoffice) + "Office Suite" exec libreoffice
 + "Simple Spreadsheet" exec gnumeric
 + "Simple Document" exec abiword
 + "GVim%menu/vim.png%" exec gvim
 + "&Gimp%menu/gimp.png%" exec gimp
 + "&Inkscape" exec inkscape
-Test(x display) + "ImageMagick" exec display
+Test (x display) + "ImageMagick" exec display
 + "Simple Image Viewer" exec feh
 + "Thesaurus" exec artha
 
@@ -106,8 +121,9 @@ Test (x pcmanfm) + "File Manager" Exec exec pcmanfm
 Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "System Load" Exec xload
 + "&Xterm" Exec xterm
-+ "Virutal Keyboard" Exec xvkbd
++ "Virutal Keyboard" Exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
++ "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
 Test (F /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
 Test (F /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
@@ -150,14 +166,16 @@ Silent Key Super_R A A Menu QuickMenu
 #Key XF86AudioRaiseVolume A A Exec exec /usr/bin/amixer sset Master,0 10%+,10%+
 #Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%-
 #Key XF86AudioMute A A Exec exec /usr/bin/amixer sset Master,0 toggle
-Key XF86AudioMute A A        Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
-Key XF86AudioLowerVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
-Key XF86AudioRaiseVolume A A Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
+Key XF86AudioMute A A        Exec exec $[fvwm_home]/mixer mute
+Key XF86AudioLowerVolume A A Exec exec $[fvwm_home]/mixer minus
+Key XF86AudioRaiseVolume A A Exec exec $[fvwm_home]/mixer plus
 Key XF86MonBrightnessUp A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
 Key XF86MonBrightnessDown A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
-Key F10 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py mute
-Key F11 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py minus
-Key F12 A SC Exec exec ${HOME}/bin/shellscripts/pa-vol.py plus
+Key F8 A SC Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
+Key F9 A SC Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
+Key F10 A SC Exec exec $[fvwm_home]/mixer mute
+Key F11 A SC Exec exec $[fvwm_home]/mixer minus
+Key F12 A SC Exec exec $[fvwm_home]/mixer plus
 
 Key XF86Messenger A A FvwmSkype
 Key XF86HomePage A A FvwmFireFox
@@ -187,12 +205,14 @@ Key F1 A M Menu MenuFvwmRoot
 Key F2 A M Menu FvwmRootMenu
 Key F3 A M Menu QuickMenu
 #Select window
-Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, NoDeskSort, SelectOnRelease Meta_L
+#Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, NoDeskSort, SelectOnRelease Meta_L
+Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, SelectOnRelease Meta_L
 #Key Tab A M WindowList Root c c CurrentDesk, NoSticky, NoIcons, CurrentAtEnd
 
 #Mouse control
-Mouse 1 R A Menu QuickMenu
-Mouse 3 R A Menu FvwmWindowOpsMenu
+Mouse 1 R A Menu -
+Mouse 3 R A Menu QuickMenu
+Mouse 2 R A Menu FvwmWindowOpsMenu
 Mouse 1 T S WindowShade
 
 ##############################
@@ -255,6 +275,32 @@ DestroyModuleConfig FvwmPager: *
 *FvwmPager: MiniIcons
 *FvwmPager: UseSkipList
 *FvwmPager: Rows 3
+
+#####################
+# Brightness/Volume Config
+#####################
+
+DestroyModuleConfig Brightness/Volume:*
+*Brightness/Volume: Geometry -0+20
+*Brightness/Volume: Rows 3
+*Brightness/Volume: Columns 2
+*Brightness/Volume: Back black
+*Brightness/Volume:  (Id volUp,         Icon 64/up.png,        ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer plus`)
+*Brightness/Volume:  (Id backlightUp,   Icon 64/up.png,        ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh plus`)
+*Brightness/Volume:  (Id volSym,        Icon 64/volume.png     Frame 0)
+*Brightness/Volume:  (Id backlightSym,  Icon 64/lightbulb.png  Frame 0)
+*Brightness/Volume:  (Id volDown,       Icon 64/down.png,      ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer minus`)
+*Brightness/Volume:  (Id backlightDown, Icon 64/down.png,      ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh minus`)
+
+DestroyModuleConfig MainMenuButton:*
+*MainMenuButton: Geometry -305+0
+*MainMenuButton: Back black
+*MainMenuButton: Frame 0
+*MainMenuButton: Padding 0 0
+*MainMenuButton: (Id mainMenu,         Icon 12/next.png,        ActionOnPress, Action Menu QuickMenu)
+
+Style "MainMenuButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
+  CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
 
 #####
 # Basic Functions
