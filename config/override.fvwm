@@ -65,7 +65,7 @@ Test (x luakit) + "&Luakit" Exec exec luakit
 + "Sound/&Video%mini.sound.xpm%" Popup SoundMenu
 + "S&ystem%icons/programs.png%" Popup SystemMenu
 PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup FunstuffPiMenu; fi'
-PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup GameMenu; fi'
+PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Funstuff%mini.xsnow.xpm%\" Popup GameMenu; fi'
 + "M&anual Pages%icons/help.png%" Popup MenuManPages
 + "" Nop
 + "Prog&Menu" Menu ProgMenu
@@ -94,18 +94,19 @@ Test (x fbreader) + "&FbReader epub" exec fbreader
 + "&Comix" exec mcomix
 + "&Pdf (mupdf)" exec mupdf
 Test (x libreoffice) + "Office Suite" exec libreoffice
-+ "Simple Spreadsheet" exec gnumeric
-+ "Simple Document" exec abiword
++ "G&numeric Spreadsheet" exec gnumeric
++ "&Abiword Document" exec abiword
 + "GVim%menu/vim.png%" exec gvim
 + "&Gimp%menu/gimp.png%" exec gimp
 + "&Inkscape" exec inkscape
 Test (x display) + "ImageMagick" exec display
 + "Simple Image Viewer" exec feh
-+ "Thesaurus" exec artha
++ "&Thesaurus" FuncArtha
 
 DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title
-Test (x pavucontrol) + "&Volume Control" Exec exec pavucontrol
++ "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
+Test (x pavucontrol) + "&PulseAudio" Exec exec pavucontrol
 + "&SmTube (youtube)" exec smtube
 Test (x guvcview) + "Gucview" Exec guvcview
 Test (x discord) + "&Discord" Exec discord
@@ -123,7 +124,6 @@ Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "&Xterm" Exec xterm
 + "Virutal Keyboard" Exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
-+ "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
 Test (F /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
 Test (F /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
@@ -285,22 +285,44 @@ DestroyModuleConfig Brightness/Volume:*
 *Brightness/Volume: Rows 3
 *Brightness/Volume: Columns 2
 *Brightness/Volume: Back black
-*Brightness/Volume:  (Id volUp,         Icon 64/up.png,        ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer plus`)
-*Brightness/Volume:  (Id backlightUp,   Icon 64/up.png,        ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh plus`)
+*Brightness/Volume:  (Id volUp,         Icon 64/up.png, \
+  ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer plus`)
+*Brightness/Volume:  (Id backlightUp,   Icon 64/up.png, \
+  ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh plus`)
 *Brightness/Volume:  (Id volSym,        Icon 64/volume.png     Frame 0)
 *Brightness/Volume:  (Id backlightSym,  Icon 64/lightbulb.png  Frame 0)
-*Brightness/Volume:  (Id volDown,       Icon 64/down.png,      ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer minus`)
-*Brightness/Volume:  (Id backlightDown, Icon 64/down.png,      ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh minus`)
+*Brightness/Volume:  (Id volDown,       Icon 64/down.png, \
+  ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer minus`)
+*Brightness/Volume:  (Id backlightDown, Icon 64/down.png, \
+  ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh minus`)
 
 DestroyModuleConfig MainMenuButton:*
 *MainMenuButton: Geometry -305+0
 *MainMenuButton: Back black
 *MainMenuButton: Frame 0
 *MainMenuButton: Padding 0 0
-*MainMenuButton: (Id mainMenu,         Icon 12/next.png,        ActionOnPress, Action Menu QuickMenu)
+*MainMenuButton: (Id mainMenu, Icon 12/next.png, ActionOnPress, \
+    Action Menu QuickMenu)
 
 Style "MainMenuButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
   CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
+
+DestroyModuleConfig ArthaButton:*
+*ArthaButton: Geometry -355+0
+*ArthaButton: Back white
+*ArthaButton: Frame 0
+*ArthaButton: Padding 0 0
+*ArthaButton: (Id arthaButton, Icon 12/artha.png, ActionOnPress, \
+    Action Exec artha.sh)
+
+Style "ArthaButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
+  CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
+
+DestroyFunc FuncArtha
+AddToFunc FuncArtha
++ I KillModule ArthaButton
++ I Module FvwmButtons ArthaButton
++ I Exec artha
 
 #####
 # Basic Functions
