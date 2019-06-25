@@ -23,6 +23,12 @@ doTarget() {
         mkdir -p $TARGETDIR/$PTGT
         chmod 700 $TARGETDIR/$PTGT
       fi
+    elif [ "$PTYP" = "l" ]; then
+      if [ ! -e $TARGETDIR/${PTGT}_ln ]; then
+        mkdir -p $TARGETDIR/$PTGT
+        rmdir $TARGETDIR/$PTGT
+        cp -a $HOME/${PTGT}_ln $TARGETDIR/${PTGT}_ln
+      fi
     else
       if [ ! -e $TARGETDIR/$PTGT ]; then
         mkdir -p $TARGETDIR/$PTGT
@@ -33,7 +39,8 @@ doTarget() {
     fi
 
     #Create a link to ram if it does not exist.
-    if [ ! -h $HOME/$PTGT ]; then
+    #Note: type l must already have link setup with appended _ln.
+    if [ ! -h $HOME/$PTGT -a "$PTYP" != "l" ]; then
       if [ -d $HOME/$PTGT ]; then
         if [ -n $PTGT ]; then
           rm -rf $HOME/$PTGT
@@ -54,6 +61,7 @@ doTarget .cache d
 doTarget .bash_history f
 doTarget .dbus d
 doTarget .config/vice/vice.log f
+doTarget .config/dconf l
 
 #in /etc/X11/Xsession ERRFILE=~/.cache/xsession-errors
 #in .bashrc export XAUTHORITY=~/.cache/Xauthority
