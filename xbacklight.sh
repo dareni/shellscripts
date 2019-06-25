@@ -1,8 +1,22 @@
 #!/bin/sh
 
 CMD=$1
-
-if [ -x xbacklight ]; then
+if [ -x `which xrandr` ]; then
+  OP=`xrandr -q --verbose |awk '{ if (OP != ""){ if ($0 ~ /Brightness:/){BRIGHT=$2; }; } \
+    else if ($0 ~ / connected /){OP=$1}} END{print OP" "BRIGHT}'`
+  if [ -n "$OP" ]; then
+    DIS=`echo $OP|cut -d" " -f1`
+    BRIGHT=`echo $OP|cut -d" " -f2`
+    if [ ${CMD} = "plus" ]; then
+      BRIGHT=`echo $BRIGHT+.1|bc`
+    else
+      BRIGHT=`echo $BRIGHT-.1|bc`
+    fi
+    if [ -n "$BRIGHT" ]; then
+      xrandr --output $DIS --brightness $BRIGHT
+    fi
+  fi
+elif [ -x xbacklight ]; then
   if [ -z "$CMD" ]; then
     SETTING=`xbacklight -get `
     SETTING=`printf %.0f $SETTING`
