@@ -110,6 +110,7 @@ Test (x pavucontrol) + "&PulseAudio" Exec exec pavucontrol
 + "&SmTube (youtube)" exec smtube
 Test (x guvcview) + "Gucview" Exec guvcview
 Test (x discord) + "&Discord" Exec discord
+Test (x lingot) + "Lingot tuner" Exec lingot
 + "&Media Player" exec mpv --player-operation-mode=pseudo-gui
 + "T&otem"  FvwmTotem
 + "Openshot (video editing)" exec openshot
@@ -295,6 +296,9 @@ DestroyModuleConfig Brightness/Volume:*
   ActionOnPress, Action (Mouse1) `Exec $[fvwm_home]/mixer minus`)
 *Brightness/Volume:  (Id backlightDown, Icon 64/down.png, \
   ActionOnPress, Action (Mouse1) `Exec ~/bin/shellscripts/xbacklight.sh minus`)
+
+Style "Brightness/Volume" Title, Handles, Borders, Sticky, \
+  StaysOnTop, !Iconifiable
 
 DestroyModuleConfig MainMenuButton:*
 *MainMenuButton: Geometry -305+0

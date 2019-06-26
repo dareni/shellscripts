@@ -62,6 +62,8 @@ doTarget .bash_history f
 doTarget .dbus d
 doTarget .config/vice/vice.log f
 doTarget .config/dconf l
+doTarget .config/artha.log l
+
 
 #in /etc/X11/Xsession ERRFILE=~/.cache/xsession-errors
 #in .bashrc export XAUTHORITY=~/.cache/Xauthority
