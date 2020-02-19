@@ -55,6 +55,7 @@ DesktopSize 1x1
 
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
+Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
 Test (x firefox) + "&Firefox%firefox.png%" Exec exec firefox

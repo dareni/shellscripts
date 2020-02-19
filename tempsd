@@ -13,6 +13,8 @@
 #
 # A temperature monitor with shutdown when configured limits are exceeded.
 # Simple configuration / extension for different sensors.
+#
+# If you have to, use initSystemd to config.
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=tempsd
@@ -21,13 +23,39 @@ DESC="Hardware temperature monitor."
 CONFIG=/usr/local/etc/tempsd.cfg
 LOG=/var/log/tempsd.log
 CHECKLOOP=120
+STARTUP_ERROR=0
+ERROR=""
+STX="^B"
+ETX="^C"
+WARNING_COUNT=2;
+
+DEBUG=0;
+
+debug() {
+  if [ "$DEBUG" = 1 ]; then
+    TSTAMP=`date +%M:%S`
+    echo $TSTAMP $1 >>/tmp/tempsd.debug
+  fi
+}
+
+if [ "$DEBUG" = 1 ]; then
+  rm -f /tmp/tempsd.debug
+  debug "Debug Enabled"
+fi
 
 ## Sources of temperature data (Raw output dumped on overheat event) ##########
 getNvidiaOp() {
-  if [ -e `which nvidia-settings` ];  then
-    nvidia-settings -q $1/GPUCoreTemp
+  RET=0
+  nvCmd=`which nvidia-settings`
+  if [ -n "$nvCmd" -a -e "$nvCmd" ];  then
+    nvidia-settings -t -q $1/GPUCoreTemp
+  else
+    ERROR="Nonexistent nvidia-settings command."
+    RET=1
   fi
+  return $RET
 }
+
 
 getSensorOp() {
   sensors
@@ -38,19 +66,21 @@ getSensorOp() {
 # the name of the func + args delimited by '_' and the max temp
 # delimited by ':'. Function calls are delimited by ';' eg:
 # temp_1:45;temp_2:45;nvidiaQuadro_0:70'
+# Functions must set the TEMP variable.
+#nvidiaQuadro_0 -> 0 defines the x11 display number.
+#temp_1 -> 1 defines the temperature temp1 from 'sensors' output.
+
 #moboTemp
 getMoboTemp() {
   TEMP=`sensors | grep "MB Temperature" |awk '{print $3}'`
   TEMP=`echo $TEMP| cut -d + -f 2`
   TEMP=`echo $TEMP| cut -d . -f 1`
-  echo $TEMP
 }
 #cpuTemp
 getCpuTemp() {
   TEMP=`getSensorOp | grep "CPU Temperature" |awk '{print $3}'`
   TEMP=`echo $TEMP| cut -d + -f 2`
   TEMP=`echo $TEMP| cut -d . -f 1`
-  echo $TEMP
 }
 #temp_?
 getTemp() {
@@ -60,70 +90,124 @@ getTemp() {
   TEMP=`echo $TEMP| cut -d . -f 1`
   #TEMP=${TEMP#+}
   #TEMP=${TEMP%.*}
-  echo $TEMP
 }
+getRadeon() {
+  TEMP=`sensors | \
+  awk -v num="$1" 'BEGIN{found=0}
+    { if ($0 ~ /^radeon-pci/) {found=1}
+        if ( $0 ~ /^$/) {found=0}
+          if (found==1) {
+                if ($0 ~ /^temp1/){print $2}
+                  }
+    }'`
+  TEMP=`echo $TEMP| cut -d + -f 2`
+  TEMP=`echo $TEMP| cut -d . -f 1`
+}
+
 #nvidiaQuadro_?
 getNvidiaQuadro() {
   DISPLAY=:$1
+  RET=0
   export DISPLAY
   xhost >/dev/null 2>/dev/null
   X_EXISTS=$?
   if [ $X_EXISTS -eq 0 ]; then
-    TEMP=`getNvidiaOp :$1 | grep Attribute | cut -d " " -f 6 | sed s'/\.//'`
-    echo $TEMP
+    TMP=`getNvidiaOp :$1`
+    RET=$?
+    debug "getNvidiaQuadro TMP:$TMP RET:$RET"
+    if [ $RET -eq 0 ]; then
+      TEMP=`echo $TMP |cut -f1 -d' '`
+      debug "getNvidiaQuadro TEMP:$TEMP"
+    fi
   else
-    echo NO_X
+    TEMP="NO_X"
   fi
+  return $RET
 }
+
 ## Main logic #################################################################
 checkTemp() {
+#Return OVER:t/fMESSAGE[STX]message[ETX] text else an error message.
   cfg_data=$1
   cfg_data_test=$2
   for sensor in `echo $cfg_data | sed s'/;/ /g'`
   do
+    msg=""
+    OVER="f"
     limit=`echo $sensor | cut -s -d : -f 2`
     cmd=`echo $sensor | cut -s -d : -f 1`
     if [ -z "$cmd" -o -z "$limit" ]; then
-      echo Error: Not of form 'sensorNameA_arg1_arg2:temperatureLimit;sensorNameB_arg1:tempLimit'
+      echo Error in tempsd: Not of form 'sensorNameA_arg1_arg2:temperatureLimit;sensorNameB_arg1:tempLimit'
       RET=1;
     else
       firstLetter=`echo ${cmd} | cut -c 1 | tr [:lower:] [:upper:]`
       endCmd=`echo ${cmd} | cut -c 2- | sed s'/_/ /g' `
       cmd=get$firstLetter$endCmd
-      temp=`$cmd`
+      TEMP=""
+      $cmd
       RET=$?
+      temp=$TEMP
+      debug "sensor:$sensor cmd:$cmd RET:$RET temp:$temp"
       if [ $RET != 0 ]; then
-        msg="Failure to test for SENSOR:$sensor"
-        echo $msg
-      elif [ "$temp" != "NO_X" ]; then
-        if [ -z $temp ]; then
-          msg="WARNING: No temperature returned from SENSOR:$sensor"
-          echo $msg
-          if [ -z "$cfg_data_test" ]; then
-            OVER=true;
-          else
+        debug "RET:$RET"
+        msg="Failure in tempsd testing for SENSOR:$sensor"
+      elif [ "$temp" = "NO_X" ]; then
+        #if NO_X then X is not running and we can not get the nv card temp.
+        #Without X nv card should not be hot so ignore nv card and continue.
+        nop
+      else
+        if [ -z "$temp" ]; then
+          msg="ERROR tempsd : No temperature returned from SENSOR:$sensor"
+          if [ -n "$cfg_data_test" ]; then
+            #On cfg_data_test ie startup. Allow print of config location.
             RET=1;
+          else
+            OVER=t;
           fi
-        elif [ -z "$cfg_data_test" -a $temp -gt $limit ]; then
-          msg="WARNING: Running hot! LIMIT:$temp SENSOR:$sensor"
-          wall -n $msg
-          OVER=true;
+        elif [ -z "$cfg_data_test" -a "$temp" -gt "$limit" ]; then
+          msg="WARNING tempsd: Running hot! LIMIT:$temp SENSOR:$sensor"
+          OVER=t;
         fi
       fi
     fi
     if [ $RET -ne 0 ]; then
+      echo OVER${OVER}MESSAGE${STX}${msg}${ETX}
+      return $RET
+    elif [ "$OVER" =  t ]; then
+      echo OVER${OVER}MESSAGE${STX}${msg}${ETX}
       return $RET
     fi
   done;
+  echo OVER${OVER}MESSAGE${STX}${ETX}
 }
 
 doShutdown() {
   shutdown -h 0
 }
 
+shutdownWarning() {
+  causeMsg=$1
+  {
+    echo Shutdown imminent!
+    echo $causeMsg
+  } | wall
+  DISPLAY=$TEMPSD_DISPLAY
+  debug DISPLAY:$DISPLAY
+  export DISPLAY
+  xhost >/dev/null 2>/dev/null
+  X_EXISTS=$?
+  if [ $X_EXISTS -eq 0 ]; then
+    xterm -fa *courier* -fs 20  -bg red -fg black -maximized -T "Computer Temperature Monitor" -hold \
+      -e echo "$causeMsg" & 2>>$LOG >>$LOG
+  else
+    echo No X11! Is /etc/X11/xinit/xinitrc or $HOME/.xinitrc configured? ie: xhost +si:localuser:root >>$LOG
+  fi
+  WARNING_COUNT=$((WARNING_COUNT-1));
+  debug WARNING_COUNT=$WARNING_COUNT
+}
+
 start() {
-  OVER=FALSE;
-  WARNING_COUNT=0;
+  debug start
   RET=0;
   if [ -e "${PIDFILE}" ]; then
     echo $NAME already running: $PIDFILE exists.
@@ -131,42 +215,67 @@ start() {
   else
     TEMPSD_DISPLAY=`head -1 $CONFIG`
     CFG_DATA=`tail -1 $CONFIG`
+    debug ConfigLocation:$CONFIG
+    debug ConfigData:$CFG_DATA
     if [ -z "$CFG_DATA" ]; then
       echo
       echo Error no config data in $CONFIG.
       echo For example set $CONFIG containing:
       echo ":0"
       echo "temp_1:49;temp_2:50;temp_3:30;nvidiaQuadro_0:70"
+      STARTUP_ERROR=1
     else
-       msg=`checkTemp $CFG_DATA test`
-       RET=$?
-       if [ $RET -ne 0 ]; then
-         echo Error in config data in $CONFIG.
-       else
-         (
-           while [ 1 -eq 1 ]; do
-             checkTemp $CFG_DATA
-             if [ "$OVER" = "true" ]; then
-               WARNING_COUNT=$((WARNING_COUNT+1));
-               if [ $WARNING_COUNT -gt 1 ]; then
-                 doShutdown
-               fi
-               echo Shutdown imminent!
-               DISPLAY=$TEMPSD_DISPLAY
-               export DISPLAY
-               xterm -fa *courier* -fs 20  -bg red -fg black -maximized -T "Computer Overheating" -hold \
-                              -e echo "Computer Overheating. Check the operation of fans and water pump." & 2>>$LOG >>$LOG
-               date >> $LOG
-               getSensorOp >> $LOG
-               getNvidiaOp $TPSD_DISPLAY >> $LOG
-             fi
-             sleep $CHECKLOOP;
-           done;
-         )&
-         echo $! > $PIDFILE
-         echo Started $NAME ok.
-       fi
+      OP=$(checkTemp $CFG_DATA test 2>&1)
+      RET=$?
+      if [ $RET -ne 0 ]; then
+        echo Error in tempsd config data in $CONFIG.
+        echo $OP
+        echo THE TEMPERATURE MONITOR FAILED TO START.
+        echo OPEATION OF YOUR COMPUTER WITHOUT A TEMPERATURE MONITOR MAY RESULT IN A FIRE!
+        STARTUP_ERROR=1
+        RET=0
+      fi
     fi
+    if [ $STARTUP_ERROR -eq 1 ]; then
+      WARNING_COUNT=20
+    fi
+    (
+      while [ 1 -eq 1 ]; do
+        if [ $STARTUP_ERROR -eq 1 ]; then
+            shutdownWarning "Error on start of tempsd service. Computer may cause a fire."
+        else
+          #Capture all stdout and stderr and fail on random output.
+          OP=$(checkTemp $CFG_DATA 2>&1)
+          RET=$?
+          if [ "$RET" -ne 0 ]; then
+            shutdownWarning $OP
+          else
+            MATCH=`expr match "$OP" '\(^OVER[tf]MESSAGE'$STX'.*'$ETX'\)'`
+            OVER=`expr substr  "$OP" 5 1`
+            MSG=`expr substr "$OP" 14 1000`
+            debug "match:$MATCH"
+            debug "over:$OVER"
+            debug "msg:$MSG"
+            if [ -z "$MATCH" ]; then
+              shutdownWarning "Error tempsd data collection. Data: $OP"
+            elif [ "$OVER" != "f" ]; then
+              shutdownWarning "Computer Overheating. Check the operation of fans, water pump etc. $MSG"
+              {
+              date >> $LOG
+              getSensorOp >> $LOG
+              getNvidiaOp $TPSD_DISPLAY >> $LOG
+              } | tee -a $LOG | wall
+            fi
+          fi
+        fi
+        if [ $WARNING_COUNT -lt 0 ]; then
+          doShutdown
+        fi
+        sleep $CHECKLOOP;
+      done;
+    )&
+    echo $! > $PIDFILE
+    echo Started $NAME ok.
   fi
   return $RET;
 }
@@ -254,3 +363,4 @@ initSystemd)
   ;;
 esac
 
+# vim: tabstop=2 shiftwidth=2 expandtab:

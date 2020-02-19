@@ -5,7 +5,8 @@ import os
 
 inc = 0x800
 #sink = "alsa_output.pci-0000_00_1b.0.analog-stereo"
-sink = "alsa_output.pci-0000_00_1b.0"
+#sink = "alsa_output.pci-0000_00_1b.0"
+sink = os.popen('pacmd dump|grep set-default-sink').read().split(" ")[1]
 
 def getSetting(setting):
     command = 'pacmd dump |grep ' + setting + '|grep ' + sink
