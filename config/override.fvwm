@@ -13,6 +13,8 @@ SetEnv fvwm_home $[HOME]/.fvwm
 SetEnv fvwm_icon $[fvwm_home]/icons
 ImagePath $[fvwm_icon]:$[fvwm_icon];.png:+:$[FVWM_DATADIR]/default-config/images/icons:+:/usr/share/pixmaps/fvwm
 PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
+CursorStyle Default $[fvwm_icon]/crosshair.xcursor
+CursorStyle Root $[fvwm_icon]/crosshair.xcursor
 
 AddToFunc   InitFunction
 # Setup: ln ~/bin/shellscripts/config/xxx.sh ~/.fvwm/fvwm.sh
@@ -364,3 +366,17 @@ AddToFunc   FvwmWindowRestack
 #+ I RestackTransients
 + I Iconify
 + I Iconify
+
+#####
+# Screenshot Functions (uses ImageMagick)
+###########
+DestroyFunc FvwmWindowScreenshot
+AddToFunc   FvwmWindowScreenshot
++ I ThisWindow (!Shaded !Iconic Iconifiable) \
+  Exec import -window $[w.id] -quality 100 -silent \
+  "$[fvwm_home]/screenshot/screenshot-`date +%F[%R]`.$[w.id].jpg"
+
+DestroyFunc FvwmDesktopScreenshot
+AddToFunc   FvwmDesktopScreenshot
++ I Exec sleep $0; import -window root -quality 100 -silent \
+  "$[fvwm_home]/screenshot/screenshot-`date +%F[%R]`.jpg"
