@@ -154,7 +154,7 @@ checkTemp() {
       elif [ "$temp" = "NO_X" ]; then
         #if NO_X then X is not running and we can not get the nv card temp.
         #Without X nv card should not be hot so ignore nv card and continue.
-        nop
+        debug "No X11, so no nvidia temps." 
       else
         if [ -z "$temp" ]; then
           msg="ERROR tempsd : No temperature returned from SENSOR:$sensor"
