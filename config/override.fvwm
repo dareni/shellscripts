@@ -122,12 +122,14 @@ Test (x lingot) + "Lingot tuner" Exec lingot
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
 Test (x nautilus) + "File Manager (Nautilus)" Exec exec nautilus
+Test (x gentoo) + "File Manager (Gentoo)" Exec exec gentoo
 Test (x pcmanfm) + "File Manager" Exec exec pcmanfm
 Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "System Load" Exec xload
 + "&Xterm" Exec xterm
 + "Virutal Keyboard" Exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
+Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock
 Test (F /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
 Test (F /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
