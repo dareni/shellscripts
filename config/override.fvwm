@@ -116,8 +116,10 @@ Test (x discord) + "&Discord" Exec discord
 Test (x lingot) + "Lingot tuner" Exec lingot
 + "&Media Player" exec mpv --player-operation-mode=pseudo-gui
 + "T&otem"  FvwmTotem
-+ "Openshot (video editing)" exec openshot
-+ "Istanbul (screen capture)" exec istanbul
+Test (x openshot) + "Openshot (video editing)" exec openshot
+Test (x istanbul) + "Istanbul (screen capture)" exec istanbul
+Test (x simpelscreenrecorder) + "SimpleScreenRecorder(screen capture)" exec simplescreenrecorder
+
 
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
