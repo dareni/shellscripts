@@ -5,14 +5,15 @@ if  [ "$1" = "" ]; then
   echo "Usage: ./stripAudio.sh ../*webm"
   echo "       ./stripAudio.sh song.avi"
 else
-  MENCODER=`which mencoder` 
+  MENCODER=`which mencoder`
   FFMPEG=`which ffmpeg`
   for FILE in "$@"
   do
     FILENOPATH="${FILE##*/}"
     FILENOEXT="${FILENOPATH%.*}"
     OUTFILE="$FILENOEXT.mp3"
-    echo infile: "$FILE" outfile: "$OUTFILE"
+    echo InFile:"'$FILE'"
+    echo OutFile:"'$OUTFILE'"
     if [ -n "$MENCODER" ]; then
       mencoder $FILE  -ovc frameno -oac mp3lame -of rawaudio -lameopts cbr:br=128 -o $OUTFILE
     elif [ -n "$FFMPEG" ]; then
@@ -23,5 +24,3 @@ else
     echo done
   done;
 fi;
-
-
