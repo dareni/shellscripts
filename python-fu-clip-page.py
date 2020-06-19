@@ -32,8 +32,7 @@ def do_postprocessing(theImage, fileName, displayId) :
   if (nonEmpty == 1) :
     theActiveLayer = pdb.gimp_image_get_active_layer(theImage)
     x0,y0 = pdb.gimp_drawable_offsets(theActiveLayer)
-    pdb.gimp_layer_resize(theActiveLayer,x2-x1,y2-y1,x0-x1,y0-y1)
-    pdb.gimp_image_resize(theImage,x2-x1,y2-y1,x0-x1,y0-y1)
+    pdb.gimp_image_crop(theImage,x2-x1,y2-y1,x1,y1)
   
   pdb.script_fu_guides_remove(theImage, theActiveLayer)
   pagedir, filename, fileNo, fileExt = get_filename_parts(fileName)
