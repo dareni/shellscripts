@@ -12,35 +12,59 @@
 # Sysv script with systemd support: run initSystemd.
 #
 # A temperature monitor with shutdown when configured limits are exceeded.
-# Simple configuration / extension for different sensors.
+# Simple configuration / extension for different sensors. Run sensors-detect
+# to install the necessary drivers. Run sensors and determine what to monitor.
 #
-# If you have to, use initSystemd to config.
+# If you have to, use `tempsd initSystemd` to config.
+#
+# See devTemp for a configuration example.
+
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=tempsd
-PIDFILE=/var/run/$NAME.pid
+if [ -d /run ]; then
+  PIDFILE=/run/$NAME.pid
+else
+  PIDFILE=/var/run/$NAME.pid
+fi
 DESC="Hardware temperature monitor."
 CONFIG=/usr/local/etc/tempsd.cfg
 LOG=/var/log/tempsd.log
+DEBUG_LOG=/tmp/tempsd.debug
 CHECKLOOP=120
 STARTUP_ERROR=0
 ERROR=""
 STX="^B"
 ETX="^C"
 WARNING_COUNT=2;
+SYSTEMD_SERVICE=/etc/systemd/system/tempsd.service
+SCRIPT_LOC=`readlink -f "$0"`
+SCRIPT_PATH=${SCRIPT_LOC%/*}
 
-DEBUG=0;
+if [ -n "${ARRAYS_ENV}" ]; then
+  . "${ARRAYS_ENV}/array.env"
+else
+  . $SCRIPT_PATH/array.env
+fi
+
+#To enable systemd debug edit Environment DEBUG setting
+#in /etc/systemd/system/tempsd.service
+if [ -z "$DEBUG" ]; then
+  DEBUG=0;
+fi
 
 debug() {
-  if [ "$DEBUG" = 1 ]; then
+  if [ "$DEBUG" -eq 1 ]; then
     TSTAMP=`date +%M:%S`
-    echo $TSTAMP $1 >>/tmp/tempsd.debug
+    echo $TSTAMP $1 >>$DEBUG_LOG
   fi
 }
 
-if [ "$DEBUG" = 1 ]; then
-  rm -f /tmp/tempsd.debug
+if [ "$DEBUG" -eq 0 ]; then
+  rm -f $DEBUG_LOG
+else
   debug "Debug Enabled"
+  echo "Debug Enabled $DEBUG_LOG" >> $LOG
 fi
 
 ## Sources of temperature data (Raw output dumped on overheat event) ##########
@@ -56,9 +80,19 @@ getNvidiaOp() {
   return $RET
 }
 
-
 getSensorOp() {
   sensors
+}
+
+getParams() {
+  OIFS=$IFS
+  IFS="_"
+  for param in $1
+  do
+    tparam=`echo $param | sed 's/[\x00\x09\x0a\x0d\x0e\x0f]//g'`
+    array_add params "$tparam"
+  done
+  IFS=$OIFS
 }
 
 ## Possible check functions (extend here) #####################################
@@ -69,6 +103,50 @@ getSensorOp() {
 # Functions must set the TEMP variable.
 #nvidiaQuadro_0 -> 0 defines the x11 display number.
 #temp_1 -> 1 defines the temperature temp1 from 'sensors' output.
+
+##devTemp is the default function
+# arg1: device name; arg2 temperature name; arg3: position number of the temp.
+# config eg:
+#    devTemp_coretemp-isa-0000_Package id 0_4:40;devTemp_coretemp-isa-0000_Core 0_3:40
+#
+# for sensor output:
+#           coretemp-isa-0000
+#           Adapter: ISA adapter
+#           Package id 0:  +34.0°C  (high = +82.0°C, crit = +102.0°C)
+#           Core 0:        +29.0°C  (high = +82.0°C, crit = +102.0°C)
+#
+getDevTemp() {
+  getParams "$1"
+  paramCount=`array_size params`
+  if [ $paramCount -lt 3 ]; then
+    echo "ERROR: DevTemp requires 3 parameters but has $paramCount." >>$LOG
+  else
+    DEVICENAME=`get_avar params 1`
+    TEMPNAME=`get_avar params 2`
+    FIELDPOS=`get_avar params 3`
+    array_clear params
+    debug "devicename:$DEVICENAME tempname:$TEMPNAME field:$FIELD"
+    TEMP=`sensors | \
+    awk -v fi=$FIELDPOS -v devName="^$DEVICENAME" -v tempName="^$TEMPNAME" ' \
+      BEGIN{found=0}
+      {
+        if ( $0 ~ /^$/) {
+          found=0
+        } else if (found == 0) {
+          if ($0 ~ devName) {
+            found=1
+          }
+        } else if (found==1) {
+          if ($0 ~ tempName) {
+            print $fi
+          }
+        }
+      }'`
+    debug "devTemp:$TEMP"
+    TEMP=`echo $TEMP| cut -d + -f 2`
+    TEMP=`echo $TEMP| cut -d . -f 1`
+  fi
+}
 
 #moboTemp
 getMoboTemp() {
@@ -91,6 +169,7 @@ getTemp() {
   #TEMP=${TEMP#+}
   #TEMP=${TEMP%.*}
 }
+
 getRadeon() {
   TEMP=`sensors | \
   awk -v num="$1" 'BEGIN{found=0}
@@ -104,7 +183,7 @@ getRadeon() {
   TEMP=`echo $TEMP| cut -d . -f 1`
 }
 
-#nvidiaQuadro_?
+#nvidiaQuadro_DISPLAYNO
 getNvidiaQuadro() {
   DISPLAY=:$1
   RET=0
@@ -112,7 +191,7 @@ getNvidiaQuadro() {
   xhost >/dev/null 2>/dev/null
   X_EXISTS=$?
   if [ $X_EXISTS -eq 0 ]; then
-    TMP=`getNvidiaOp :$1`
+    TMP=`getNvidiaOp :$DISPLAY`
     RET=$?
     debug "getNvidiaQuadro TMP:$TMP RET:$RET"
     if [ $RET -eq 0 ]; then
@@ -125,26 +204,63 @@ getNvidiaQuadro() {
   return $RET
 }
 
+getK10temp() {
+  TEMP=`sensors | \
+  awk -v num="$1" 'BEGIN{found=0}
+    {
+      if ( $0 ~ /^$/) {
+        found=0
+      } else if (found == 0) {
+        if ($0 ~ /^k10temp-pci/) {found=1}
+      } else if (found==1) {
+        if ($0 ~ /^Adapter/){found=2}
+      } else if (found==2) {
+        if ($0 ~ /^temp1/){
+          print $2
+        }
+      }
+
+    }'`
+  TEMP=`echo $TEMP| cut -d + -f 2`
+  TEMP=`echo $TEMP| cut -d . -f 1`
+}
+
 ## Main logic #################################################################
 checkTemp() {
 #Return OVER:t/fMESSAGE[STX]message[ETX] text else an error message.
   cfg_data=$1
   cfg_data_test=$2
-  for sensor in `echo $cfg_data | sed s'/;/ /g'`
+
+ OIFS="$IFS"
+ IFS=";"
+ for sensor in  `echo "$cfg_data"`
+ do
+   array_add sensors "$sensor"
+ done;
+ IFS=$OIFS
+
+  sensorNo=1
+  while [ $sensorNo -le `array_size sensors` ];
   do
+    sensor=`get_avar sensors $sensorNo`
+    debug "checkTemp sensor: $sensor"
     msg=""
     OVER="f"
     limit=`echo $sensor | cut -s -d : -f 2`
     cmd=`echo $sensor | cut -s -d : -f 1`
     if [ -z "$cmd" -o -z "$limit" ]; then
-      echo Error in tempsd: Not of form 'sensorNameA_arg1_arg2:temperatureLimit;sensorNameB_arg1:tempLimit'
+      echo "Error in tempsd: Not of form 'sensorNameA_arg1_arg2:temperatureLimit;\
+sensorNameB_arg1:tempLimit' Sensor data: $sensor " | tee >> $LOG
       RET=1;
     else
+      debug "cmd:$cmd"
       firstLetter=`echo ${cmd} | cut -c 1 | tr [:lower:] [:upper:]`
-      endCmd=`echo ${cmd} | cut -c 2- | sed s'/_/ /g' `
+      endCmd=`echo ${cmd} | cut -c 2- | cut -d_ -f 1`
+      params=`echo ${cmd} | cut -d_ -f 2-`
       cmd=get$firstLetter$endCmd
+      debug "cmd:$cmd params:$params"
       TEMP=""
-      $cmd
+      $cmd "$params"
       RET=$?
       temp=$TEMP
       debug "sensor:$sensor cmd:$cmd RET:$RET temp:$temp"
@@ -154,7 +270,7 @@ checkTemp() {
       elif [ "$temp" = "NO_X" ]; then
         #if NO_X then X is not running and we can not get the nv card temp.
         #Without X nv card should not be hot so ignore nv card and continue.
-        debug "No X11, so no nvidia temps." 
+        debug "No X11, so no nvidia temps."
       else
         if [ -z "$temp" ]; then
           msg="ERROR tempsd : No temperature returned from SENSOR:$sensor"
@@ -177,6 +293,7 @@ checkTemp() {
       echo OVER${OVER}MESSAGE${STX}${msg}${ETX}
       return $RET
     fi
+    sensorNo=$((sensorNo+1))
   done;
   echo OVER${OVER}MESSAGE${STX}${ETX}
 }
@@ -192,7 +309,7 @@ shutdownWarning() {
     echo $causeMsg
   } | wall
   DISPLAY=$TEMPSD_DISPLAY
-  debug DISPLAY:$DISPLAY
+  debug DISPLAY: $DISPLAY
   export DISPLAY
   xhost >/dev/null 2>/dev/null
   X_EXISTS=$?
@@ -216,7 +333,7 @@ start() {
     TEMPSD_DISPLAY=`head -1 $CONFIG`
     CFG_DATA=`tail -1 $CONFIG`
     debug ConfigLocation:$CONFIG
-    debug ConfigData:$CFG_DATA
+    debug "ConfigData:$CFG_DATA"
     if [ -z "$CFG_DATA" ]; then
       echo
       echo Error no config data in $CONFIG.
@@ -225,7 +342,7 @@ start() {
       echo "temp_1:49;temp_2:50;temp_3:30;nvidiaQuadro_0:70"
       STARTUP_ERROR=1
     else
-      OP=$(checkTemp $CFG_DATA test 2>&1)
+      OP=$(checkTemp "$CFG_DATA" test 2>&1)
       RET=$?
       if [ $RET -ne 0 ]; then
         echo Error in tempsd config data in $CONFIG.
@@ -245,7 +362,11 @@ start() {
             shutdownWarning "Error on start of tempsd service. Computer may cause a fire."
         else
           #Capture all stdout and stderr and fail on random output.
-          OP=$(checkTemp $CFG_DATA 2>&1)
+          if [ "$DEBUG" -eq 1 ]; then
+            CFG_DATA=`tail -1 $CONFIG`
+            debug "ConfigData:$CFG_DATA"
+          fi
+          OP=$(checkTemp "$CFG_DATA" 2>&1)
           RET=$?
           if [ "$RET" -ne 0 ]; then
             shutdownWarning $OP
@@ -308,15 +429,12 @@ stop() {
   return $RET
 }
 
-SYSTEMD_SERVICE=/etc/systemd/system/tempsd.service
-#SYSTEMD_SERVICE=~/tempsd.service
 initSystemd() {
   if [ -e $SYSTEMD_SERVICE ]; then
     echo $SYSTEMD_SERVICE already installed.
   else
     touch $SYSTEMD_SERVICE
     chmod 700 $SYSTEMD_SERVICE
-    SCRIPT_LOC=`readlink -f "$0"`
     (
       cat <<EOF
 [Unit]
@@ -326,6 +444,8 @@ Description=Local Host temperature shutdown monitor.
 Type=forking
 ExecStart=$SCRIPT_LOC start
 ExecStop=$SCRIPT_LOC stop
+Environment=DEBUG=0
+Environment=ARRAYS_ENV=${SCRIPT_PATH}
 SuccessExitStatus=0
 RestartPreventExitStatus=1 2
 PIDFile=$PIDFILE
