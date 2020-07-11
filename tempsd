@@ -191,7 +191,7 @@ getNvidiaQuadro() {
   xhost >/dev/null 2>/dev/null
   X_EXISTS=$?
   if [ $X_EXISTS -eq 0 ]; then
-    TMP=`getNvidiaOp :$DISPLAY`
+    TMP=`getNvidiaOp $DISPLAY`
     RET=$?
     debug "getNvidiaQuadro TMP:$TMP RET:$RET"
     if [ $RET -eq 0 ]; then
