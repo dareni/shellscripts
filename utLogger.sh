@@ -18,6 +18,11 @@ awk '{
   } else if (/connected/ || /joined/ || /overflow/ || /\^5[auth]/) {
       print $0
       fflush()
+  } else if (/console_tell:/) {
+    if (/XLR Stats:/ || /Ratio/) {
+      print $0
+      fflush()
+    }
   }
 
 }' >> $OUT /dev/stdin

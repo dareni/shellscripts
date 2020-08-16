@@ -193,6 +193,8 @@ Key XF86Explorer A A FvwmNautilus
 Key XF86MyComputer A A FvwmNautilus
 Key XF86Calculator A A FvwmCalculator
 Key XF86Sleep A A Exec exec sudo pm-suspend
+Key Delete A S Exec exec sudo pm-suspend
+
 
 #Flip pages
 Key h A CM CursorMove -5 +0

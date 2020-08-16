@@ -15,12 +15,17 @@ COUNT_LIMIT=$5
 if [ -z "$DELAY" ] || [ "$CMD" = "IMAGE" -a -z "$FILENAME" ];  then
   echo
   echo  Usage:
+  echo         click.sh MULTI secDelay
+  echo            secDelay may be a float for a portion of a second.
   echo         click.sh CLICK secDelay
+  echo            secDelay - integer for seconds before each click.
+  echo            Note: secDelay is added to a random generated fraction to
+  echo                  for the interval between each click.
   echo         click.sh IMAGE secDelay fileName dup count
-  echo         secDelay - seconds before each image
-  echo         filename - name for new images
-  echo         dup - 2/1 images per shot
-  echo         count - number of shots
+  echo            secDelay - seconds before each image
+  echo            filename - name for new images
+  echo            dup - 2/1 images per shot
+  echo            count - number of shots
   exit
 fi
 
@@ -118,7 +123,7 @@ if [ "$CMD" = "CLICK" ]; then
   WINID=$F_WINID
   X=$F_X
   Y=$F_Y
-  echo Press any key to end ...
+  echo Press 'q' to quit ...
 
   while [ -z `getch` ];
     do
@@ -127,7 +132,19 @@ if [ "$CMD" = "CLICK" ]; then
       SLEEP=$GRD_DELAY
       sleep $SLEEP
   done
+elif [ "$CMD" = "MULTI" ]; then
+  echo Click on the window ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  echo Press 'q' to quit ...
 
+  while [ -z `getch` ];
+    do
+      doMouseClick $WINID $X $Y
+      sleep $DELAY
+  done
 elif [ "$CMD" = "IMAGE" ]; then
   if [ -z "$COUNT_LIMIT" ]; then
     COUNT_LIMIT=0

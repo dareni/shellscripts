@@ -82,7 +82,8 @@ if [ -n "${JDKTAB}" ]; then
 
         #If the selected jdk is not in the path then add it.
         INPATH=`echo $NEWPATH |grep ${NEW_JDK_HOME}`
-        if [ -z "${INPATH}" ]; then NEWPATH=${NEWPATH}:${NEW_JDK_HOME}/bin
+        #Add it to the path start to override invocation of system installation at /usr/bin
+        if [ -z "${INPATH}" ]; then NEWPATH=${NEW_JDK_HOME}/bin:${NEWPATH}
         fi
 
     fi
