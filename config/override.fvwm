@@ -105,6 +105,7 @@ Test (x libreoffice) + "Office Suite" exec libreoffice
 Test (x display) + "ImageMagick" exec display
 + "Simple Image Viewer" exec feh
 + "&Thesaurus" FuncArtha
+Test (x denemo) + "Denemo Music Notation Editor" exec denemo 
 
 DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title

@@ -15,19 +15,38 @@
 
 
 if [[  $1 == '-h' ]]; then
-   echo crypt.sh ./file.crypt
+   echo crypt.sh [./file.crypt] [mountNo [rw]]
+else
+  #Store mount No option
+  if [[ ${#1} -eq 1 ]]; then
+    MNT=$1
+  elif [[ ${#2} -eq 1 ]]; then
+    MNT=$2
+  else
+    MNT=1
+  fi
+  if [[ ${#1} -gt 1 ]]; then
+    FILENAME=$1
+  else
+    FILENAME=""
+  fi
+
+  if [[ "${3}" = "rw" ]]; then
+    OPT=""
+  else
+    OPT="-o ro"
+  fi
 
 fi
 
-if [[ -z $1 ]]; then
-  sudo umount /media
-  sudo cryptsetup close blah
+if [[ -z "$FILENAME" ]]; then
+  sudo umount /media/media${MNT}
+  sudo cryptsetup close blah${MNT}
   sudo losetup -D
 else
-  FILENAME=$1
-  sudo losetup /dev/loop0 $FILENAME
-  sudo cryptsetup open /dev/loop0 blah --type plain -c aes
-  sudo mount /dev/mapper/blah /media
+  sudo losetup /dev/loop${MNT} $FILENAME
+  sudo cryptsetup open /dev/loop${MNT} blah${MNT} --type plain -c aes
+  sudo mount $OPT /dev/mapper/blah${MNT} /media/media${MNT}
 fi
 
 

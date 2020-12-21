@@ -18,7 +18,18 @@ rm -f $COOKIES
 touch $COOKIES
 FINAL=$TMPDIR/final.txt
 
+
 doLogin() {
+  WELCOME=`wget -qO- \
+           --server-response \
+           --load-cookies $COOKIES \
+           --keep-session-cookies \
+           --save-cookies $COOKIES \
+           'https://www.morningstar.com.au'`
+  echo $WELCOME > ~/ms/login.txt
+}
+
+doLogin1() {
   wget -qO- \
            --server-response \
            --keep-session-cookies \
@@ -34,9 +45,12 @@ doLogin() {
            --load-cookies $COOKIES \
            --keep-session-cookies \
            --save-cookies $COOKIES \
-           'https://www.morningstar.com.au/Common/IframeHeader?ControllerToInject=About&ReqPath=About.mvc/Fsg&introad' \
-  |xmllint --html --recover -  \
-  |xmllint --html  -xpath "//span [@class='welcome']/text()" -`
+           'https://www.morningstar.com.au/Common/IframeHeader?ControllerToInject=About&ReqPath=About.mvc/Fsg&introad'
+#           \
+#  |xmllint --html --recover -  \
+#  |xmllint --html  -xpath "//span [@class='welcome']/text()" -`
+
+  echo $WELCOME > ~/ms/login.txt
 
   SITE_USER=`echo $WELCOME | awk '{print $2}'`
 }

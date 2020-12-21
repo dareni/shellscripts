@@ -6,7 +6,10 @@ mkdir -p $LOGDIR
 OUT=$LOGDIR/$DAY.log
 
 awk '{
-  if (// || //){
+  if (1 == 1) {
+      print $0
+      fflush()
+  } else if (// || //){
   } else if (/\^1/ || /\^4/) {
     if ($0 !~ /\^7/ ) {
       print $0
