@@ -125,7 +125,7 @@ getDevTemp() {
     TEMPNAME=`get_avar params 2`
     FIELDPOS=`get_avar params 3`
     array_clear params
-    debug "devicename:$DEVICENAME tempname:$TEMPNAME field:$FIELD"
+    debug "devicename:$DEVICENAME tempname:$TEMPNAME field:$FIELDPOS"
     TEMP=`sensors | \
     awk -v fi=$FIELDPOS -v devName="^$DEVICENAME" -v tempName="^$TEMPNAME" ' \
       BEGIN{found=0}
@@ -272,7 +272,9 @@ sensorNameB_arg1:tempLimit' Sensor data: $sensor " | tee >> $LOG
         #Without X nv card should not be hot so ignore nv card and continue.
         debug "No X11, so no nvidia temps."
       else
-        if [ -z "$temp" ]; then
+        isNum=`echo $temp |grep -c "^[0-9]\+$"`
+        debug "temp:$temp isNum:$isNum"
+        if [ $isNum -eq 0 ]; then
           msg="ERROR tempsd : No temperature returned from SENSOR:$sensor"
           if [ -n "$cfg_data_test" ]; then
             #On cfg_data_test ie startup. Allow print of config location.
@@ -345,10 +347,10 @@ start() {
       OP=$(checkTemp "$CFG_DATA" test 2>&1)
       RET=$?
       if [ $RET -ne 0 ]; then
-        echo Error in tempsd config data in $CONFIG.
-        echo $OP
-        echo THE TEMPERATURE MONITOR FAILED TO START.
-        echo OPEATION OF YOUR COMPUTER WITHOUT A TEMPERATURE MONITOR MAY RESULT IN A FIRE!
+        echo Error in tempsd config data in $CONFIG. |tee -a $LOG
+        echo $OP|tee -a $LOG
+        echo THE TEMPERATURE MONITOR FAILED TO START.|tee -a $LOG
+        echo OPEATION OF YOUR COMPUTER WITHOUT A TEMPERATURE MONITOR MAY RESULT IN A FIRE!|tee -a $LOG
         STARTUP_ERROR=1
         RET=0
       fi
