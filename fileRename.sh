@@ -10,23 +10,31 @@ echo       test - blank for test, else 'n' to execute the rename.
 
 fi
 
-MATCH=$1
-REPLACEMENT=$2
-TEST=$3
+MATCH="$1"
+REPLACEMENT="$2"
+TEST="$3"
 
 COUNT=`ls |grep -c $MATCH`
 
 echo
 echo $COUNT files match.
 
-for name in `ls |grep $MATCH`
+TEMP_SEP="$IFS"
+SEP=$(echo -en '\n\b')
+IFS="$SEP"
+
+for name in `ls -1|grep $MATCH`
 do
-  ADJ=`echo $name |sed 's/'$MATCH'/'$REPLACEMENT'/'`
-if [ "$TEST" = "n" ]; then
-    echo Doing rename "$name -> $ADJ"
-    mv $name $ADJ
-  else
-    echo mv "$name -> $ADJ" ?
-  fi
+   IFS="$TEMP_SEP"
+   ADJ=`echo $name |sed 's/'$MATCH'/'$REPLACEMENT'/'`
+   if [ "$TEST" = "n" ]; then
+     echo Doing rename "$name -> $ADJ"
+     mv "$name" "$ADJ"
+   else
+     echo mv "$name -> $ADJ" ?
+   fi
+   IFS="$SEP"
 done
+
+IFS="$TEMP_SEP"
 

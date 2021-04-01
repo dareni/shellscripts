@@ -1,4 +1,8 @@
 #!/bin/sh
+#btw make an epub with zip:
+#zip -X0 ../example.epub mimetype
+#zip -Xur9D ../example.epub *
+
 LANG=C
 
 #Dependencies:pandoc2.9 texlive-fonts-recommended texlive-xetex
