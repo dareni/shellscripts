@@ -1,5 +1,7 @@
 # Maintained at: git@github.com:dareni/shellscripts.git
-ADAPTER=0
+if [ -z "$ADAPTER" ]; then
+   ADAPTER=0
+fi
 clear;
 
 if [[ -z "$1" ]]; then
@@ -20,7 +22,8 @@ echo $ZAP
 {
 while [ 1 ]
  do 
- cat /dev/dvb/adapter$ADAPTER/dvr0 | mplayer -fs -cache 8192 -ao sdl -demuxer mpegts -
+ cat /dev/dvb/adapter$ADAPTER/dvr0 | mpv -fs --cache=8192 -
+ #cat /dev/dvb/adapter$ADAPTER/dvr0 | mplayer -fs -cache 8192 -ao sdl -demuxer mpegts -
  #cat /dev/dvb/adapter$ADAPTER/dvr0 | mplayer -fs -cache 8192 -
  #mplayer -fs -cache 8192 -idle dvb://$chan
 done
