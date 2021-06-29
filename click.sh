@@ -12,21 +12,23 @@ DELAY=$2
 FILENAME=$3
 DUP=$4
 COUNT_LIMIT=$5
-if [ -z "$DELAY" ] || [ "$CMD" = "IMAGE" -a -z "$FILENAME" ];  then
-  echo
-  echo  Usage:
-  echo         click.sh MULTI secDelay
-  echo            secDelay may be a float for a portion of a second.
-  echo         click.sh CLICK secDelay
-  echo            secDelay - integer for seconds before each click.
-  echo            Note: secDelay is added to a random generated fraction to
-  echo                  for the interval between each click.
-  echo         click.sh IMAGE secDelay fileName dup count
-  echo            secDelay - seconds before each image
-  echo            filename - name for new images
-  echo            dup - 2/1 images per shot
-  echo            count - number of shots
-  exit
+if [ \( -z "$DELAY" \) -o \( "$CMD" = "IMAGE" -a -z "$FILENAME" \) ];  then
+  if [  ! \( $CMD = "FARM"  -o  $CMD = "SAND" -o $CMD = "MESE"  \) ];  then
+    echo
+    echo  Usage:
+    echo         click.sh MULTI secDelay
+    echo            secDelay may be a float for a portion of a second.
+    echo         click.sh CLICK secDelay
+    echo            secDelay - integer for seconds before each click.
+    echo            Note: secDelay is added to a random generated fraction to
+    echo                  for the interval between each click.
+    echo         click.sh IMAGE secDelay fileName dup count
+    echo            secDelay - seconds before each image
+    echo            filename - name for new images
+    echo            dup - 2/1 images per shot
+    echo            count - number of shots
+    exit
+  fi
 fi
 
 getWindowCoordinates() {
@@ -116,6 +118,23 @@ doMouseClick() {
   xdotool mousemove --window $DMC_WINID $DMC_X $DMC_Y click 1
   xdotool windowfocus $PREVWINID mousemove $PREVX $PREVY
 }
+
+doMouseDClick() {
+  DMC_WINID=$1
+  DMC_X=$2
+  DMC_Y=$3
+  REPEAT=1
+  if [ -n "$4" ]; then
+    REPEAT=$4
+  fi
+  PREVWIN=`xdotool getmouselocation`
+  PREVX=`echo $PREVWIN|cut -f1 -d " " |cut -f2 -d:`
+  PREVY=`echo $PREVWIN|cut -f2 -d " " |cut -f2 -d:`
+  PREVWINID=`echo $PREVWIN|cut -f4 -d " " |cut -f2 -d:`
+  xdotool mousemove --window $DMC_WINID $DMC_X $DMC_Y click --repeat $REPEAT 1
+  xdotool windowfocus $PREVWINID mousemove $PREVX $PREVY
+}
+
 
 if [ "$CMD" = "CLICK" ]; then
   echo Click on the window ...
@@ -222,6 +241,67 @@ elif [ "$CMD" = "IMAGE" ]; then
         echo $COUNT > $COUNTER
         echo -n "$COUNT "
       fi
+  done
+elif [ "$CMD" = "FARM" ]; then
+  echo Click on the window ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  echo Press 'q' to quit ...
+
+  while [ -z `getch` ];
+    do
+      doMouseDClick $WINID $X $Y 2
+      sleep $DELAY
+      xdotool keydown w
+      xdotool keyup w
+  done
+elif [ "$CMD" = "SAND" ]; then
+  echo Click on the window ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  echo Press 'q' to quit ...
+
+  while [ -z `getch` ];
+    do
+      xdotool mousedown 1
+      sleep 2.5
+      xdotool mouseup 1
+      sleep 1
+      xdotool click 3
+      sleep 1
+  done
+elif [ "$CMD" = "MESE" ]; then
+  echo Click on the window ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  echo Press 'q' to quit ...
+
+  while [ -z `getch` ];
+    do
+      #Eat mushroom
+      xdotool key 1
+      xdotool click 1
+      xdotool mousedown 1
+      sleep .5
+      xdotool mouseup 1
+
+      #Place coral
+      xdotool key 2
+      sleep .5
+      xdotool click 3
+
+      #Mine coral with bronze pick
+      xdotool key 3
+      sleep .5
+      xdotool mousedown 1
+      sleep .75
+      xdotool mouseup 1
   done
 
 fi
