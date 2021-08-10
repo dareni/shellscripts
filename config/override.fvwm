@@ -29,8 +29,9 @@ Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
 Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
-Style stalonetray Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style stalonetray Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*

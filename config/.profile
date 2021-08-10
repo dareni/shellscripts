@@ -28,8 +28,21 @@ fi
 
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
-
 PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH
 JDK_NO=8
 . jdkenv
 
+function zones() {
+  egrep 'Paris|Istanbul|London|Athens|New_York|Los_Angeles|Chicago|Denmark|Brisbane' < /usr/share/zoneinfo/zone.tab |\
+  while read TZONE; do
+    TZ=`echo $TZONE| cut -d" " -f3`
+    export TZ
+    CDATE=`date`
+    printf "%-19s %s\n" $TZ "$CDATE"
+  done;
+
+  export TZ=Australia/Brisbane
+}
+
+alias music='ls -1 |sort -R |while read song; do mpv "$song"; done;'
+alias scan='nmap -v -sn 192.168.1.0/24'

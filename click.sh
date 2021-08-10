@@ -13,7 +13,8 @@ FILENAME=$3
 DUP=$4
 COUNT_LIMIT=$5
 if [ \( -z "$DELAY" \) -o \( "$CMD" = "IMAGE" -a -z "$FILENAME" \) ];  then
-  if [  ! \( $CMD = "FARM"  -o  $CMD = "SAND" -o $CMD = "MESE"  \) ];  then
+  if [  ! \( "$CMD" = "FARM"  -o  "$CMD" = "SAND" -o "$CMD" = "MESE" -o \
+    "$CMD" = "CLICKER" \) ];  then
     echo
     echo  Usage:
     echo         click.sh MULTI secDelay
@@ -96,6 +97,26 @@ getch() {
         stty raw min 0 time 1
         printf '%s' $(dd bs=1 count=1 2>/dev/null)
         stty $old
+}
+
+getCommand() {
+  XEV_WINID=$1
+    xev -id $XEV_WINID -event keyboard | awk ' \
+  BEGIN{CTRL=0;PRESS=0;COMMAND=""}
+  { if ($0 ~ /KeyPress/) {PRESS=1}
+    if ($0 ~ /keycode 37/ && PRESS == 1) {CTRL=1} #Left ALT
+    if ($0 ~ /KeyRelease/) {PRESS=0; CTRL=0; COMMAND=""}
+    if ($0 ~ /keycode 59/) {COMMAND="START"} #Comma
+    if ($0 ~ /keycode 60/) {COMMAND="STOP"} #Fullstop
+    if ($0 ~ /keycode 61/) {COMMAND="QUIT"} #Forward Slash
+    if (CTRL==1 && length(COMMAND) > 0) {
+      print COMMAND
+      CTRL=0
+      PRESS=0
+      COMMAND=""
+      fflush()
+    }
+  }'
 }
 
 getRandomDelay() {
@@ -303,5 +324,36 @@ elif [ "$CMD" = "MESE" ]; then
       sleep .75
       xdotool mouseup 1
   done
+elif [ "$CMD" = "CLICKER" ]; then
+  echo Click on the window ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  echo ctrl-,  start
+  echo ctrl-.  stop
+  echo ctrl-/  quit
+  CMD=""
+ xev -id $WINID
+exit
+  getCommand $WINID | \
+  while read KEY; do
+    if [ "$KEY" == "START" ]; then
+      echo "START"
+      CMD=$KEY
+    elif [ "$KEY" == "STOP" ]; then
+      echo "STOP"
+      CMD=$KEY
+    elif [ "$KEY" == "QUIT" ]; then
+      echo "QUIT"
+      kill -15 `ps |grep "xev" | cut -d" " -f 1`
+      exit;
+    fi
+    if [ "$CMD" == "START" ]; then
+      doMouseClick $WINID $X $Y
+    fi
+  done;
+
+
 
 fi

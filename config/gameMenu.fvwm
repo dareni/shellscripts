@@ -3,7 +3,9 @@ Read funstuffPiMenu.fvwm
 
 DestroyMenu GameMenu
 AddToMenu GameMenu
++ "========GAMES========" Nop
 + "Funstuff Pi" popup FunstuffPiMenu
++ "&Steam" exec steam
 + "TypingTutor" exec tuxtype
 + "TuxMath" exec tuxmath
 + "Blinken" exec blinken
