@@ -22,6 +22,7 @@ AddToFunc   InitFunction
 
 Read $[fvwm_home]/gameMenu.fvwm
 Read $[fvwm_home]/funstuffPiMenu.fvwm
+Read $[fvwm_home]/progMenu.fvwm
 
 Style * Icon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
@@ -32,6 +33,7 @@ Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style stalonetray Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
+Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
@@ -71,8 +73,9 @@ Test (x luakit) + "&Luakit" Exec exec luakit
 PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Funstuff%mini.xsnow.xpm%\" Popup FunstuffPiMenu; fi'
 PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup GameMenu; fi'
 + "M&anual Pages%icons/help.png%" Popup MenuManPages
+PipeRead 'if [ -e $fvwm_home/progMenu.fvwm ]; then echo + \"Prog&Menu\" Popup ProgMenu; fi'
+Test(F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "" Nop
-+ "Prog&Menu" Menu ProgMenu
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease, OnlyNormal
 + "&Window Ops" Menu FvwmWindowOpsMenu
@@ -95,18 +98,18 @@ DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu  "Office Menu" Title
 Test (x calibre) + "Calibre-ebook" exec calibre
 Test (x fbreader) + "&FbReader epub" exec fbreader
-+ "&Comix" exec mcomix
-+ "&Pdf (mupdf)" exec mupdf
+Test (x mcomix) + "&Comix" exec mcomix
+Test (x mupdf) + "&Pdf (mupdf)" exec mupdf
 Test (x libreoffice) + "Office Suite" exec libreoffice
 + "G&numeric Spreadsheet" exec gnumeric
 + "&Abiword Document" exec abiword
 + "GVim%menu/vim.png%" exec gvim
-+ "&Gimp%menu/gimp.png%" exec gimp
-+ "&Inkscape" exec inkscape
+Test (x gimp) + "&Gimp%menu/gimp.png%" exec gimp
+Test (x inkscape) + "&Inkscape" exec inkscape
 Test (x display) + "ImageMagick" exec display
-+ "Simple Image Viewer" exec feh
-+ "&Thesaurus" FuncArtha
-Test (x denemo) + "Denemo Music Notation Editor" exec denemo 
+Test (x feh) + "Simple Image Viewer" exec feh
+Test (x artha) + "&Thesaurus" FuncArtha
+Test (x denemo) + "Denemo Music Notation Editor" exec denemo
 
 DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title
@@ -177,8 +180,11 @@ Silent Key Super_R A A Menu QuickMenu
 #Key XF86AudioLowerVolume A A Exec exec /usr/bin/amixer sset Master,0 10%-,10%-
 #Key XF86AudioMute A A Exec exec /usr/bin/amixer sset Master,0 toggle
 Key XF86AudioMute A A        Exec exec $[fvwm_home]/mixer mute
+Key KEY_MUTE A A        Exec exec $[fvwm_home]/mixer mute
 Key XF86AudioLowerVolume A A Exec exec $[fvwm_home]/mixer minus
+Key KEY_VOLUMEDOWN A A Exec exec $[fvwm_home]/mixer minus
 Key XF86AudioRaiseVolume A A Exec exec $[fvwm_home]/mixer plus
+Key KEY_VOLUMEUP A A Exec exec $[fvwm_home]/mixer plus
 Key XF86MonBrightnessUp A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
 Key XF86MonBrightnessDown A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
 Key F8 A SC Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
@@ -196,7 +202,7 @@ Key XF86MyComputer A A FvwmNautilus
 Key XF86Calculator A A FvwmCalculator
 Key XF86Sleep A A Exec exec sudo pm-suspend
 Key Delete A S Exec exec sudo pm-suspend
-
+Key Print A A FvwmDesktopScreenshot
 
 #Flip pages
 Key h A CM CursorMove -5 +0

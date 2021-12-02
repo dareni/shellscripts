@@ -44,5 +44,12 @@ function zones() {
   export TZ=Australia/Brisbane
 }
 
+export zones
+
 alias music='ls -1 |sort -R |while read song; do mpv "$song"; done;'
 alias scan='nmap -v -sn 192.168.1.0/24'
+alias temp='nvidia-settings -q GPUCoreTemp|grep gpu; sensors |grep Core'
+
+export WINEPREFIX=/opt/game/WINE
+
+

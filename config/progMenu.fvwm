@@ -4,4 +4,29 @@ AddToMenu ProgMenu "Programming Menu" Title
 + "Net&beans"  FvwmNetbeans
 + "Jasper&Reports" FvwmJasperReports
 + "&Jconsole" Menu Jconsole
-+ "&Virtualbox" exec virtualbox
+
+DestroyFunc FvwmPowerArchitect
+AddToFunc   FvwmPowerArchitect
++ I Exec exec /opt/dev/jdk1.7.0_67/bin/java -jar /opt/dev/architect-1.0.7/architect.jar
+
+DestroyFunc FvwmNetbeans
+AddToFunc   FvwmNetbeans
++ I Exec exec /usr/bin/env netbeans
+# ln -s /opt/dev/netbeans/bin/netbeans ~/bin/netbeans
+
+#GrabFocusOff not the cause of x11 freezes during netbeans debug.
+#Note: netbeans needs sloppyfocus to gain focus to the transient windows.
+Style "*NetBeans IDE*" Title, StackTransientParent,AllowRestack,SloppyFocus
+Style Checkout StaysOnTop
+Style "Browse Repository Folders" StaysOnTop
+#Style *NetBeans* FPSortWindowlistByFocus, FPEnterToFocus
+#Style *NetBeans* FocusFollowsMouse
+
+DestroyFunc FvwmJasperReports
+AddToFunc   FvwmJasperReports
++ I Exec exec /opt/dev/jasper/TIB_js-studiocomm_6.4.3.final/Jaspersoft\ Studio
+
+DestroyMenu Jconsole
+AddToMenu Jconsole
++ "local&1 " Exec exec  jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
+

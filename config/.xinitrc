@@ -1,5 +1,5 @@
+#!/bin/sh
 # Maintained at: git@github.com:dareni/shellscripts.git
-~/bin/shellscripts/fvwminit.sh
 
 xhost +si:localuser:root
 . ~/bin/shellscripts/config/mouse.env >/tmp/xinitrc.log
@@ -7,18 +7,25 @@ xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32
 
 (
   PA=1
+  IT=0
   (while [ $PA -ne 0 ]; do
-    sleep 20
+    sleep 5
+    IT=$((IT + 1))
+    if [ $IT -eq 3 ]; then
+      systemctl --user restart pulseaudio.service
+    fi
     pulseaudio --check
     PA=$?
-    if [ $PA -ne 0 ]; then
-      pulseaudio -D
+    if [ $PA -eq 0 ]; then
       COUNT=`pacmd list-sinks|grep -c "name: <compressor>"`
         if [ $COUNT -eq 0 ]; then
           #limit volume extremities
           pacmd load-module module-ladspa-sink sink_name=compressor plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
           pacmd set-default-sink compressor
         fi
+    fi
+    if [ $IT -gt 5 ]; then
+      PA=0
     fi
   done) >/dev/null
 )&

@@ -2,21 +2,25 @@
 
 TEST=$1
 
+POWER_CMD="upower -d"
+
 function getStats() {
-  upower -d |egrep 'on-battery|percentage'
+  $POWER_CMD |egrep 'on-battery|percentage'
 }
 
 function showMessage() {
+  wall $1
   (xterm -geometry 100x6-0+0 -fa *courier* -fs 12 -bg darkgray -fg black -e ~/bin/shellscripts/timer.sh 0 "$1")&
 }
-
 
 function getMessage() {
   PERCENT=$1
   ONBAT=$2
   OLD_PERCENT=$3
   MSG=""
-  if [[ ! $PERCENT =~ ^-?[0-9]+$ ]]; then
+  if [[ -z "$PERCENT" ]]; then
+    MSG="Error: PERCENT value is invalid:$PERCENT"
+  elif [[ ! $PERCENT =~ ^-?[0-9]+$ ]]; then
     MSG="Error calculating battery capacity."
   elif [[ "$ONBAT" = yes ]]; then
    if [[ -z "$OLD_PERCENT" ]]; then
@@ -71,6 +75,16 @@ function testIt() {
 
   RET=`getMessage 89 no 90`
   assert "gMess5" "," "$RET"
+
+  #Does the power level utility exist?
+  OUT=`$POWER_CMD`
+  COUNT=`echo $OUT|head -1 |grep -c Device`
+  assert "pCmd1" "1" "$COUNT"
+
+  PREV_POWER_CMD=$POWER_CMD
+  POWER_CMD="echo"
+  TXT=`getStatus`
+  assert "mParse1" "Error: PERCENT value is invalid:" "$TXT"
 }
 
 function assert() {
@@ -83,30 +97,33 @@ function assert() {
   fi
 }
 
+function getStatus() {
+  STAT=`getStats`
+  PERCENT=`echo $STAT | awk '{print $4}'| awk -F% '{print $1}'`
+  ONBAT=`echo $STAT | awk '{print $6}'`
+  #echo getMessage $PERCENT $ONBAT $OLD_PERCENT
+  MSG=`getMessage $PERCENT $ONBAT $OLD_PERCENT`
+  #echo $MSG
+  OLD_PERCENT=`decodePercent "$MSG"`
+  TXT=`decodeMessage "$MSG"`
+  echo $TXT
+}
+
 
 if [[ "$TEST" = TEST ]]; then
   testIt
 else
   EPID=`pgrep -o funcPower.sh`
-
-  if [[ -n `which upower` ]]; then
-    OLD_PERCENT="";
-    if [ "$$" -eq "$EPID" ]; then
-      (while [ 1 ]; do
-        STAT=`getStats`
-        PERCENT=`echo $STAT | awk '{print $4}'| awk -F% '{print $1}'`
-        ONBAT=`echo $STAT | awk '{print $6}'`
-        echo getMessage $PERCENT $ONBAT $OLD_PERCENT
-        MSG=`getMessage $PERCENT $ONBAT $OLD_PERCENT`
-        echo $MSG
-        OLD_PERCENT=`decodePercent "$MSG"`
-        TXT=`decodeMessage "$MSG"`
-        if [[ -n $TXT ]]; then
-          showMessage "$TXT"
-        fi
-        sleep 60
-      done)&
+    if [ "$$" -ne "$EPID" ]; then
+      kill -9 $EPID
     fi
-  fi
+    OLD_PERCENT="";
+    (while [ 1 ]; do
+      TXT=`getStatus`
+      if [[ -n $TXT ]]; then
+        showMessage "$TXT"
+      fi
+      sleep 60
+    done)&
 fi
 
