@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Maintained at: git@github.com:dareni/shellscripts.git
 from sys import argv
 import os
@@ -41,4 +41,4 @@ if len(argv) == 2:
             value = '1'
         setSetting(result[0], result[1], value)
 else:
-    print "usage pa-vol.py plus | minus | mute"            
+    print("usage pa-vol.py plus | minus | mute")
