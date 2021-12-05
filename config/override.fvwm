@@ -17,9 +17,9 @@ CursorStyle Default $[fvwm_icon]/crosshair.xcursor
 CursorStyle Root $[fvwm_icon]/crosshair.xcursor
 
 AddToFunc   InitFunction
-# Setup: ln ~/bin/shellscripts/config/xxx.sh ~/.fvwm/fvwm.sh
 + I Exec exec $[fvwm_home]/fvwm.sh init
 
+Read $[fvwm_home]/init.fvwm
 Read $[fvwm_home]/gameMenu.fvwm
 Read $[fvwm_home]/funstuffPiMenu.fvwm
 Read $[fvwm_home]/progMenu.fvwm

@@ -40,6 +40,11 @@ do_init() {
     xload -geometry 100x28+$XLOAD_POS+0 -nolabel &
     stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity NE &
 
+    #Pop message when on battery.
+    UPOWER=`which upower`
+    if [ -n "$UPOWER" ]; then
+      ~/bin/shellscripts/config/funcPower.sh
+    fi
 }
 
 case $CMD in
