@@ -3,10 +3,6 @@
 # for examples
 set -o vi
 
-#PATH=$HOME/bin/shellscripts:/sbin:~/bin:/opt/dev/nodejs/bin:$PATH
-#JDK_NO=8
-#. jdkenv
-
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
