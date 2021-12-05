@@ -15,11 +15,11 @@
 *color3: #FEA63C
 *color11: #FFE863
 !blue
-*color4:       DeepSkyBlue
-*color12:      RoyalBlue
+*color4: DeepSkyBlue
+*color12: RoyalBlue
 !magenta
 *color5: #B7416E
-*color13: #BB4466
+*color13: OrangeRed
 !cyan
 *color6: cyan3
 *color14: cyan4
@@ -27,14 +27,14 @@
 *color7: #DDEEDD
 *color15: #6C887A
 
-!XClock*analog: false
+XClock*analog: false
 XClock*buffer: true
-!XClock*update: 1
-!XClock*font:      *fixed* 
-!XClock*faceSize: 6
-!*fontWarnings: 2
-
-
+XClock*update: 1
+!XClock*borderWidth: 0
+!XClock*font: -bitstream-*-bold-r-*-33-240-*
+!XClock*font: l-medium-r-normal--0-0-0-0-p-0-iso8859-2
+!XClock*font: -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso8859-2
+XClock*font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1
 !xlsfonts
 !xcolorsel
 !xrdb -merge .Xresources
@@ -43,22 +43,18 @@ XClock*buffer: true
 !fc-match mono
 !fc-list
 
+
 !xterm -u8
 !only xterm and urxvt support unicode
 xterm*utf8: 1
-!*customization: -color
-xterm*termName: xterm-256color
+XTerm*termName: xterm-256color
+xterm*pointerShape: crosshair
+Xcursor.theme: default
+!xvkbd.NormalKeys: \
+!  F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 Delete \n\
+!  Escape 1 2 3 4 5 6 7 8 9 0 - = \134 ` \n\
+!  Tab q w e r t y u i o p [ ] BackSpace \n\
+!  Control_L a s d f g h j k l ; \047 Return \n\
+!  Shift_L z x c v b n m , . / Multi_key Shift_R \n\
+!  MainMenu Caps_Lock Alt_L Meta_L space Meta_R Alt_R Left Right Up Down Focus
 
-xterm*faceName: Inconsolata:size=9:minispace=True:antialias=true:bold
-!Xterm*faceName: DejaVu Sans Mono:size=9:antialias=true
-!Xterm*faceName: "DejaVu Sans Mono"
-!xterm*faceName: DejaVu Sans Mono:size=9:antialias=true
-!xterm*faceName: Liberation Mono:size=9:antialias=true
-!xterm*faceName: Andale Mono:size=9:antialias=true
-!xterm*faceName: FreeMono:size=9:antialias=true
-!xterm*faceName: Courier New:size=9:antialias=false
-!xterm*faceName: Sans:size=9:minispace=True:antialias=false
-
-
-!Xterm*font: 7x13
-xterm*faceSize: 10 
