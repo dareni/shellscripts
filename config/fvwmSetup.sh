@@ -3,7 +3,6 @@ mkdir -p $HOME/.fvwm/screenshot
 if [ -d $HOME/bin/shellscripts ]; then
 
   ln -s $HOME/bin/shellscripts/config/alias.env $HOME/.bash_aliases
-  ln -s $HOME/bin/shellscripts/config/.xinitrc $HOME/.xinitrc
   ln -s $HOME/bin/shellscripts/config/.profile $HOME/.profile
   ln -s $HOME/bin/shellscripts/config/.bashrc $HOME/.bashrc
   ln -s $HOME/bin/shellscripts/config/.xinitrc $HOME/.xinitrc
