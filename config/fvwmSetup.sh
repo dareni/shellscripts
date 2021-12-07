@@ -16,6 +16,7 @@ if [ -d $HOME/bin/shellscripts ]; then
   fi
   ln -s $HOME/bin/shellscripts/config/config $HOME/.fvwm/config
   ln -s $HOME/bin/shellscripts/config/override.fvwm $HOME/.fvwm/override.fvwm
+  ln -s $HOME/bin/shellscripts/config/init.fvwm $HOME/.fvwm/init.fvwm
   ln -s $HOME/bin/shellscripts/config/raw/funstuffPiMenu.fvwm $HOME/.fvwm/funstuffPiMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/gameMenu.fvwm $HOME/.fvwm/gameMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/fvwm.sh $HOME/.fvwm/fvwm.sh
