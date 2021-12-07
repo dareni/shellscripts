@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 mkdir -p $HOME/.fvwm/screenshot
 
 if [ -d $HOME/bin/shellscripts ]; then

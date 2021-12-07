@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/local/bin/sh
 # Maintained at: git@github.com:dareni/shellscripts.git
 #### noddy ####
 # Link to .fvwm/fvwm.sh executed from init.fvwm by:

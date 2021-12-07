@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 RESOURCE_ID=$1
 NAME=$2
 WINDOW_ID=$3

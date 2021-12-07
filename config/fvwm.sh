@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env sh
 # Maintained at: git@github.com:dareni/shellscripts.git
 #### sweetpea ####
 # Link to .fvwm/fvwm.sh executed from init.fvwm by:

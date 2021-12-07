@@ -63,7 +63,7 @@ AddToMenu   QuickMenu "Menu" Title
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
-Test (x firefox) + "&Firefox%firefox.png%" Exec exec firefox
+Test (x firefox) + "&Firefox%icons/menu/firefox.png%" Exec exec firefox
 Test (x google-chrome) + "Google-&Chrome" Exec exec google-chrome
 Test (x luakit) + "&Luakit" Exec exec luakit
 + "" Nop
@@ -74,7 +74,7 @@ PipeRead 'if [ -e $fvwm_home/funstuffPiMenu.fvwm ]; then echo + \"&Funstuff%mini
 PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm%\" Popup GameMenu; fi'
 + "M&anual Pages%icons/help.png%" Popup MenuManPages
 PipeRead 'if [ -e $fvwm_home/progMenu.fvwm ]; then echo + \"Prog&Menu\" Popup ProgMenu; fi'
-Test(F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
+Test (F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "" Nop
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease, OnlyNormal
