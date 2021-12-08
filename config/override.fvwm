@@ -141,6 +141,7 @@ Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -l
 Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
+Test (x synclient) + "Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient.sh
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
