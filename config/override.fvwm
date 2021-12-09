@@ -41,19 +41,7 @@ DestroyModuleConfig RightPanel:*
 
 AddToFunc   StartFunction
 + I FvwmEvent FvwmEvent-NewWindow
-+ I Module FvwmButtons GBAPanel
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
-
-DestroyModuleConfig GBAPanel:*
-*GBAPanel: Geometry 800x400-20+20
-*GBAPanel: Rows 5
-*GBAPanel: Columns 10
-*GBAPanel: Colorset 10
-*GBAPanel: Frame 0
-*GBAPanel: (Swallow (UseOld) "VisualBoyAdvance" Nop )
-*GBAPanel:  (Id up, Title "", Icon 64/up.png, ActionOnPress, Action (Mouse1), Size 64 64, Geometry +1+0) `Exec exec xterm`
-
-DestroyModuleConfig GBAPanel:*
 
 EwmhBaseStruts 0 0 0 0
 DesktopSize 1x1
@@ -330,6 +318,8 @@ DestroyModuleConfig MainMenuButton:*
 Style "MainMenuButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
   CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
 
+#This button allows thesaurus lookup on the rpi of a highlighted word.
+#TODO allow dynamic positioning.
 DestroyModuleConfig ArthaButton:*
 *ArthaButton: Geometry -355+0
 *ArthaButton: Back white
@@ -342,9 +332,9 @@ Style "ArthaButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
   CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
 
 DestroyFunc FuncArtha
-AddToFunc FuncArtha
+AddToFunc FuncArth
 + I KillModule ArthaButton
-+ I Module FvwmButtons ArthaButton
+Test(x raspi-config) + I Module FvwmButtons ArthaButton
 + I Exec artha
 
 #####
