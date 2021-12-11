@@ -1,3 +1,4 @@
 Read /usr/share/fvwm/default-config/config
 Read override.fvwm
+Read custom.fvwm
 
