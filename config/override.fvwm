@@ -11,7 +11,10 @@
 
 SetEnv fvwm_home $[HOME]/.fvwm
 SetEnv fvwm_icon $[fvwm_home]/icons
-ImagePath $[fvwm_icon]:$[fvwm_icon];.png:+:$[FVWM_DATADIR]/default-config/images/icons:+:/usr/share/pixmaps/fvwm
+
+SetEnv fvwm_image_path $[fvwm_icon]:$[fvwm_icon];.png:$[fvwm_home]/images:$[FVWM_DATADIR]/default-config/images/icons:/usr/share/pixmaps/fvwm:+
+#Exec exec echo "fvwm_image_path $[fvwm_image_path]"
+ImagePath $[fvwm_image_path]
 PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
 CursorStyle Default $[fvwm_icon]/crosshair.xcursor
 CursorStyle Root $[fvwm_icon]/crosshair.xcursor
@@ -130,6 +133,18 @@ Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remoun
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
 Test (x synclient) + "Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient.sh
+
+# Background Menu
+#
+# Backgrounds are located in ~/.fvwm/images/background/
+# Menu icons are located in ~/.fvwm/images/bgicons/
+DestroyMenu BGMenu
+AddToMenu   BGMenu "Wallpapers" Title
++ "Floral%bgicons/bg1.png%" SetBG bg1.png
++ "Circles%bgicons/bg2.png%" SetBG bg2.png
++ "Space%bgicons/bg3.png%" SetBG bg3.png
++ "Tritile%bgicons/bg4.png%" SetBG bg4.png
++ "Cat%bgicons/bg5.png%" SetBG bg5.png
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
@@ -334,7 +349,7 @@ Style "ArthaButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
 DestroyFunc FuncArtha
 AddToFunc FuncArth
 + I KillModule ArthaButton
-Test(x raspi-config) + I Module FvwmButtons ArthaButton
+Test (x raspi-config) + I Module FvwmButtons ArthaButton
 + I Exec artha
 
 #####
