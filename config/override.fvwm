@@ -16,8 +16,8 @@ SetEnv fvwm_image_path $[fvwm_icon]:$[fvwm_icon];.png:$[fvwm_home]/images:$[FVWM
 #Exec exec echo "fvwm_image_path $[fvwm_image_path]"
 ImagePath $[fvwm_image_path]
 PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
-CursorStyle Default $[fvwm_icon]/crosshair.xcursor
-CursorStyle Root $[fvwm_icon]/crosshair.xcursor
+CursorStyle Default $[fvwm_icon]/cursor/crosshair.xcursor
+CursorStyle Root $[fvwm_icon]/cursor/crosshair.xcursor
 
 AddToFunc   InitFunction
 + I Exec exec $[fvwm_home]/fvwm.sh init

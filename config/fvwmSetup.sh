@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
+sudo chown root:root $HOME/bin/shellscripts/krunker.sh
+sudo chmod 655  $HOME/bin/shellscripts/krunker.sh
+sudo chown root:root $HOME/bin/shellscripts/pw
+sudo chmod 755  $HOME/bin/shellscripts/pw
+
 mkdir -p $HOME/.fvwm/screenshot
 
 if [ -d $HOME/bin/shellscripts ]; then
