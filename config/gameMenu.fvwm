@@ -5,108 +5,109 @@ DestroyMenu GameMenu
 AddToMenu GameMenu
 + "========GAMES========" Nop
 + "Funstuff Pi" popup FunstuffPiMenu
-+ "&Steam" exec steam
-+ "TypingTutor" exec tuxtype
-+ "TuxMath" exec tuxmath
-+ "Blinken" exec blinken
+Test (x steam) + "&Steam" exec steam
+Test (x tuxtype) + "TypingTutor" exec tuxtype
+Test (x tuxmath) + "TuxMath" exec tuxmath
+Test (x blinken) + "Blinken" exec blinken
 
 + "========FPS========" Nop
-+ "BzFlag" exec bzflag
-+ "nexuiz" exec nexuiz
-+ "openarena" exec openarena
-+ "redeclipse" exec redeclipse
-+ "urbanTerror" exec /opt/game/urbanTerrorMaps/ut.sh
+Test (x bzflag) + "BzFlag" exec bzflag
+Test (x nexuiz) + "nexuiz" exec nexuiz
+Test (x openarena) + "openarena" exec openarena
+Test (x redeclipse) + "redeclipse" exec redeclipse
+Test (x ut.sh) + "urbanTerror" exec /opt/game/urbanTerrorMaps/ut.sh
++ "&Krunker" exec $[HOME]/bin/shellscripts/krunker.sh
 
 + "========Strategy========" Nop
-+ "Net Panzer" exec netpanzer
-+ "Crimson" exec crimson
-+ "Pioneers" exec pioneers
-+ "Pingus" exec pingus
-+ "Pax Britannica" exec pax-britannica
-+ "HedgeWars" exec hedgewars
-+ "SpaceZero" exec spacezero
-+ "Freeciv" exec freeciv-gtk2
-+ "Freeciv Server" exec freeciv-server
-+ "Boswars" exec boswars
-+ "0 A.D." exec 0ad
-+ "Seven Kingdoms Ancient Adversaries" exec 7kaa
-+ "Pax Britannica" exec pax-britannica
+Test (x netpanzer) + "Net Panzer" exec netpanzer
+Test (x crimson) + "Crimson" exec crimson
+Test (x pioneers) + "Pioneers" exec pioneers
+Test (x pingus) + "Pingus" exec pingus
+Test (x pax-britannica) + "Pax Britannica" exec pax-britannica
+Test (x hedgewars) + "HedgeWars" exec hedgewars
+Test (x spacezero) + "SpaceZero" exec spacezero
+Test (x freeciv-gtk2) + "Freeciv" exec freeciv-gtk2
+Test (x freeciv-server) + "Freeciv Server" exec freeciv-server
+Test (x boswars) + "Boswars" exec boswars
+Test (x 0ad) + "0 A.D." exec 0ad
+Test (x 7kaa) + "Seven Kingdoms Ancient Adversaries" exec 7kaa
+Test (x pax-britannica) + "Pax Britannica" exec pax-britannica
 
 + "========Others========" Nop
-+ "Super Tux Kart" exec supertuxkart
-+ "Aerial combat simulation" exec acm
-+ "Oolite" exec oolite
-+ "Pinball" exec pinball
-+ "Kolf" exec kolf
-+ "Frozen Bubble" exec frozen-bubble
-+ "Pingus" exec pingus
-+ "Breakout" exec lbreakout2
-+ "Cgoban" exec cgoban
-+ "Chess" exec xboard
+Test (x supertuxkart) + "Super Tux Kart" exec supertuxkart
+Test (x acm) + "Aerial combat simulation" exec acm
+Test (x oolite) + "Oolite" exec oolite
+Test (x pinball) + "Pinball" exec pinball
+Test (x kolf) + "Kolf" exec kolf
+Test (x frozen-bubble) + "Frozen Bubble" exec frozen-bubble
+Test (x pingus) + "Pingus" exec pingus
+Test (x lbreakout2) + "Breakout" exec lbreakout2
+Test (x cgoban) + "Cgoban" exec cgoban
+Test (x xboard) + "Chess" exec xboard
 #fltk1.3-games
-+ "Blocks" exec flblocks
-+ "Checkers" exec flcheckers
-+ "Sudoku" exec flsudoku
+Test (x flblocks) + "Blocks" exec flblocks
+Test (x flcheckers) + "Checkers" exec flcheckers
+Test (x flsudoku) + "Sudoku" exec flsudoku
 
 + "========Arcade========" Nop
-+ "Airstrike" exec airstrike
-+ "Adanaxis" exec adanaxisgpl
-+ "Balazar Brothers" exec balazar_brothers
-+ "a7xpg" exec a7xpg
-+ "alienblaster" exec alienblaster
-+ "antigravitaattori" exec antigrav
-+ "asylum" exec asylum
-+ "armagetronad" exec armagetronad
-+ "balder2d" exec balder2d
-+ "ballerburg" exec ballerburg
-+ "barrage" exec barrage
-+ "bomberman" exec bomberclone
-+ "btanks" exec btanks
-+ "bubbros" exec bubbros
-+ "chromium" exec chromium-bsu
-+ "freedroid" exec freedroid
+Test (x airstrike) + "Airstrike" exec airstrike
+Test (x adanaxisgpl) + "Adanaxis" exec adanaxisgpl
+Test (x balazar_brothers) + "Balazar Brothers" exec balazar_brothers
+Test (x a7xpg) + "a7xpg" exec a7xpg
+Test (x alienblaster) + "alienblaster" exec alienblaster
+Test (x antigrav) + "antigravitaattori" exec antigrav
+Test (x asylum) + "asylum" exec asylum
+Test (x armagetronad) + "armagetronad" exec armagetronad
+Test (x balder2d) + "balder2d" exec balder2d
+Test (x ballerburg) + "ballerburg" exec ballerburg
+Test (x barrage) + "barrage" exec barrage
+Test (x bomberclone) + "bomberman" exec bomberclone
+Test (x btanks) + "btanks" exec btanks
+Test (x bubbros) + "bubbros" exec bubbros
+Test (x chromium-bsu) + "chromium" exec chromium-bsu
+Test (x freedroid) + "freedroid" exec freedroid
 #+ "gunroar" exec gunroar
-+ "xpilot-ng-server" exec xterm -hold -e xpilot-ng-server
-+ "xpilot-ng" exec xpilot-ng-x11
-+ "Astromenace" exec AstroMenace
-+ "Maze of Galious" exec mog
-+ "Super Mario Chronicles" exec smc
+Test (x xterm ) + "xpilot-ng-server" exec xterm -hold -e xpilot-ng-server
+Test (x xpilot-ng-x11) + "xpilot-ng" exec xpilot-ng-x11
+Test (x AstroMenace) + "Astromenace" exec AstroMenace
+Test (x mog) + "Maze of Galious" exec mog
+Test (x smc) + "Super Mario Chronicles" exec smc
 
 + "========Adventure========" Nop
 + "&Stendhal" exec java -Dsun.java2d.opengl.fbobject=false -Dsun.java2d.opengl=true -Dsun.java2d.d3d=false -Dsun.java2d.pmoffscreen=false -jar /opt/game/stendhal/stendhal-starter.jar
-+ "Beneath a Steel Sky" exec sky
-+ "Drascula" exec drascula
-+ "Flight of the Amazon Queen" exec queen
-+ "Dink Smallwood" exec freedink
-+ "Lure of the Temptress" exec lure
+Test (x sky) + "Beneath a Steel Sky" exec sky
+Test (x drascula) + "Drascula" exec drascula
+Test (x queen) + "Flight of the Amazon Queen" exec queen
+Test (x freedink) + "Dink Smallwood" exec freedink
+Test (x lure) + "Lure of the Temptress" exec lure
 
-+ "========BSD Games (simple text games) ========" Nop
-+ "adventure" exec xterm -hold -e /usr/games/adventure
-+ "arithmetic"   exec xterm -hold -e /usr/games/arithmetic
-+ "air traffic control (man atc)"   exec xterm -hold -e /usr/games/atc
-+ "backgammon"   exec xterm -hold -e /usr/games/backgammon
-+ "battlestar"   exec xterm -hold -e /usr/games/battlestar
-+ "boggle    "   exec xterm -hold -e /usr/games/boggle
-+ "canfield  "   exec xterm -hold -e /usr/games/canfield
-+ "cribbage  "   exec xterm -hold -e /usr/games/cribbage
-+ "dab (man dab)"   exec xterm -hold -e /usr/games/dab
-+ "go-fish   "   exec xterm -hold -e /usr/games/go-fish
-+ "gomoku    "   exec xterm -hold -e /usr/games/gomoku
-+ "hack      "   exec xterm -hold -e /usr/games/hack
-+ "hangman   "   exec xterm -hold -e /usr/games/hangman
-+ "Hunt (man 6 hunt)" exec xterm -hold -e /usr/games/hunt
-+ "mille     "   exec xterm -hold -e /usr/games/mille
-+ "monop   (monopoly)"   exec xterm -hold -e /usr/games/monop
-+ "phantasia "   exec xterm -hold -e /usr/games/phantasia
-+ "Phase of Moon (man 6 pom)"   exec xterm -hold -e /usr/games/pom
-+ "quiz      "   exec xterm -hold -e /usr/games/quiz
-+ "robots    "   exec xterm -hold -e /usr/games/robots
-+ "sail (man 6 sail)"   exec xterm -hold -e /usr/games/sail
-+ "snake (man 6 snake)"   exec xterm -hold -e /usr/games/snake
-+ "tetris    "   exec xterm -hold -e /usr/games/tetris
-+ "trek      "   exec xterm -hold -e /usr/games/trek
-+ "worm      "   exec xterm -hold -e /usr/games/worm
-+ "wump (man 6 wump)"   exec xterm -hold -e /usr/games/wump
+Test (x mille) + + "========BSD Games (simple text games) ========" Nop
+Test (x adventure) + "adventure" exec xterm -hold -e /usr/games/adventure
+Test (x arithmetic) + "arithmetic"   exec xterm -hold -e /usr/games/arithmetic
+Test (x atc) + "air traffic control (man atc)"   exec xterm -hold -e /usr/games/atc
+Test (x backgammon) + "backgammon"   exec xterm -hold -e /usr/games/backgammon
+Test (x battlestar) + "battlestar"   exec xterm -hold -e /usr/games/battlestar
+Test (x boggle) + "boggle    "   exec xterm -hold -e /usr/games/boggle
+Test (x canfield) + "canfield  "   exec xterm -hold -e /usr/games/canfield
+Test (x cribbage) + "cribbage  "   exec xterm -hold -e /usr/games/cribbage
+Test (x dab) + "dab (man dab)"   exec xterm -hold -e /usr/games/dab
+Test (x go-fish) + "go-fish   "   exec xterm -hold -e /usr/games/go-fish
+Test (x gomoku) + "gomoku    "   exec xterm -hold -e /usr/games/gomoku
+Test (x hack) + "hack      "   exec xterm -hold -e /usr/games/hack
+Test (x hangman) + "hangman   "   exec xterm -hold -e /usr/games/hangman
+Test (x hunt) + "Hunt (man 6 hunt)" exec xterm -hold -e /usr/games/hunt
+Test (x mille) + "mille     "   exec xterm -hold -e /usr/games/mille
+Test (x monop) + "monop   (monopoly)"   exec xterm -hold -e /usr/games/monop
+Test (x phantasia) + "phantasia "   exec xterm -hold -e /usr/games/phantasia
+Test (x pom) + "Phase of Moon (man 6 pom)"   exec xterm -hold -e /usr/games/pom
+Test (x quiz) + "quiz      "   exec xterm -hold -e /usr/games/quiz
+Test (x robots) + "robots    "   exec xterm -hold -e /usr/games/robots
+Test (x sail) + "sail (man 6 sail)"   exec xterm -hold -e /usr/games/sail
+Test (x snake) + "snake (man 6 snake)"   exec xterm -hold -e /usr/games/snake
+Test (x tetris) + "tetris    "   exec xterm -hold -e /usr/games/tetris
+Test (x trek) + "trek      "   exec xterm -hold -e /usr/games/trek
+Test (x worm) + "worm      "   exec xterm -hold -e /usr/games/worm
+Test (x wump) + "wump (man 6 wump)"   exec xterm -hold -e /usr/games/wump
 
 #+ "countmail "   exec xterm -hold -e /usr/games/countmail
 #+ "number    "   exec xterm -hold -e /usr/games/number
@@ -123,4 +124,4 @@ AddToMenu GameMenu
 #+ "caesar    "   exec xterm -hold -e /usr/games/caesar
 
 + "========Last========" Nop
-+ "Atomix" exec atomix
+Test (x atomix) + "Atomix" exec atomix

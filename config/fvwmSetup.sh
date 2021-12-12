@@ -3,6 +3,7 @@ mkdir -p $HOME/.fvwm/screenshot
 
 if [ -d $HOME/bin/shellscripts ]; then
 
+  ln -s $HOME/bin/shellscripts/rpi/_vimrc $HOME/_vimrc
   ln -s $HOME/bin/shellscripts/config/alias.env $HOME/.bash_aliases
   ln -s $HOME/bin/shellscripts/config/.profile $HOME/.profile
   ln -s $HOME/bin/shellscripts/config/.bashrc $HOME/.bashrc

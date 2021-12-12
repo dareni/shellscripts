@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+/usr/bin/yad --title="Enter Root Password" --entry --text "Enter Password:" --hide-text
