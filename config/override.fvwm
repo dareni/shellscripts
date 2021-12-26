@@ -19,8 +19,10 @@ PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
 CursorStyle Default $[fvwm_icon]/cursor/crosshair.xcursor
 CursorStyle Root $[fvwm_icon]/cursor/crosshair.xcursor
 
-AddToFunc   InitFunction
-+ I Exec exec $[fvwm_home]/fvwm.sh init
+# Called from init.fvwm
+#AddToFunc   InitFunction
+#+ I Exec exec $[fvwm_home]/fvwm.sh init
+#+ I Test (F /usr/sbin/wpa_gui) Exec sudo /usr/sbin/wpa_gui -t 
 
 Read $[fvwm_home]/init.fvwm
 Read $[fvwm_home]/gameMenu.fvwm
@@ -33,7 +35,8 @@ Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
 Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
-Style stalonetray Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style trayer Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
+#Style stalonetray Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
@@ -132,7 +135,7 @@ Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -l
 Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
 Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
-Test (x synclient) + "Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient.sh
+Test (x synclient) + "&Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient.sh
 
 # Background Menu
 #

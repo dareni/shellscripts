@@ -10,6 +10,12 @@ if [ -d $HOME/bin/shellscripts ]; then
 
   ln -s $HOME/bin/shellscripts/rpi/_vimrc $HOME/_vimrc
   ln -s $HOME/bin/shellscripts/config/alias.env $HOME/.bash_aliases
+  if [ -f $HOME/.bash_profile ]; then
+    echo WARNING: $HOME/.bash_profile exists so .profile inactive!
+  fi
+  if [ -f $HOME/.bash_login ]; then
+    echo WARNING: $HOME/.bash_login exists so .profile inactive !
+  fi
   ln -s $HOME/bin/shellscripts/config/.profile $HOME/.profile
   ln -s $HOME/bin/shellscripts/config/.bashrc $HOME/.bashrc
   ln -s $HOME/bin/shellscripts/config/.xinitrc $HOME/.xinitrc

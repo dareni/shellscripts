@@ -114,7 +114,7 @@ if [ -n "$TEST" ]; then
   echo "Testing.."
   testIt
 else
-  EPID=`pgrep -o funcPower.sh`
+  EPID=`pgrep -fo funcPower.sh`
   if [ -n "$EPID" ]; then
     if [ "$$" -ne "$EPID" ]; then
       kill -9 $EPID

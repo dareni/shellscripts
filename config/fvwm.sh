@@ -23,7 +23,7 @@ do_init() {
     TIME_POS=$(($X-$TIME_POS))
     DATE_POS=$(($X-$DATE_POS))
     XLOAD_POS=$(($X-$XLOAD_POS))
-    TRAY_POS=$(($X-$TRAY_POS))
+    #TRAY_POS=$(($X-$TRAY_POS))
     PADDING=-5
     HOST_NAME=`hostname`
     if [ "${HOST_NAME}" = "sweetpea" \
@@ -38,7 +38,10 @@ do_init() {
     xclock -update 1 -digital -norender -padding $PADDING -geometry 70x14+$TIME_POS+0  -strftime " %H:%M:%S" &
     xclock           -digital -norender -padding $PADDING -geometry 115x14+$DATE_POS+0 -strftime " %a %b %d %Y" &
     xload -geometry 100x28+$XLOAD_POS+0 -nolabel &
-    stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity E &
+    #stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity E &
+    trayer --edge top --distance $TRAY_POS --distancefrom right --widthtype request \
+      --align right --transparent true --alpha 255 &
+
 
     #Pop message when on battery.
     UPOWER=`which upower`

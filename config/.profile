@@ -28,7 +28,7 @@ fi
 
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
-PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH
+PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH:/usr/sbin
 JDK_NO=8
 . jdkenv
 
@@ -43,5 +43,7 @@ function zones() {
 }
 
 export -f zones
-export WINEPREFIX=/opt/game/WINE
+WINEPREFIX=/opt/game/WINE
+export -f WINEPREFIX
+export -f PATH 
 
