@@ -44,6 +44,6 @@ function zones() {
 
 export -f zones
 WINEPREFIX=/opt/game/WINE
-export -f WINEPREFIX
-export -f PATH 
+export WINEPREFIX
+export PATH
 
