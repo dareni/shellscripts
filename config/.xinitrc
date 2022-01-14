@@ -1,6 +1,8 @@
 #!/bin/sh
 # Maintained at: git@github.com:dareni/shellscripts.git
 
+#xdg-settings set default-web-browser luakit.desktop
+
 xhost +si:localuser:root
 . ~/bin/shellscripts/config/mouse.env >/tmp/xinitrc.log
 xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32
@@ -13,6 +15,7 @@ if [ -n "$SYNCLIENT" ]; then
 fi
 
 
+#install swh-plugins - Steve Harris's LADSPA plugins
 PACMD=`which pacmd`
 if [ -n "$PACMD" ]; then
   (
