@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="Gnumeric_PyCalendar">
+	<information>
+		<name>Python Calendar functions</name>
+		<description>Functions for building a calendar in gnumeric using python.</description>
+		<require_explicit_enabling/>
+	</information>
+	<loader type="Gnumeric_PythonLoader:python">
+		<attribute value="py_cal" name="module_name"/>
+	</loader>
+	<services>
+		<service type="function_group" id="calendar">
+			<category>Python</category>
+			<functions>
+				<function name="py_build_school_term_cal"/>
+			</functions>
+		</service>
+	</services>
+</plugin>
