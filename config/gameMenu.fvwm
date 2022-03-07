@@ -62,6 +62,7 @@ Test (x balder2d) + "balder2d" exec balder2d
 Test (x ballerburg) + "ballerburg" exec ballerburg
 Test (x barrage) + "barrage" exec barrage
 Test (x bomberclone) + "bomberman" exec bomberclone
+Test (x xblast-tnt) + "xblast-tnt" exec xblast-tnt
 Test (x btanks) + "btanks" exec btanks
 Test (x bubbros) + "bubbros" exec bubbros
 Test (x chromium-bsu) + "chromium" exec chromium-bsu

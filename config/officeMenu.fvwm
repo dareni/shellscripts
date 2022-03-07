@@ -28,6 +28,7 @@ AddToMenu   OfficeMenu  "Office Menu%menu/programs.png%" Title
 + "T&otem"  FvwmTotem
 + "Openshot (video editing)" exec openshot
 + "Istanbul (screen capture)" exec istanbul
++ "Rip audio cd (vcdimager)" exec xterm +hold -e 'man cdxa2mpeg' 
 + "" Nop
 +                       "Communication%menu/programs.png%" Nop
 + "" Nop

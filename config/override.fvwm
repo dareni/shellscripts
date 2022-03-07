@@ -129,6 +129,7 @@ AddToMenu   SystemMenu  "System Menu" Title
 Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "System Load" Exec xload
 + "&Xterm" Exec xterm
++ "x&clipboard" Exec xclipboard
 + "Virutal Keyboard" Exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
 Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock

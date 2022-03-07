@@ -1,2 +1,3 @@
 #!/usr/bin/env sh
+#Used by krunker.sh
 /usr/bin/yad --title="Enter Root Password" --entry --text "Enter Password:" --hide-text
