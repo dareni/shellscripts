@@ -5,7 +5,7 @@ DestroyMenu GameMenu
 AddToMenu GameMenu
 + "========GAMES========" Nop
 + "Funstuff Pi" popup FunstuffPiMenu
-Test (x steam) + "&Steam" exec steam
+Test (x steam) + "&Steam" exec steam -no-browser
 Test (x tuxtype) + "TypingTutor" exec tuxtype
 Test (x tuxmath) + "TuxMath" exec tuxmath
 Test (x blinken) + "Blinken" exec blinken

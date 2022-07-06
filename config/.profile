@@ -32,16 +32,8 @@ PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH:/usr/sbin
 JDK_NO=8
 . jdkenv
 
-function zones() {
-  egrep 'Paris|Istanbul|London|Athens|New_York|Los_Angeles|Chicago|Denmark|Brisbane' < /usr/share/zoneinfo/zone.tab |\
-  while read TZONE; do
-    TZ=`echo $TZONE| cut -d" " -f3`
-    export TZ
-    CDATE=`date`
-    printf "%-19s %s\n" $TZ "$CDATE"
-  done;
-}
-
+EDITOR=vi
+export EDITOR
 export -f zones
 WINEPREFIX=/opt/game/WINE
 export WINEPREFIX

@@ -90,6 +90,8 @@ AddToMenu   MenuManPages "Manual Pages" Title
 
 DestroyMenu OfficeMenu
 AddToMenu   OfficeMenu  "Office Menu" Title
+#Thunar is the preferred choice for fm because it is small and supports mtp for mobile devices.
+Test (x thunar) + "File Manager (Thunar)" Exec exec thunar
 Test (x nautilus) + "File Manager (Nautilus)" Exec exec nautilus
 Test (x gentoo) + "File Manager (Gentoo)" Exec exec gentoo
 Test (x pcmanfm) + "File Manager (Pacmanfm)" Exec exec pcmanfm
@@ -174,8 +176,8 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "Layer -1%menu/window-lower.xpm%"  Pick (CirculateHit) Layer -1
 + "StaysOnBottom%menu/window-lower.xpm%"  Pick (CirculateHit) Layer 0 2
 + "" Nop
-+ "%menu/window.xpm%Window Screenshot"  Pick (CirculateHit) FvwmWindowScreenshot
-+ "%menu/display.xpm%Screenshot" FvwmDesktopScreenshot 5
++ "%menu/window.xpm%&Window Screenshot"  Pick (CirculateHit) FvwmWindowScreenshot
++ "%menu/display.xpm%Screensho&t" FvwmDesktopScreenshot 5
 + "" Nop
 + "x&3" MoveToDesk 0 -1
 + "Identify%menu/window-identify.xpm%"  Module FvwmIdent
