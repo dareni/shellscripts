@@ -34,7 +34,6 @@ JDK_NO=8
 
 EDITOR=vi
 export EDITOR
-export -f zones
 WINEPREFIX=/opt/game/WINE
 export WINEPREFIX
 export PATH
