@@ -1,0 +1,125 @@
+<html>
+  <!--
+  Maintained at: git@github.com:dareni/shellscripts.git
+  Play random webm audio files from a directory served up by:
+    python -m http.server.
+
+  Provide play/pause and skip button.
+  -->
+
+  <body>
+    <span id="songName"></span>
+    <div>
+    <audio id="my-audio" controls width="100%"></audio>
+    </div>
+    <div>
+      <button id="playButton" width="50%" height="20%">play</button>
+    </div>
+    <div>
+      <button id="skipButton" width="50%" height="20%">skip</button>
+    </div>
+
+  <style type="text/css">
+    #my-audio {width:100%; font-size: 200%; }
+    #playButton {width:100%; height:20%; font-size: 200%; }
+    #skipButton {width:100%; height:20%; font-size: 200%; }
+    #songName {width:100% height:20%; font-size: 100%;
+      display: flex; flex-wrap: wrap;
+      align-content: center; align:center;
+      padding: 5% 5% 5% 5%; font-size: 200%}
+  </style>
+
+
+  <script>
+    var fileDir = document.URL;
+    var endURL=fileDir.lastIndexOf("/");
+    var URL=fileDir.substr(0,endURL);
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.addEventListener("load", transferComplete);
+    xmlHttp.open('GET', URL, true);
+    xmlHttp.setRequestHeader('Content-Type', 'text/xml');
+    xmlHttp.overrideMimeType('application/xml');
+    xmlHttp.send();
+
+    const myAudio = document.getElementById('my-audio');
+    const playButton = document.getElementById('playButton');
+    const skipButton = document.getElementById('skipButton');
+
+    songList=[];
+
+    function transferComplete(event) {
+      var songStartMarker='<li><a href=\"';
+      var markerLength=songStartMarker.length;
+      var songXML = event.target.responseText;
+      if (event.target.status == 200) {
+        var songEnd = 0;
+        var songNo=0;
+        do {
+          var songStart = songXML.indexOf('<li><a href=\"', songEnd);
+          if (songStart > 0) {
+            songStart = songStart + markerLength;
+            var songEnd = songXML.indexOf('"', songStart);
+            if (songEnd > 0) {
+              song=songXML.substr(songStart, songEnd-songStart);
+              var isSong = song.indexOf('.webm');
+              if (isSong > 0) {
+                songList[songNo]=song;
+                songNo=songNo+1;
+                //alert(songStart+"."+songEnd + ":"+song+"\n");
+              }
+            } else {
+              songStart = -1;
+            }
+          }
+        } while (songStart != -1)
+        if (songList.length > 0) {
+          setSong();
+        }
+      }
+    }
+
+    function switchState() {
+      if (myAudio.paused) {
+        myAudio.play();
+        playButton.textContent = "pause";
+      } else {
+        myAudio.pause();
+        playButton.textContent = "play";
+      }
+    }
+
+    playButton.addEventListener('click', () => {
+      switchState();
+    }, false);
+
+    skipButton.addEventListener('click', () => {
+      setSong();
+      myAudio.play();
+    }, false);
+
+
+    myAudio.addEventListener("ended", () => {
+      setSong();
+      myAudio.play();
+    });
+
+    function getRandomSong() {
+      var newSong = Math.floor(Math.random() * songList.length);
+      return newSong;
+    }
+
+    function setSong() {
+      var newSong = getRandomSong()
+      var songName = songList[newSong];
+      myAudio.setAttribute('src', songName);
+      var songNameDiv = document.getElementById('songName');
+      songName = songName.substring(0,songName.length-4);
+      songNameDiv.innerHTML=decodeURI(songName);
+    }
+
+  </script>
+
+  </body>
+</html>
+
