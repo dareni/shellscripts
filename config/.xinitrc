@@ -38,7 +38,7 @@ if [ -n "$PACMD" ]; then
             pacmd set-default-sink compressor
             sleep 5
             #pacmd set-default-source alsa_input.pci-0000_00_1b.0.analog-stereo
-            pacmd set-default-source alsa_output.usb-C-Media_Electronics_Inc._USB_Audio_Device-00.analog-stereo.monitor
+            pactl set-default-source 'alsa_input.usb-C-Media_Electronics_Inc._USB_Audio_Device-00.multichannel-input'
           fi
       fi
       if [ $IT -gt 5 ]; then

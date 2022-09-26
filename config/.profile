@@ -28,13 +28,17 @@ fi
 
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
-PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH:/usr/sbin
+PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH:/usr/sbin:/opt/dev/apache-maven/bin
 JDK_NO=8
 . jdkenv
+export PATH
 
 EDITOR=vi
 export EDITOR
 WINEPREFIX=/opt/game/WINE
 export WINEPREFIX
-export PATH
+NETBEANS_TMP=/store/tmp
+export NETBEANS_TMP
+
+. "$HOME/.cargo/env"
 
