@@ -199,6 +199,7 @@ Key XF86AudioRaiseVolume A A Exec exec $[fvwm_home]/mixer plus
 Key KEY_VOLUMEUP A A Exec exec $[fvwm_home]/mixer plus
 Key XF86MonBrightnessUp A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
 Key XF86MonBrightnessDown A A Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
+Key XF86TouchpadToggle A A Exec exec ${HOME}/bin/shellscripts/synclient.sh
 Key F8 A SC Exec exec ${HOME}/bin/shellscripts/xbacklight.sh minus
 Key F9 A SC Exec exec ${HOME}/bin/shellscripts/xbacklight.sh plus
 Key F10 A SC Exec exec $[fvwm_home]/mixer mute
