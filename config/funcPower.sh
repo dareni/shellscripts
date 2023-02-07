@@ -18,6 +18,7 @@ getMessage() {
   ONBAT=$2
   OLD_PERCENT=$3
   MSG=""
+
   if [ -z "$PERCENT" ]; then
     MSG="Error: PERCENT value is invalid:$PERCENT"
   elif [[ ! $PERCENT =~ ^-?[0-9]+$ ]]; then
@@ -101,12 +102,17 @@ getStatus() {
   STAT=`getStats`
   PERCENT=`echo $STAT | awk '{print $4}'| awk -F% '{print $1}'`
   ONBAT=`echo $STAT | awk '{print $6}'`
-  #echo getMessage $PERCENT $ONBAT $OLD_PERCENT
-  MSG=`getMessage $PERCENT $ONBAT $OLD_PERCENT`
-  #echo $MSG
-  OLD_PERCENT=`decodePercent "$MSG"`
-  TXT=`decodeMessage "$MSG"`
-  echo $TXT
+  if [[ -z "$ONBAT" ]]; then
+    ONBAT=`echo $STAT | awk '{print $2}'`
+  fi
+  if [ "$ONBAT" = yes ]; then
+    #echo getMessage $PERCENT $ONBAT $OLD_PERCENT
+    MSG=`getMessage $PERCENT $ONBAT $OLD_PERCENT`
+    #echo $MSG
+    OLD_PERCENT=`decodePercent "$MSG"`
+    TXT=`decodeMessage "$MSG"`
+    echo $TXT
+  fi
 }
 
 
