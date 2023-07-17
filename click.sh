@@ -91,6 +91,12 @@ getWindowCoordinates() {
 }
 
 getch() {
+        pid_parent=`ps -h -q "$$" -o ppid `
+        key_binder=`ps -h -q $pid_parent -o cmd |grep -c key_binder`
+        if [ 1 = "$key_binder" ]; then
+          #do not read for a char when triggered from keybinder
+          return
+        fi
         #read a single char from stdin
         old=$(stty -g)
         #time 1 = 100ms timeout
@@ -163,7 +169,7 @@ if [ "$CMD" = "CLICK" ]; then
   WINID=$F_WINID
   X=$F_X
   Y=$F_Y
-  echo Press 'q' to quit ...
+  echo Press {q} to quit ...
 
   while [ -z `getch` ];
     do
