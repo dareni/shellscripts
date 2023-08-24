@@ -126,9 +126,3 @@ if ! shopt -oq posix; then
 fi
 
 
-if [ -d "$HOME/.cargo" ]; then
-  #Rust config
-  . "$HOME/.cargo/env"
-  alias ra='rustup run nightly rust-analyzer'
-  #alias grep='~/.cargo/bin/rg'
-fi

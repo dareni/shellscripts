@@ -1,5 +1,4 @@
 " Maintained at: git@github.com:dareni/shellscripts.git
-" Simple rpi config.
 "the FreeBSD Security Team advises that VIM users
 "use 'set nomodeline' in ~/.vimrc to avoid the possibility of trojaned
 "text files.
@@ -20,8 +19,6 @@ set selectmode=mouse
 "set autoindent
 "set cindent
 set foldmethod=marker
-
-color desert
 
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
 set viminfo='20,<50,s10,h,n~/.cache/viminfo

@@ -28,8 +28,8 @@ fi
 
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
-PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH:/usr/sbin:/opt/dev/apache-maven/bin
-JDK_NO=8
+PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH
+JDK_NO=11
 . jdkenv
 export PATH
 
@@ -37,8 +37,24 @@ EDITOR=vi
 export EDITOR
 WINEPREFIX=/opt/game/WINE
 export WINEPREFIX
-NETBEANS_TMP=/store/tmp
-export NETBEANS_TMP
 
-. "$HOME/.cargo/env"
+_JAVA_OPTIONS=-Djava.io.tmpdir=/store/tmp
+export _JAVA_OPTIONS
+
+if [ -d "/opt/dev/apache-maven/bin" ]; then
+  export PATH="$PATH:/opt/dev/apache-maven/bin"
+fi
+
+if [ -d "/opt/dev/apache-ant/bin" ]; then
+  export ANT_HOME=/opt/dev/apache-ant
+  export PATH="$PATH:$ANT_HOME/bin"
+fi
+
+
+if [ -d "$HOME/.cargo" ]; then
+  #Rust config
+  . "$HOME/.cargo/env"
+  alias ra='rustup run nightly rust-analyzer'
+  #alias grep='~/.cargo/bin/rg'
+fi
 

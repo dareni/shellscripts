@@ -11,7 +11,7 @@ AddToFunc   FvwmPowerArchitect
 
 DestroyFunc FvwmNetbeans
 AddToFunc   FvwmNetbeans
-+ I Exec exec env bash -c '_JAVA_OPTIONS=-Djava.io.tmpdir=$NETBEANS_TMP; netbeans --jdkhome $JAVA_HOME'
++ I Exec exec env bash -c 'netbeans --jdkhome $JAVA_HOME'
 #Note: set the tmpdir to a device with 3G spare
 # for maven central index processing.
 # ln -s /opt/dev/netbeans/bin/netbeans ~/bin/netbeans
