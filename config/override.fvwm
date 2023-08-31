@@ -25,8 +25,8 @@ CursorStyle Root $[fvwm_icon]/cursor/crosshair.xcursor
 #+ I Test (F /usr/sbin/wpa_gui) Exec sudo /usr/sbin/wpa_gui -t 
 
 Read $[fvwm_home]/init.fvwm
-Read $[fvwm_home]/gameMenu.fvwm
-Read $[fvwm_home]/funstuffPiMenu.fvwm
+Test (F $[fvwm_home]/gameMenu) Read $[fvwm_home]/gameMenu.fvwm
+Test (!F $[fvwm_home]/gameMenu) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
 Read $[fvwm_home]/progMenu.fvwm
 
 Style * Icon
@@ -41,11 +41,21 @@ Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Ti
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
+Style "*" InitialMapCommand WarpToWindow 50 50
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
 
 AddToFunc   StartFunction
+
+DestroyFunc StartFunction
+AddToFunc   StartFunction
++ I Test (Init, f $[FVWM_USERDIR]/.BGdefault) \
+    Exec exec fvwm-root $[FVWM_USERDIR]/.BGdefault
++ I TestRc (NoMatch) Exec exec fvwm-root \
+    $[FVWM_DATADIR]/default-config/images/background/bg1.png
++ I Test (Init) Module FvwmBanner
++ I Module FvwmEvent EventNewDesk
 + I FvwmEvent FvwmEvent-NewWindow
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
 
@@ -241,7 +251,7 @@ Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, Se
 #Key Tab A M WindowList Root c c CurrentDesk, NoSticky, NoIcons, CurrentAtEnd
 
 #Mouse control
-Mouse 1 R A Menu -
+Mouse 1 R A Nop
 Mouse 3 R A Menu QuickMenu
 Mouse 2 R A Menu FvwmWindowOpsMenu
 Mouse 1 T S WindowShade

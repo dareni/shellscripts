@@ -14,8 +14,9 @@ elif [ "${RESOURCE_ID}" = "NoResource" ]; then
 elif [ "${RESOURCE_ID}" = "sun-awt-X11-XFramePeer" -a "${RESOURCE_ID}" = "Jitsi" ]; then
   #Iconify the Jitsi application after it has started.
   echo WindowId $WINDOW_ID Iconify true
-else
+#else No longer use the new window event for warptowindow. Use Style InitialMapCommand.
   #Jump to all other windows when the open.
-  echo FlipFocus
-  echo WarpToWindow 50 50
+#  echo FlipFocus
+#  echo WarpToWindow 50 50
+
 fi;
