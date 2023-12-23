@@ -7,7 +7,7 @@ AddToMenu ProgMenu "Programming Menu" Title
 
 DestroyFunc FvwmPowerArchitect
 AddToFunc   FvwmPowerArchitect
-+ I Exec exec /opt/dev/jdk1.7.0_67/bin/java -jar /opt/dev/architect-1.0.7/architect.jar
++ I Exec exec java -jar /opt/dev/power-architect/architect.jar
 
 DestroyFunc FvwmNetbeans
 AddToFunc   FvwmNetbeans

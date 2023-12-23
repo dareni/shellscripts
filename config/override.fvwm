@@ -19,11 +19,6 @@ PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
 CursorStyle Default $[fvwm_icon]/cursor/crosshair.xcursor
 CursorStyle Root $[fvwm_icon]/cursor/crosshair.xcursor
 
-# Called from init.fvwm
-#AddToFunc   InitFunction
-#+ I Exec exec $[fvwm_home]/fvwm.sh init
-#+ I Test (F /usr/sbin/wpa_gui) Exec sudo /usr/sbin/wpa_gui -t 
-
 Read $[fvwm_home]/init.fvwm
 Test (F $[fvwm_home]/gameMenu) Read $[fvwm_home]/gameMenu.fvwm
 Test (!F $[fvwm_home]/gameMenu) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
@@ -36,17 +31,23 @@ Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
 Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style trayer Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
-#Style stalonetray Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
+<<<<<<< Updated upstream
 Style "*" InitialMapCommand WarpToWindow 50 50
+||||||| Stash base
+=======
+Style "*" InitialMapCommand WarpToWindow 50 50
+Style "*Apache NetBeans*" Lenience
+>>>>>>> Stashed changes
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
 
 AddToFunc   StartFunction
+<<<<<<< Updated upstream
 
 DestroyFunc StartFunction
 AddToFunc   StartFunction
@@ -57,6 +58,11 @@ AddToFunc   StartFunction
 + I Test (Init) Module FvwmBanner
 + I Module FvwmEvent EventNewDesk
 + I FvwmEvent FvwmEvent-NewWindow
+||||||| Stash base
++ I FvwmEvent FvwmEvent-NewWindow
+=======
+#+ I Module FvwmEvent FvwmEvent-NewWindow
+>>>>>>> Stashed changes
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
 
 EwmhBaseStruts 0 0 0 0
@@ -191,6 +197,7 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "%menu/display.xpm%Screensho&t" FvwmDesktopScreenshot 5
 + "" Nop
 + "x&3" MoveToDesk 0 -1
++ "xg" GoToDesk 0 -1
 + "Identify%menu/window-identify.xpm%"  Module FvwmIdent
 
 Silent Key Super_L A A Menu QuickMenu
@@ -246,9 +253,8 @@ Key F1 A M Menu MenuFvwmRoot
 Key F2 A M Menu FvwmRootMenu
 Key F3 A M Menu QuickMenu
 #Select window
-#Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, NoDeskSort, SelectOnRelease Meta_L
-Key Tab A M WindowList Root c c CurrentAtEnd, CurrentDesk, NoSticky, NoIcons, SelectOnRelease Meta_L
-#Key Tab A M WindowList Root c c CurrentDesk, NoSticky, NoIcons, CurrentAtEnd
+#Key Tab A M WindowList Root c c  CurrentDesk, NoSticky, NoIcons, SelectOnRelease Meta_L
+Key Tab A M WindowList Root c c CurrentDesk, NoIcons
 
 #Mouse control
 Mouse 1 R A Nop
@@ -259,23 +265,22 @@ Mouse 1 T S WindowShade
 ##############################
 # Default Functions Overridden
 ##############################
-DestroyFunc WindowListFunc
 AddToFunc WindowListFunc
-+ I Iconify off
-+ I Raise
 + I WarpToWindow 50 50
-+ I FlipFocus
++ I Focus
 
 ##################
 # New Window Event
 ##################
-DestroyModuleConfig FvwmEvent-NewWindow: *
-*FvwmEvent-NewWindow: StartDelay 4
-*FvwmEvent-NewWindow: add_window FuncFocusWindow
+#No need to use event to warp. Instead use  Style "*" InitialMapCommand WarpToWindow 50 50
+#DestroyModuleConfig FvwmEvent-NewWindow: *
+#*FvwmEvent-NewWindow: Cmd
+##*FvwmEvent-NewWindow: add_window "WarpToWindow"
+#*FvwmEvent-NewWindow: add_window "FuncFocusWindow"
 
-DestroyFunc FuncFocusWindow
-AddToFunc FuncFocusWindow
-+ I PipeRead "~/.fvwm/focusWindow.sh '$[w.resource]' '$[w.name]' '$[w.id]'"
+#DestroyFunc FuncFocusWindow
+#AddToFunc FuncFocusWindow
+#+ I PipeRead "~/.fvwm/focusWindow.sh '$[w.resource]' '$[w.name]' '$[w.id]'"
 
 ##############
 # Pager Config

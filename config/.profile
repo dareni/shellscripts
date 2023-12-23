@@ -29,7 +29,7 @@ fi
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
 PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH
-JDK_NO=11
+JDK_NO=17
 . jdkenv
 export PATH
 
@@ -38,8 +38,11 @@ export EDITOR
 WINEPREFIX=/opt/game/WINE
 export WINEPREFIX
 
-_JAVA_OPTIONS=-Djava.io.tmpdir=/store/tmp
-export _JAVA_OPTIONS
+#JDK_JAVA_OPTIONS="-Djava.io.tmpdir=/opt/volatile/tmp"
+JDK_JAVA_OPTIONS="-Djava.io.tmpdir=/opt/volatile/tmp --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
+
+
+export JDK_JAVA_OPTIONS
 
 if [ -d "/opt/dev/apache-maven/bin" ]; then
   export PATH="$PATH:/opt/dev/apache-maven/bin"
