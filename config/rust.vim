@@ -52,14 +52,14 @@ map \rt :call RustyTags() <RETURN>
 
 function! GdbSetup()
   set mouse=a
-  let g:termdebug_popup = 0
+  "let g:termdebug_popup = 0
   let g:termdebug_wide = 163
   packadd termdebug
 endfunction
 
 map \rg :call GdbSetup()
 
-let b:undo_ftplugin = "unlet g:_ale_linters"
+let b:undo_ftplugin = ""
 
 augroup END
 

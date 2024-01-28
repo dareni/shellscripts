@@ -17,36 +17,11 @@ fi
 
 
 #install swh-plugins - Steve Harris's LADSPA plugins
-PACMD=`which pacmd`
-if [ -n "$PACMD" ]; then
-  (
-    PA=1
-    IT=0
-    (while [ $PA -ne 0 ]; do
-      sleep 5
-      IT=$((IT + 1))
-      if [ $IT -eq 3 ]; then
-        systemctl --user restart pulseaudio.service
-      fi
-      pulseaudio --check
-      PA=$?
-      if [ $PA -eq 0 ]; then
-        COUNT=`pacmd list-sinks|grep -c "name: <compressor>"`
-          if [ $COUNT -eq 0 ]; then
-            #limit volume extremities
-            pacmd load-module module-ladspa-sink sink_name=compressor plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
-            pacmd set-default-sink compressor
-            sleep 5
-            #pacmd set-default-source alsa_input.pci-0000_00_1b.0.analog-stereo
-            pactl set-default-source 'alsa_input.usb-C-Media_Electronics_Inc._USB_Audio_Device-00.multichannel-input'
-          fi
-      fi
-      if [ $IT -gt 5 ]; then
-        PA=0
-      fi
-    done) >/dev/null
-  )&
-fi
+
+pactl load-module module-ladspa-sink sink_name=compressor \
+       plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
+pactl set-default-sink compressor
+
 
 status=`pgrep -fl fvwm`
 if [ -z "${status}" ]; then

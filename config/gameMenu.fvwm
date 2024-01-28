@@ -1,10 +1,10 @@
 #vim ft:fvwm
-Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
+#Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
 
 DestroyMenu GameMenu
 AddToMenu GameMenu
 + "========GAMES========" Nop
-+ "Funstuff Pi" popup FunstuffPiMenu
+#+ "Funstuff Pi" popup FunstuffPiMenu
 Test (x steam) + "&Steam" exec steam -no-browser
 Test (x tuxtype) + "TypingTutor" exec tuxtype
 Test (x tuxmath) + "TuxMath" exec tuxmath

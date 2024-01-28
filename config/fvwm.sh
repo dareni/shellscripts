@@ -48,6 +48,8 @@ do_init() {
     if [ -n "$UPOWER" ]; then
       ~/bin/shellscripts/config/funcPower.sh
     fi
+
+    #(sleep 5; pulseaudio --kill )&
 }
 
 case $CMD in

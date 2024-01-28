@@ -20,8 +20,8 @@ CursorStyle Default $[fvwm_icon]/cursor/crosshair.xcursor
 CursorStyle Root $[fvwm_icon]/cursor/crosshair.xcursor
 
 Read $[fvwm_home]/init.fvwm
-Test (F $[fvwm_home]/gameMenu) Read $[fvwm_home]/gameMenu.fvwm
-Test (!F $[fvwm_home]/gameMenu) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
+Test (F $[fvwm_home]/gameMenu.fvwm) Read $[fvwm_home]/gameMenu.fvwm
+Test (!F $[fvwm_home]/gameMenu.fvwm) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
 Read $[fvwm_home]/progMenu.fvwm
 
 Style * Icon
@@ -35,19 +35,11 @@ Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Ti
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
-<<<<<<< Updated upstream
-Style "*" InitialMapCommand WarpToWindow 50 50
-||||||| Stash base
-=======
 Style "*" InitialMapCommand WarpToWindow 50 50
 Style "*Apache NetBeans*" Lenience
->>>>>>> Stashed changes
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
-
-AddToFunc   StartFunction
-<<<<<<< Updated upstream
 
 DestroyFunc StartFunction
 AddToFunc   StartFunction
@@ -57,12 +49,6 @@ AddToFunc   StartFunction
     $[FVWM_DATADIR]/default-config/images/background/bg1.png
 + I Test (Init) Module FvwmBanner
 + I Module FvwmEvent EventNewDesk
-+ I FvwmEvent FvwmEvent-NewWindow
-||||||| Stash base
-+ I FvwmEvent FvwmEvent-NewWindow
-=======
-#+ I Module FvwmEvent FvwmEvent-NewWindow
->>>>>>> Stashed changes
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
 
 EwmhBaseStruts 0 0 0 0

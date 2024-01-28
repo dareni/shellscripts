@@ -14,7 +14,7 @@ DUP=$4
 COUNT_LIMIT=$5
 if [ \( -z "$DELAY" \) -o \( "$CMD" = "IMAGE" -a -z "$FILENAME" \) ];  then
   if [  ! \( "$CMD" = "FARM"  -o  "$CMD" = "SAND" -o "$CMD" = "MESE" -o \
-    "$CMD" = "CLICKER" \) ];  then
+    "$CMD" = "CLICKER" -o "$CMD" = "POINTS" -o "$CMD" = "AL" \) ];  then
     echo
     echo  Usage:
     echo         click.sh MULTI secDelay
@@ -28,7 +28,7 @@ if [ \( -z "$DELAY" \) -o \( "$CMD" = "IMAGE" -a -z "$FILENAME" \) ];  then
     echo            filename - name for new images
     echo            dup - 2/1 images per shot
     echo            count - number of shots
-    exit
+    return
   fi
 fi
 
@@ -134,6 +134,26 @@ getRandomDelay() {
   fi
 }
 
+getRandom5() {
+ a=`head -1 /dev/urandom |cut -b1`
+ a=`printf "%03d" "'$a" |cut -b3`
+ echo "(5-$a)/2" |bc
+}
+
+#Generate a random number between 5 and -4.
+getRandom10() {
+ a=`head -1 /dev/urandom |cut -b1`
+ a=`printf "%03d" "'$a" |cut -b3`
+ echo $((5-$a))
+}
+
+#Generate a random number between 0 and 63
+getRandom50() {
+ a=`head -1 /dev/urandom |cut -b1`
+ a=`printf "%03i" "'$a" |cut -b1-3`
+ echo $a/4 |bc
+}
+
 doMouseClick() {
   DMC_WINID=$1
   DMC_X=$2
@@ -144,6 +164,13 @@ doMouseClick() {
   PREVWINID=`echo $PREVWIN|cut -f4 -d " " |cut -f2 -d:`
   xdotool mousemove --window $DMC_WINID $DMC_X $DMC_Y click 1
   xdotool windowfocus $PREVWINID mousemove $PREVX $PREVY
+}
+
+doSimpleClick() {
+  DMC_WINID=$1
+  DMC_X=$2
+  DMC_Y=$3
+  xdotool mousemove --window $DMC_WINID $DMC_X $DMC_Y click 1
 }
 
 doMouseDClick() {
@@ -302,7 +329,7 @@ elif [ "$CMD" = "SAND" ]; then
       sleep 1
   done
 elif [ "$CMD" = "MESE" ]; then
-  echo Click on the window ...
+  echo Click point 1  ...
   getWindowCoordinates
   WINID=$F_WINID
   X=$F_X
@@ -330,6 +357,60 @@ elif [ "$CMD" = "MESE" ]; then
       sleep .75
       xdotool mouseup 1
   done
+elif [ "$CMD" = "AL" ]; then
+  read -p "Add delay(sec)?" DELAY
+  echo Click point c  ...
+  getWindowCoordinates
+  WINID=$F_WINID
+  X=$F_X
+  Y=$F_Y
+  doSimpleClick $WINID $X $Y
+  while [ -z `getch` ];
+  do
+    sleep .5
+    CWIN=`xdotool getwindowfocus`
+    if [ $CWIN -ne $WINID ]; then
+      return
+    fi
+    sleep .5
+    CWIN=`xdotool getwindowfocus`
+    if [ $CWIN -ne $WINID ]; then
+      return
+    fi
+    x_adj=$(($X+`getRandom5`))
+    y_adj=$(($Y+`getRandom5`))
+    doSimpleClick $WINID $x_adj $y_adj
+    sleep $((DELAY+`getRandom50`))
+  done
+  return
+elif [ "$CMD" = "POINTS" ]; then
+  echo start
+  . array.env
+  read -p "Number of points? " POINT_COUNT
+
+  for c in `jot - 1 ${POINT_COUNT:=1} 1`
+  do
+    echo Click point $c  ...
+    getWindowCoordinates
+    set_avar winid $c $F_WINID
+    set_avar x $c $F_X
+    set_avar y $c $F_Y
+    doMouseClick `get_avar winid $c` `get_avar x $c` `get_avar y $c`
+    read -p "Add delay?" DELAY
+    set_avar delay $c ${DELAY:=0}
+    echo `get_avar x $c` `get_avar y $c` `get_avar delay $c`
+  done;
+  echo Press 'q' to quit ...
+  while [ -z `getch` ];
+  do
+    for c in `jot - 1 ${POINT_COUNT:=1} 1`
+    do
+      doMouseClick `get_avar winid $c` `get_avar x $c` `get_avar y $c`
+      sleep `get_avar delay $c`
+    done
+  done
+  return
+
 elif [ "$CMD" = "CLICKER" ]; then
   echo Click on the window ...
   getWindowCoordinates
@@ -359,7 +440,4 @@ exit
       doMouseClick $WINID $X $Y
     fi
   done;
-
-
-
 fi
