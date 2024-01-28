@@ -147,6 +147,7 @@ Test (x synclient) + "&Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient
 #
 # Backgrounds are located in ~/.fvwm/images/background/
 # Menu icons are located in ~/.fvwm/images/bgicons/
+# Create the icon eg:  convert -geometry 32x32 background/bg7.png bgicons/bg7.png
 DestroyMenu BGMenu
 AddToMenu   BGMenu "Wallpapers" Title
 + "Floral%bgicons/bg1.png%" SetBG bg1.png
@@ -154,6 +155,8 @@ AddToMenu   BGMenu "Wallpapers" Title
 + "Space%bgicons/bg3.png%" SetBG bg3.png
 + "Tritile%bgicons/bg4.png%" SetBG bg4.png
 + "Cat%bgicons/bg5.png%" SetBG bg5.png
++ "Scenic Mountains%bgicons/bg6.png%" SetBG bg6.png
++ "WiseMan%bgicons/bg7.png%" SetBG bg7.png
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
