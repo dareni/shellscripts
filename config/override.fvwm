@@ -158,6 +158,7 @@ AddToMenu   BGMenu "Wallpapers" Title
 + "Scenic Mountains%bgicons/bg6.png%" SetBG bg6.png
 + "WiseMan%bgicons/bg7.png%" SetBG bg7.png
 + "Tf2%bgicons/bg8.png%" SetBG bg8.png
++ "Stream%bgicons/bg9.png%" SetBG bg9.png
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
