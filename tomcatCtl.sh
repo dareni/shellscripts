@@ -8,6 +8,7 @@ COMMAND=$2
 COMMAND_PARAM=$3
 COMMAND_LIST="\tstatus - is the instance running
 \tup - upgrade ie clear logs, copy new war
+\tpartial - partial upgrade ie clear logs, copy new files
 \tstart - start the instance
 \tstop - stop the instance
 \tstop <waitsec> - stop the instance allowing waitsec
@@ -126,6 +127,15 @@ upgrade() {
     start
 }
 
+partial() {
+    stop
+    clearCache
+    clearLogs
+    do_partial_update
+    sleep 2
+    start
+}
+
 clean() {
     if [ 1 -eq `status | grep -c Running` ]; then
         stop
@@ -240,6 +250,11 @@ status)
 up)
     echo upgrading ...
     upgrade
+    last
+    exit 0;;
+partial)
+    echo partial upgrade ...
+    partial
     last
     exit 0;;
 start)

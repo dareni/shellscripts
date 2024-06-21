@@ -9,10 +9,13 @@ args[0]="-url"
 //args[1]="jdbc:h2:file:./db/test;MODE=HSQLDB"
 //args[1]="jdbc:h2:file:/tmp/h2/dataSource;DATABASE_TO_UPPER=FALSE;MODE=MYSQL;FILE_LOCK=NO;DB_CLOSE_ON_EXIT=FALSE"
 //Note: both clients must use AUTO_SERVER=TRUE to share the database. 
-args[1]="jdbc:h2:file:/tmp/h2/dataSource;DATABASE_TO_UPPER=FALSE;MODE=MYSQL;AUTO_SERVER=TRUE"
+//args[1]="jdbc:h2:file:/tmp/h2/dataSource;DATABASE_TO_UPPER=FALSE;MODE=HSQLDB;AUTO_SERVER=TRUE"
+//args[1]="jdbc:h2:file:/tmp/h2/dataSource;DATABASE_TO_UPPER=FALSE;MODE=MYSQL;AUTO_SERVER=TRUE"
 //args[1]="jdbc:h2:mem:dataSource;DATABASE_TO_UPPER=FALSE;MODE=strict"
+//args[1]="jdbc:h2:mem:dataSource;DATABASE_TO_UPPER=FALSE;MODE=LEGACY"
+args[1]="jdbc:h2:file:/tmp/h2/dataSource;DATABASE_TO_UPPER=FALSE;MODE=LEGACY;AUTO_SERVER=TRUE"
 args[2]="-user"
-args[3]="sa"
+args[3]=""
 args[4]="-password"
 args[5]=""
 args[6]="-driver"
@@ -22,8 +25,11 @@ org.h2.tools.Shell.main(args)
 //  Commands:
 //
 //    show tables;
+//    show columns from ...
 //    select current_schema;
 //    select current_catalog;
+//    @tables;
+//    @tables null null ...;
 //    @info
 //    select * from information_schema.tables;
 //    RUNSCRIPT FROM 'create_schema.sql'

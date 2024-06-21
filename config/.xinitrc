@@ -7,6 +7,9 @@ xhost +si:localuser:root
 . ~/bin/shellscripts/config/mouse.env >/tmp/xinitrc.log
 xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32
 
+#xdg-desktop-portal-gtk requirement for steam.
+systemctl --user set-environment DISPLAY=$DISPLAY
+
 SYNCLIENT=`which synclient`
 if [ -n "$SYNCLIENT" ]; then
   synclient TapButton1=1

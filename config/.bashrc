@@ -125,4 +125,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Default system vm's.
+export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 
