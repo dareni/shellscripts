@@ -30,6 +30,14 @@ let g:ale_list_window_size = 5
 let g:ale_pattern_options_enabled = 1
 let g:ale_hover_preview = 1
 
+"ENV for rusty-tags invocation.
+let g:rust_src_path=trim(system("rustc --print sysroot"))."/lib/rustlib/src/rust/library"
+let $RUST_SRC_PATH=g:rust_src_path
+let &tags="./rusty-tags.vi,".g:rust_src_path."/rusty-tags.vi"
+set tagcase=smart 
+"see tag-matchlist ie use :ts to get a tag picklist for multiple matches.
+
+
 "Activate Ale autocomplete ie ctrl-x ctrl-a in insert mode.
 imap <C-A> <Plug>(ale_complete)
 
@@ -37,6 +45,7 @@ map \gd :ALEGoToDefinition
 map \cl :cexpr []
 map \da :let ale_enabled=0
 
+map \cb :!clear; cargo build 
 map \cr :!clear; cargo run
 map \ct :!clear; cargo test -- --nocapture
 map \ft :%!rustfmt
@@ -45,7 +54,7 @@ function! RustyTags()
   call system("rusty-tags vi")
   let l:tpath=system("pwd")
   let l:tpath= trim(l:tpath)."/rusty-tags.vi"
-  let &tags=l:tpath
+  let &tags=l:tpath.",".g:rust_src_path."/rusty-tags.vi"
 endfunction
 "run rusty-tags
 map \rt :call RustyTags() <RETURN>

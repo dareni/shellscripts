@@ -14,6 +14,7 @@ AddToMenu   OfficeMenu  "Office Menu%menu/programs.png%" Title
 + "Office Suite" exec libreoffice
 + "Simple Spreadsheet" exec gnumeric
 + "Simple Document" exec abiword
++ "Graphical Document (Scribus)" exec scribus 
 + "GVim%menu/vim.png%" FvwmGVim
 + "" Nop
 +                       "Images/Drawing%menu/programs.png%" Nop
