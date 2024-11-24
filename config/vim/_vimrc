@@ -19,6 +19,9 @@ set selectmode=mouse
 "set autoindent
 "set cindent
 set foldmethod=marker
+" when wrapping break on space
+set linebreak
+:colo blackbeauty
 
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
 set viminfo='20,<50,s10,h,n~/.cache/viminfo
@@ -26,5 +29,19 @@ set history=20
 syntax on
 set hlsearch
 
+
 "vim network read/write bookmark/history disable.
 :let g:netrw_dirhistmax=0
+
+autocmd BufNew,BufRead *.asm call SetNasmOptions() 
+
+function SetNasmOptions() 
+  set ft=nasm
+  let g:ale_pattern_options = {'\/opt\/volatile\/game\/asm\/*.asm$': {'ale_enabled': 0}}
+endfunction
+
+"function StartProject()
+"  :packadd project
+"  :Project project.txt
+"endfunction 
+
