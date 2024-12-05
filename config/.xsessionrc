@@ -29,7 +29,7 @@ pactl set-default-sink compressor
 status=`pgrep -fl fvwm`
 if [ -z "${status}" ]; then
   rm -f /tmp/fvwm${USER}.log
-  fvwm2 >> /tmp/fvwm${USER}.log 2>>/tmp/fvwm${USER}.log
+  fvwm3 >> /tmp/fvwm${USER}.log 2>>/tmp/fvwm${USER}.log
 else
   echo fvwm already running! $status
 fi

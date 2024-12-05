@@ -37,6 +37,8 @@ Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
 Style "*" BorderWidth 1, HandleWidth 1
 Style "*" InitialMapCommand WarpToWindow 50 50
 Style "*Apache NetBeans*" Lenience
+Style yad StaysOnTop, Sticky, PositionPlacement center
+Style FvwmBanner !Title !Borders
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
@@ -45,8 +47,9 @@ DestroyFunc StartFunction
 AddToFunc   StartFunction
 + I Test (Init, f $[FVWM_USERDIR]/.BGdefault) \
     Exec exec fvwm-root $[FVWM_USERDIR]/.BGdefault
-+ I TestRc (NoMatch) Exec exec fvwm-root \
+#+ I TestRc (NoMatch) Exec exec fvwm-root \
     $[FVWM_DATADIR]/default-config/images/background/bg1.png
++ I TestRc (NoMatch) Exec exec $[HOME]/.fehbg
 + I Test (Init) Module FvwmBanner
 + I Module FvwmEvent EventNewDesk
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
@@ -150,15 +153,26 @@ Test (x synclient) + "&Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient
 # Create the icon eg:  convert -geometry 32x32 background/bg7.png bgicons/bg7.png
 DestroyMenu BGMenu
 AddToMenu   BGMenu "Wallpapers" Title
-+ "Floral%bgicons/bg1.png%" SetBG bg1.png
-+ "Circles%bgicons/bg2.png%" SetBG bg2.png
-+ "Space%bgicons/bg3.png%" SetBG bg3.png
-+ "Tritile%bgicons/bg4.png%" SetBG bg4.png
-+ "Cat%bgicons/bg5.png%" SetBG bg5.png
-+ "Scenic Mountains%bgicons/bg6.png%" SetBG bg6.png
-+ "WiseMan%bgicons/bg7.png%" SetBG bg7.png
-+ "Tf2%bgicons/bg8.png%" SetBG bg8.png
-+ "Stream%bgicons/bg9.png%" SetBG bg9.png
+#+ "Click a tile. (m)enu on opened image ->File->Background" Exec exec feh -t /usr/share/fvwm3/default-config/images/background/* ~/.fvwm/images/background/
++ "Select Wallpaper" Wallpaper
+#+ "Floral%bgicons/bg1.png%" SetBG bg1.png
+#+ "Circles%bgicons/bg2.png%" SetBG bg2.png
+#+ "Space%bgicons/bg3.png%" SetBG bg3.png
+#+ "Tritile%bgicons/bg4.png%" SetBG bg4.png
+#+ "Cat%bgicons/bg5.png%" SetBG bg5.png
+#+ "Scenic Mountains%bgicons/bg6.png%" SetBG bg6.png
+#+ "WiseMan%bgicons/bg7.png%" SetBG bg7.png
+#+ "Tf2%bgicons/bg8.png%" SetBG bg8.png
+#+ "Stream%bgicons/bg9.png%" SetBG bg9.png
+#+ "OceanLandscape%bgicons/bg10.png%" SetBG bg10.png
+
+######
+# Wallpaper function
+###########
+DestroyFunc Wallpaper
+AddToFunc   Wallpaper
++ I Exec  exec feh -t /usr/share/fvwm3/default-config/images/background/* ~/.fvwm/images/background/
++ I Exec  exec yad --tytle="Select Wallpaper" --text "» Click a wallpaper tile.\n» Press (m)enu on the wallpaper image when it opens.\n» Note: the image may open under this message window." --escape-ok --sticky --center --on-top --borders=20 
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
