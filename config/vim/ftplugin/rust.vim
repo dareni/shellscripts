@@ -1,72 +1,58 @@
-" Maintained at: git@github.com:dareni/shellscripts.git
-" Rust plugin for autocomplete, debug etc.
-" Link to ~/.vim/ftplugin/
 
-if exists("b:did_ftplugin")
-  finish
+"leg g:ale_completion_symbols = { 'method': 'hello'}
+"let g:ale_linters_explicit=1
+"let g:ale_linters_ignore= {'rust': ['cargo']}
+"let g:ale_keep_list_window_open = 0
+"let g:ale_hover_preview = 1
+"
+"When rust file is not part of a cargo project use rustc linter.
+let cargo_op=system('cargo verify-project')
+if v:shell_error != 0
+  "No cargo project so use rustc
+  let g:ale_linters={'rust': ['rustc']}
+else
+  "Runs faster without cargo
+  let g:ale_linters={'rust':['analyzer']}
 endif
-let b:did_ftplugin = 1
 
-let s:save_cpo = &cpo
-set cpo&vim
+"None of these seem to be reliable so disable.
+"Only the lint on save is reliable.
+let g:ale_lint_on_text_changed= 0
+let g:ale_lint_on_insert_leave = 0
+let g:ale_completion_enabled = 0
 
-augroup rust.vim
-autocmd!
-
-let g:ale_linters = {'rust': ['analyzer', 'cargo', 'rls']}
-"let g:ale_linters = {'rust': ['analyzer', 'cargo', 'rls', 'rustc']}
-let g:ale_fixers = { 'rust': ['rustfmt', 'trim_whitespace', 'remove_trailing_lines'] }
-let g:ale_completion_enabled = 1
-let g:ale_sign_column_always = 1
-let g:airline#extensions#ale#enabled = 1
-"Only lint project files
-"let g:ale_pattern_options = {'\/opt\/dev\/*.rs$': {'ale_enabled': 0}}
-"Enable quickfix
-let g:ale_set_loclist = 0
 let g:ale_set_quickfix = 1
+let g:ale_list_window_size = 5
 let g:ale_open_list = 1
-let g:ale_keep_list_window_open = 1
-let g:ale_list_window_size = 8
-let g:ale_pattern_options_enabled = 1
-let g:ale_hover_preview = 1
-
-"let g:ale_set_echo_cursor = 0
-"let g:ale_set_virtualtext_cursor = 0
-"let g:ale_cursor_detail = 0
-"let g:ale_set_balloons = 0
-
-"config env rust-analyzer.diagnostics.disabled": ["inactive-code"],
-let g:ale_rust_analyzer_config = {
-\		'diagnostics': {
-\			'disabled': ["inactive-code"]
-\		}
-\}
 
 colo rusty
 set foldmethod=syntax
 
-"ENV for rusty-tags invocation.
-let g:rust_src_path=trim(system("rustc --print sysroot"))."/lib/rustlib/src/rust/library"
-let $RUST_SRC_PATH=g:rust_src_path
-let &tags="rusty-tags.vi,".g:rust_src_path."/rusty-tags.vi"
-
-set tagcase=smart 
-"see tag-matchlist ie use :ts to get a tag picklist for multiple matches.
-
+let $RUST_SRC_PATH=trim(system("rustc --print sysroot"))."/lib/rustlib/src/rust/library"
+let &tags="rusty-tags.vi"
+set tagcase=smart
 
 "Activate Ale autocomplete ie ctrl-x ctrl-a in insert mode.
+"Not available without rust-analyzer
+"LSP ..
+"nnoremap <C-A> <Plug>(ale_complete)
 imap <C-A> <Plug>(ale_complete)
 
-map \gd :ALEGoToDefinition
-map \cl :cexpr []
-"map \ae :let ale_enabled=0
-map \ae :ALEEnable <RETURN>
-map \ad :ALEDisable <RETURN>
+map <leader>ll <Plug>(ale_lint)
 
-map \cb :!clear; cargo build 
-map \cr :!clear; cargo run
-map \ct :!clear; cargo test -- --nocapture
-map \ft :%!rustfmt
+nnoremap <leader>ai <Plug>(ale_info)
+
+map <leader>gd <Plug>(ale_go_to_definition)
+"open a window for display of what is under the cursor.
+map <leader>ah :ALEHover <RETURN>
+map <leader>cl :cexpr []
+map <leader>ae <Plug>(ale_enable)
+map <leader>ad <Plug>(ale_disable)
+
+map <leader>cb :!clear; cargo build
+map <leader>cr :!clear; cargo run
+map <leader>ct :!clear; cargo test -- --nocapture
+map <leader>ft :%!rustfmt
 
 function! RustyTags()
   call system("rusty-tags vi")
@@ -86,11 +72,3 @@ endfunction
 
 map \rg :call GdbSetup()
 
-let b:undo_ftplugin = ""
-
-augroup END
-
-let &cpo = s:save_cpo
-unlet s:save_cpo
-
-" vim: set noet sw=2 ts=2:

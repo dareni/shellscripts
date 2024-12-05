@@ -1,47 +1,94 @@
-" Maintained at: git@github.com:dareni/shellscripts.git
-"the FreeBSD Security Team advises that VIM users
-"use 'set nomodeline' in ~/.vimrc to avoid the possibility of trojaned
-"text files.
-
-"Note! middle mouse insert requires <SHIFT>
-
-source $VIMRUNTIME/debian.vim
 source $VIMRUNTIME/defaults.vim
-set nocompatible	" Use Vim defaults (much better!)
+set modeline
+
 set directory=~/.cache
 set backupdir=~/.cache
 set tabstop=2
 set shiftwidth=2
 set expandtab
 set ic
-set selectmode=mouse
-"set nowrap
-"set autoindent
-"set cindent
-set foldmethod=marker
-" when wrapping break on space
-set linebreak
-:colo blackbeauty
+set fdm=marker
+"set mouse mode for xterm use
+"use "*p to paste clipboard
+behave xterm
+set mouse=a
 
-set bs=indent,eol,start		" allow backspacing over everything in insert mode
+set bs=indent,eol,start	" allow backspacing over everything in insert mode
 set viminfo='20,<50,s10,h,n~/.cache/viminfo
 set history=20
-syntax on
 set hlsearch
-
 
 "vim network read/write bookmark/history disable.
 :let g:netrw_dirhistmax=0
 
-autocmd BufNew,BufRead *.asm call SetNasmOptions() 
+nnoremap \ ,
+let mapleader=','
+"execute commands from the "clipboard
+nnoremap <leader>2 :@"<CR>
+"switch between the last 2 buffers
+nnoremap <leader>3 :e#<CR>
 
-function SetNasmOptions() 
-  set ft=nasm
-  let g:ale_pattern_options = {'\/opt\/volatile\/game\/asm\/*.asm$': {'ale_enabled': 0}}
+"{{{ buffers
+"select from hidden buffer
+nnoremap <leader>bh :ls!<CR>:b<Space>
+"wipeout buffer
+nnoremap <leader>bw :ls!<CR>:bw<Space>
+"toggle with last buffer
+nnoremap <leader>3 :e#<CR>
+nmap <C-n> :bn<cr>
+nmap <C-p> :bp<cr>
+"}}}
+"{{{ window nav
+nnoremap <leader>w <C-w>
+nnoremap <M-h> <C-w>h
+nnoremap <M-j> <C-w>j
+nnoremap <M-k> <C-w>k
+nnoremap <M-l> <C-w>l
+"}}}
+"{{{ resize window :help key-notation
+nnoremap <M-Left> <C-w><
+nnoremap <M-Down> <C-w>+
+nnoremap <M-Up> <C-w>-
+nnoremap <M-Right> <C-w>>
+"}}}
+"}}}
+"{{{ tabs
+nnoremap <leader>t :tab
+"new
+nnoremap <M-n> :tabn<cr>
+"previous
+nnoremap <M-p> :tabp<cr>
+"next
+nnoremap <C-Tab> :tabn<cr>
+"previous
+nnoremap <C-S-Tab> :tabp<cr>
+"new
+nnoremap tn :tabe<CR>
+"new
+nnoremap te :tabe<Space><C-z><S-Tab>
+"new tab with filename
+nnoremap tf :tabf<Space>
+"close
+nnoremap tc :tabc<CR>
+"close other
+nnoremap to :tabo<CR>
+"tab move
+nnoremap tm :tabm<CR>
+"list of tabs
+nnoremap ts :tabs<CR>
+
+nnoremap th :tabr<CR>
+nnoremap tj :tabn<CR>
+nnoremap tk :tabp<CR>
+nnoremap tl :tabl<CR>
+"}}}
+
+
+"{{{crude debug function.
+function! Ikky(buf)
+	"eg call Ikky(['blah'])
+	call writefile(a:buf,glob('/opt/volatile/tmp/vibuf.out', 'ba'))
 endfunction
+"}}}
 
-"function StartProject()
-"  :packadd project
-"  :Project project.txt
-"endfunction 
 
