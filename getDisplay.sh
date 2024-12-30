@@ -3,9 +3,17 @@
 # Maintained at: git@github.com:dareni/shellscripts.git
 
 #w -h |awk '{print $3}' |grep : |sort -u
-displays=`w -h |awk '{print $3}' |grep : |sort -u`
+displays=`w -h |awk '{
+  if ($3 ~ /-/ ) {
+    #alacritty term
+    print $12
+  } else {
+    #xterm
+    print $3
+  }
+}' |grep : |sort -u`
 
-for d in $displays 
+for d in $displays
 do
   DISPLAY=$d
   export DISPLAY

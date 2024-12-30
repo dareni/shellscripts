@@ -57,7 +57,10 @@ fi
 if [ -d "$HOME/.cargo" ]; then
   #Rust config
   . "$HOME/.cargo/env"
-  alias ra='rustup run nightly rust-analyzer'
-  #alias grep='~/.cargo/bin/rg'
+  export RUST_SRC_PATH=`rustc --print sysroot`/lib/rustlib/src/rust/library
 fi
 
+if [ -n `which virsh` ]; then
+  # Default system vm's.
+  export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
+fi

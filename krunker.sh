@@ -20,12 +20,12 @@ download() {
 
 if [ -z "`which fusermount`" ]; then
   fail "\n\nPlease install fusermount."
-  exit
+  exit 1
 fi
 
 if [ -z "`which yad`" ]; then
   fail "\n\nPlease install yad."
-  exit
+  exit 1
 fi
 
 export SUDO_ASKPASS=$HOME/bin/shellscripts/pw

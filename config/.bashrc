@@ -86,7 +86,7 @@ if [ -x /usr/bin/dircolors ]; then
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
-    alias  hed='feh -B white ~/hedwigsTheme.png' 
+    alias  hed='feh -B white ~/hedwigsTheme.png'
 
     export LESS_TERMCAP_mb=$'\e[1;32m'
     export LESS_TERMCAP_md=$'\e[1;32m'
@@ -124,7 +124,4 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-
-# Default system vm's.
-export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 

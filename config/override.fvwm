@@ -23,6 +23,7 @@ Read $[fvwm_home]/init.fvwm
 Test (F $[fvwm_home]/gameMenu.fvwm) Read $[fvwm_home]/gameMenu.fvwm
 Test (!F $[fvwm_home]/gameMenu.fvwm) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
 Read $[fvwm_home]/progMenu.fvwm
+Test (F $[fvwm_home]/layout1.fvwm) Read $[fvwm_home]/layout1.fvwm
 
 Style * Icon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
@@ -39,6 +40,7 @@ Style "*" InitialMapCommand WarpToWindow 50 50
 Style "*Apache NetBeans*" Lenience
 Style yad StaysOnTop, Sticky, PositionPlacement center
 Style FvwmBanner !Title !Borders
+Style Alacritty !Title !Borders
 TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
@@ -59,6 +61,7 @@ DesktopSize 1x1
 
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
+Test (F $[fvwm_home]/layout1.fvwm) + "Do Layout1" FnDoLayout1
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
@@ -81,14 +84,14 @@ Test (F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "Refes&h%icons/refresh.png%" Refresh
 + "&Restart FVWM%menu/restart.png%"  Restart
 + "Quit FVWM%menu/quit.png%"  Quit
-+ "Poweroff%icons/quit.png%" exec sudo poweroff
++ "Poweroff%icons/quit.png%" Exec exec sudo poweroff
 + "" Nop
 + "" Nop
 
 DestroyMenu MenuManPages
 AddToMenu   MenuManPages "Manual Pages" Title
-+ "Linux for Dummies" exec mupdf $[LIBRARY_HOME]/book/pdf/Linux\ Dummies\ 9th.pdf
-+ "Linux Fundamentals" exec mupdf $[LIBRARY_HOME]/book/pdf/linuxfun.pdf
++ "Linux for Dummies" Exec exec mupdf $[LIBRARY_HOME]/book/pdf/Linux\ Dummies\ 9th.pdf
++ "Linux Fundamentals" Exec exec mupdf $[LIBRARY_HOME]/book/pdf/linuxfun.pdf
 + "Manual"              ViewManPage man
 + "apropos"             ViewManPage apropos
 + "fvwm"                ViewManPage fvwm
@@ -101,50 +104,51 @@ Test (x nautilus) + "File Manager (Nautilus)" Exec exec nautilus
 Test (x gentoo) + "File Manager (Gentoo)" Exec exec gentoo
 Test (x pcmanfm) + "File Manager (Pacmanfm)" Exec exec pcmanfm
 Test (x spacefm) + "File Manager (SpaceFm)" exec spacefm
-Test (x calibre) + "Calibre-ebook" exec calibre
-Test (x fbreader) + "&FbReader epub" exec fbreader
-Test (x mcomix) + "&Comix" exec mcomix
-Test (x mupdf) + "&Pdf (mupdf)" exec mupdf
-Test (x libreoffice) + "Office Suite" exec libreoffice
-+ "G&numeric Spreadsheet" exec gnumeric
-+ "&Abiword Document" exec abiword
-+ "GVim%menu/vim.png%" exec gvim
-Test (x gimp) + "&Gimp%menu/gimp.png%" exec gimp
-Test (x inkscape) + "&Inkscape" exec inkscape
-Test (x display) + "ImageMagick" exec display
-Test (x feh) + "Simple Image Viewer" exec feh
+Test (x calibre) + "Calibre-ebook" Exec exec calibre
+Test (x fbreader) + "&FbReader epub" Exec exec fbreader
+Test (x mcomix) + "&Comix" Exec exec mcomix
+Test (x mupdf) + "&Pdf (mupdf)" Exec exec mupdf
+Test (x libreoffice) + "Office Suite" Exec exec libreoffice
++ "G&numeric Spreadsheet" Exec exec gnumeric
++ "&Abiword Document" Exec exec abiword
++ "GVim%menu/vim.png%" Exec exec gvim
+Test (x gimp) + "&Gimp%menu/gimp.png%" Exec exec gimp
+Test (x inkscape) + "&Inkscape" Exec exec inkscape
+Test (x display) + "ImageMagick" Exec exec display
+Test (x feh) + "Simple Image Viewer" Exec exec feh
 Test (x artha) + "&Thesaurus" FuncArtha
-Test (x denemo) + "Denemo Music Notation Editor" exec denemo
+Test (x denemo) + "Denemo Music Notation Editor" Exec exec denemo
 
 DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title
 + "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
 Test (x pavucontrol) + "&PulseAudio" Exec exec pavucontrol
-+ "&SmTube (youtube)" exec smtube
-Test (x guvcview) + "Guvcview" Exec guvcview
-Test (x discord) + "&Discord" Exec discord
-Test (x lingot) + "Lingot tuner" Exec lingot
-+ "&Media Player" exec mpv --player-operation-mode=pseudo-gui
++ "&SmTube (youtube)" Exec exec smtube
+Test (x guvcview) + "Guvcview" Exec exec guvcview
+Test (x discord) + "&Discord" Exec exec discord
+Test (x lingot) + "Lingot tuner" Exec exit lingot
++ "&Media Player" Exec exec mpv --player-operation-mode=pseudo-gui
 + "T&otem"  FvwmTotem
-Test (x openshot) + "Openshot (video editing)" exec openshot
-Test (x istanbul) + "Istanbul (screen capture)" exec istanbul
-Test (x simpelscreenrecorder) + "SimpleScreenRecorder(screen capture)" exec simplescreenrecorder
+Test (x openshot) + "Openshot (video editing)" Exec exec openshot
+Test (x istanbul) + "Istanbul (screen capture)" Exec exec istanbul
+Test (x simpelscreenrecorder) + "SimpleScreenRecorder(screen capture)" Exec exec simplescreenrecorder
 
 
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
 Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
-+ "System Load" Exec xload
-+ "&Xterm" Exec xterm
-+ "x&clipboard" Exec xclipboard
-+ "Virutal Keyboard" Exec xvkbd -minimizable -compact -geometry 485x150+0-0
++ "System Load" Exec exec xload
++ "&Xterm" Exec exec xterm
+Test (x alacritty) + "Alacritty" fnAlacritty
++ "x&clipboard" Exec exec xclipboard
+Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
-+ "&MouseConfig" Exec . bin/shellscripts/config/mouse.env
++ "&MouseConfig" Exec exec . ~/bin/shellscripts/config/mouse.env
 Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock
-Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec sudo mount -o remount,ro /
-Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec sudo mount -o remount,rw /
-Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec touch /var/tmp/WRITE_CLK
-Test (x synclient) + "&Touchpad Toggle" Exec  $[HOME]/bin/shellscripts/synclient.sh
+Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec exec sudo mount -o remount,ro /
+Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec exec sudo mount -o remount,rw /
+Test (x /etc/systemd/system/read-only-config.sh) + "Clock Write" Exec exec touch /var/tmp/WRITE_CLK
+Test (x synclient) + "&Touchpad Toggle" Exec exec $[HOME]/bin/shellscripts/synclient.sh
 
 # Background Menu
 #
@@ -172,7 +176,15 @@ AddToMenu   BGMenu "Wallpapers" Title
 DestroyFunc Wallpaper
 AddToFunc   Wallpaper
 + I Exec  exec feh -t /usr/share/fvwm3/default-config/images/background/* ~/.fvwm/images/background/
-+ I Exec  exec yad --tytle="Select Wallpaper" --text "» Click a wallpaper tile.\n» Press (m)enu on the wallpaper image when it opens.\n» Note: the image may open under this message window." --escape-ok --sticky --center --on-top --borders=20 
++ I Exec  exec yad --title="Select Wallpaper" --text "» Click a wallpaper tile.\n» Press (m)enu on the wallpaper image when it opens.\n» File\n» Background\n» Set Filled\n\n» Note: the image may open under this message window." --escape-ok --sticky --center --on-top --borders=20
+
+######
+# Alacritty function
+###########
+DestroyFunc fnAlacritty
+AddToFunc  fnAlacritty
++ I Exec exec picom
++ I Exec exec alacritty
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
