@@ -3,6 +3,7 @@ sudo chown root:root $HOME/bin/shellscripts/krunker.sh
 sudo chmod 655  $HOME/bin/shellscripts/krunker.sh
 sudo chown root:root $HOME/bin/shellscripts/pw
 sudo chmod 755  $HOME/bin/shellscripts/pw
+sudo chmod 755  $HOME/bin/shellscripts/config/fvwmQuit.sh
 
 mkdir -p $HOME/.fvwm/screenshot
 
@@ -33,6 +34,7 @@ if [ -d $HOME/bin/shellscripts ]; then
   ln -s $HOME/bin/shellscripts/config/raw/funstuffPiMenu.fvwm $HOME/.fvwm/funstuffPiMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/gameMenu.fvwm $HOME/.fvwm/gameMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/fvwm.sh $HOME/.fvwm/fvwm.sh
+  ln -s $HOME/bin/shellscripts/config/fvwmQuit.sh $HOME/.fvwm/fvwmQuit.sh
   ln -s $HOME/bin/shellscripts/config/focusWindow.sh $HOME/.fvwm/focusWindow.sh
   ln -s $HOME/bin/shellscripts/config/progMenu.fvwm $HOME/.fvwm/progMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/icons $HOME/.fvwm

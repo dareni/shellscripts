@@ -83,7 +83,7 @@ Test (F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "&Window Ops" Menu FvwmWindowOpsMenu
 + "Refes&h%icons/refresh.png%" Refresh
 + "&Restart FVWM%menu/restart.png%"  Restart
-+ "Quit FVWM%menu/quit.png%"  Quit
++ "Quit FVWM%menu/quit.png%"  FvwmQuit
 + "Poweroff%icons/quit.png%" Exec exec sudo poweroff
 + "" Nop
 + "" Nop
@@ -114,6 +114,7 @@ Test (x libreoffice) + "Office Suite" Exec exec libreoffice
 + "GVim%menu/vim.png%" Exec exec gvim
 Test (x gimp) + "&Gimp%menu/gimp.png%" Exec exec gimp
 Test (x inkscape) + "&Inkscape" Exec exec inkscape
+Test (x scribus) + "&Scribus" Exec exec scribus
 Test (x display) + "ImageMagick" Exec exec display
 Test (x feh) + "Simple Image Viewer" Exec exec feh
 Test (x artha) + "&Thesaurus" FuncArtha
@@ -139,11 +140,11 @@ AddToMenu   SystemMenu  "System Menu" Title
 Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
 + "System Load" Exec exec xload
 + "&Xterm" Exec exec xterm
-Test (x alacritty) + "Alacritty" fnAlacritty
+Test (x alacritty) + "&Alacritty" fnAlacritty
 + "x&clipboard" Exec exec xclipboard
 Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
-+ "&MouseConfig" Exec exec . ~/bin/shellscripts/config/mouse.env
++ "&MouseConfig" Exec . ~/bin/shellscripts/config/mouse.env
 Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock
 Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec exec sudo mount -o remount,ro /
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec exec sudo mount -o remount,rw /
@@ -395,6 +396,10 @@ Test (x raspi-config) + I Module FvwmButtons ArthaButton
 #####
 # Basic Functions
 ###########
+DestroyFunc FvwmQuit
+AddToFunc   FvwmQuit
++ I Exec exec ${HOME}/.fvwm/fvwmQuit.sh
+
 DestroyFunc FvwmDeleteOrDestroy
 AddToFunc   FvwmDeleteOrDestroy
 + H Nop
