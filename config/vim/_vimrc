@@ -6,7 +6,7 @@ set backupdir=~/.cache
 set tabstop=2
 set shiftwidth=2
 set expandtab
-set ic
+set noic
 set fdm=marker
 "set mouse mode for xterm use
 "use "*p to paste clipboard
@@ -28,6 +28,58 @@ nnoremap <leader>2 :@"<CR>
 "switch between the last 2 buffers
 nnoremap <leader>3 :e#<CR>
 
+"spelling {{{
+"jump to spelling errors: [s ]s
+map <leader>spel :setlocal spell spelllang=en_au<RETURN>
+map <leader>nspel :setlocal nospell<RETURN>
+"enable spelling for the git commit message.
+autocmd! BufWinEnter *COMMIT_EDITMSG :setlocal spell spelllang=en_au
+"}}}
+"alacritty {{{
+if $TERM =='alacritty'
+  colo asu1dark
+  hi Normal guibg=NONE ctermbg=NONE
+  hi EndOfBuffer guibg=NONE ctermbg=NONE
+  hi Folded guibg=NONE ctermbg=NONE
+else
+  "colo koehler
+  "colo blackbeauty
+  colo asu1dark
+endif
+"{{{ ToggleTransparency()
+function ToggleTransparency()
+  let l:color = execute('hi Normal')
+  if l:color =~ 'ctermbg=0'
+    "set to transparent
+    hi Normal ctermbg=None
+  else
+    "set to black
+    hi Normal ctermbg=0
+  endif
+endfunction
+nnoremap <leader>tt :call ToggleTransparency()<CR>
+"}}}
+"}}}
+"{{{ diff settings DoDiff()
+function DoDiff()
+  "Note: on exit of diff split, enable syntax again if required ie :syntax on
+  syntax off
+  "colorscheme github
+  "color slate
+  "color evening
+  "colorscheme molokai
+  colo koehler
+endfunction
+
+if &diff
+  call DoDiff()
+endif
+
+:command Gdiff {
+  Gvdiffsplit
+  call DoDiff()
+}
+"}}}
 "{{{ buffers
 "select from hidden buffer
 nnoremap <leader>bh :ls!<CR>:b<Space>
@@ -50,7 +102,6 @@ nnoremap <M-Left> <C-w><
 nnoremap <M-Down> <C-w>+
 nnoremap <M-Up> <C-w>-
 nnoremap <M-Right> <C-w>>
-"}}}
 "}}}
 "{{{ tabs
 nnoremap <leader>t :tab
@@ -82,13 +133,10 @@ nnoremap tj :tabn<CR>
 nnoremap tk :tabp<CR>
 nnoremap tl :tabl<CR>
 "}}}
-
-
 "{{{crude debug function.
-function! Ikky(buf)
+function Ikky(buf)
 	"eg call Ikky(['blah'])
 	call writefile(a:buf,glob('/opt/volatile/tmp/vibuf.out', 'ba'))
 endfunction
 "}}}
-
 
