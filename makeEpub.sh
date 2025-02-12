@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+#install tesseract-ocr tesseract-ocr-eng
+#
 #btw make an epub with zip:
 #zip -X0 ../example.epub mimetype
 #zip -Xur9D ../example.epub *
@@ -17,28 +20,31 @@ fi
 
 CMD=$1
 if [ -z "$CMD" ]; then
-  echo "Usage: ./makehtml.sh img|epub"
+  echo "Usage: ./makeEpub.sh test|img|epub"
   exit
 fi
 
 echo Working in dir `pwd` ...
-JPG_COUNT=`ls -1 *jpg |wc -l`
-FILE_COUNT=`cat count`
 
-if [ -z "$FILE_COUNT" ] || [ "$FILE_COUNT" = 0 ]; then
-  echo No jpg \"count\" file in the working directory?
-  exit
-fi
+check_for_files() {
+  JPG_COUNT=`ls -1 *jpg |wc -l`
+  FILE_COUNT=`cat count`
 
-if [ -z "$JPG_COUNT" ] || [ "$JPG_COUNT" = 0 ]; then
-  echo No jpg files?
-  exit
-fi
+  if [ -z "$FILE_COUNT" ] || [ "$FILE_COUNT" = 0 ]; then
+    echo No jpg \"count\" file in the working directory?
+    exit
+  fi
 
-if [ $JPG_COUNT -ne $FILE_COUNT ]; then
-  echo The jpg \"count\" file does not match the number of jpg files?
-  exit
-fi
+  if [ -z "$JPG_COUNT" ] || [ "$JPG_COUNT" = 0 ]; then
+    echo No jpg files?
+    exit
+  fi
+
+  if [ $JPG_COUNT -ne $FILE_COUNT ]; then
+    echo The jpg \"count\" file does not match the number of jpg files?
+    exit
+  fi
+}
 
 PARA_OPEN="<p>"
 #PARA_CLOSE tag must be printed at the end of a line only
@@ -228,7 +234,7 @@ elif [ "$CMD" = "epub" ]; then
   PANDOC_CMD="pandoc -f html -t epub2 --css=./$EPUB_CSS \
   -o book.epub  --epub-cover-image=$FRONT_COVER --metadata-file=$METADATA"
 
-  for FILE in `ls -v *.jpg`
+  for FILE in `ls -v img/*.jpg`
   do
     FILENOPATH=${FILE##*/}
     PGNO=${FILENOPATH%.*}
