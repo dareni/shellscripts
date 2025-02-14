@@ -62,6 +62,13 @@ do_init() {
       xinput set-prop $TOUCH_ID 345 1 #Tapping Enabled
       xinput set-prop $TOUCH_ID 358 1 #Middle button emulation enabled
     fi
+
+    #Configure Touch pad on Dell Latitude E5440
+    TOUCH_ID=`xinput list --id-only "AlpsPS/2 ALPS GlidePoint"`
+    if [ -n "$TOUCH_ID" ]; then
+      xinput set-prop $TOUCH_ID 312 1 #Tapping Enabled
+      xinput set-prop $TOUCH_ID 327 1 #Middle button emulation enabled
+    fi
 }
 
 case $CMD in
