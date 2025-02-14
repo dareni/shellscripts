@@ -1,4 +1,15 @@
 #!/usr/bin/env sh
+if [ -z `which yad` ]; then
+  echo "Please install yad"
+fi
+if [ -z `which python` ]; then
+  if [ -z `which python3` ]; then
+    echo "Please install python"
+  else
+    ln -s `which python3` $HOME/bin/python
+  fi
+fi
+
 sudo chown root:root $HOME/bin/shellscripts/krunker.sh
 sudo chmod 655  $HOME/bin/shellscripts/krunker.sh
 sudo chown root:root $HOME/bin/shellscripts/pw

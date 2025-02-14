@@ -35,18 +35,32 @@ do_init() {
         PADDING=-5
     fi
 
+    #stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity E &
+    trayer --edge top --distance $TRAY_POS --distancefrom right --widthtype request \
+        --align right --transparent true --alpha 255 &
     xclock -update 1 -digital -norender -padding $PADDING -geometry 70x14+$TIME_POS+0  -strftime " %H:%M:%S" &
     xclock           -digital -norender -padding $PADDING -geometry 115x14+$DATE_POS+0 -strftime " %a %b %d %Y" &
     xload -geometry 100x28+$XLOAD_POS+0 -nolabel &
-    #stalonetray -i 16 -bg black --geometry 1x1+$TRAY_POS+0 --grow-gravity E &
-    trayer --edge top --distance $TRAY_POS --distancefrom right --widthtype request \
-      --align right --transparent true --alpha 255 &
 
+    if [ -f `which wpa_gui` ]; then
+      (
+        #make sure trayer is up before starting wpa_gui
+        sleep 2
+        sudo wpa_gui -t
+      )&
+    fi
 
     #Pop message when on battery.
     UPOWER=`which upower`
     if [ -n "$UPOWER" ]; then
-      ~/bin/shellscripts/config/funcPower.sh
+      ~/bin/shellscripts/config/funcPower.sh &
+    fi
+
+    #Configure Touch pad on HP EliteBook
+    TOUCH_ID=`xinput list --id-only "ALP0017:00 044E:121C Touchpad"`
+    if [ -n "$TOUCH_ID" ]; then
+      xinput set-prop $TOUCH_ID 345 1 #Tapping Enabled
+      xinput set-prop $TOUCH_ID 358 1 #Middle button emulation enabled
     fi
 }
 

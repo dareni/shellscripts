@@ -145,6 +145,7 @@ Test (x alacritty) + "&Alacritty" fnAlacritty
 Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
 + "&MouseConfig" Exec . ~/bin/shellscripts/config/mouse.env
+Test (x upower) + "&Battery Warning" Exec exec  ~/bin/shellscripts/config/funcPower.sh
 Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock
 Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec exec sudo mount -o remount,ro /
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec exec sudo mount -o remount,rw /

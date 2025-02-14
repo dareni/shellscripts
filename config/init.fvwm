@@ -8,7 +8,7 @@ AddToFunc   InitFunction
 #+ I Schedule 600 FvwmXClock
 #+ I Schedule 900 FvwmXload
 #+ I Schedule 2000 FvwmMumble
-Test (x /usr/sbin/wpa_gui) + I Exec exec sudo /usr/sbin/wpa_gui -t
+#Test (x /usr/sbin/wpa_gui) + I Exec exec sudo /usr/sbin/wpa_gui -t
 #+ I Schedule 16000 FvwmEmpathy
 #+ I Schedule 8000 Exec exec xscreensaver
 #+ I Schedule 8000 FvwmEvolution

@@ -10,7 +10,7 @@ getStats() {
 
 showMessage() {
   wall $1
-  (xterm -geometry 100x6-0+0 -fa *courier* -fs 12 -bg darkgray -fg black -e ~/bin/shellscripts/timer.sh 0 "$1")&
+  yad --button=OK --title="Battery Warning" --text="$1"
 }
 
 getMessage() {
@@ -120,19 +120,23 @@ if [ -n "$TEST" ]; then
   echo "Testing.."
   testIt
 else
+  FUNC_PWR_KILLED=0
   EPID=`pgrep -fo funcPower.sh`
   if [ -n "$EPID" ]; then
     if [ "$$" -ne "$EPID" ]; then
       kill -9 $EPID
+      FUNC_PWR_KILLED=1
     fi
   fi
-  OLD_PERCENT="";
-  (while [ 1 ]; do
-    TXT=`getStatus`
-    if [ -n "$TXT" ]; then
-      showMessage "$TXT"
-    fi
-    sleep 60
-  done)&
+  if [ $FUNC_PWR_KILLED -eq 0 ]; then
+    OLD_PERCENT="";
+    (while [ 1 ]; do
+      TXT=`getStatus`
+      if [ -n "$TXT" ]; then
+        showMessage "$TXT"
+      fi
+      sleep 60
+    done)&
+  fi
 fi
 

@@ -1,6 +1,7 @@
 source $VIMRUNTIME/defaults.vim
 set modeline
 
+set belloff=all
 set directory=~/.cache
 set backupdir=~/.cache
 set tabstop=2
