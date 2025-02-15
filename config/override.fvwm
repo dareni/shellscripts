@@ -122,6 +122,7 @@ Test (x denemo) + "Denemo Music Notation Editor" Exec exec denemo
 
 DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title
+Test (x arandr) + "&Screen Layout" Exec exec arandr
 + "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
 Test (x pavucontrol) + "&PulseAudio" Exec exec pavucontrol
 + "&SmTube (youtube)" Exec exec smtube
