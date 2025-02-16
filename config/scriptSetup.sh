@@ -20,9 +20,22 @@ mkdir -p $HOME/.fvwm/screenshot
 
 if [ -d $HOME/bin/shellscripts ]; then
   ln -s $HOME/bin/shellscripts/config/vim/_vimrc $HOME/_vimrc
-  mkdir -p $HOME/.vim/{colors,ftplugin,pack/git-plugins}
+  mkdir -p $HOME/.vim/colors $HOME/.vim/ftplugin
+  mkdir -p  $HOME/.vim/pack/git-plugins/start
+
+  if [ ! -d $HOME/.vim/pack/git-plugins/start/ale ]; then
+    git clone --depth 1 https://github.com/dense-analysis/ale.git \
+      $HOME/.vim/pack/git-plugins/start/ale
+  fi
+  if [ ! -d $HOME/.vim/pack/git-plugins/start/vim-airline ]; then
+    git clone --depth 1 https://github.com/vim-airline/vim-airline \
+      $HOME/.vim/pack/git-plugins/start/vim-airline
+  fi
+
   ln -s $HOME/bin/shellscripts/config/vim/colors/rusty.vim $HOME/.vim/colors
-  ln -s $HOME/bin/shellscripts/config/vim/ftplugin/{asm.vim,rust.vim,text.vim} $HOME/.vim/ftplugin
+  ln -s $HOME/bin/shellscripts/config/vim/ftplugin/asm.vim $HOME/.vim/ftplugin
+  ln -s $HOME/bin/shellscripts/config/vim/ftplugin/rust.vim $HOME/.vim/ftplugin
+  ln -s $HOME/bin/shellscripts/config/vim/ftplugin/text.vim $HOME/.vim/ftplugin
   ln -s $HOME/bin/shellscripts/config/alias.env $HOME/.bash_aliases
   if [ -f $HOME/.bash_profile ]; then
     echo WARNING: $HOME/.bash_profile exists so .profile inactive!
