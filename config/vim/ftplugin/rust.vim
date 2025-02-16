@@ -26,17 +26,22 @@ let g:ale_list_window_size = 5
 let g:ale_open_list = 1
 
 colo rusty
+if $TERM =='alacritty'
+   hi Normal guibg=NONE ctermbg=NONE
+   hi EndOfBuffer guibg=NONE ctermbg=NONE
+   hi Folded guibg=NONE ctermbg=NONE
+   hi MatchParen ctermfg=200 ctermbg=NONE
+endif
+
 set foldmethod=syntax
 
 let $RUST_SRC_PATH=trim(system("rustc --print sysroot"))."/lib/rustlib/src/rust/library"
 let &tags="rusty-tags.vi"
 set tagcase=smart
 
-"Activate Ale autocomplete ie ctrl-x ctrl-a in insert mode.
+"Activate Ale autocomplete ie ctrl-a in insert mode(imap).
 "Not available without rust-analyzer
-"LSP ..
-"nnoremap <C-A> <Plug>(ale_complete)
-imap <C-A> <Plug>(ale_complete)
+inoremap <C-A> <Plug>(ale_complete)
 
 map <leader>ll <Plug>(ale_lint)
 

@@ -36,6 +36,34 @@ map <leader>nspel :setlocal nospell<RETURN>
 "enable spelling for the git commit message.
 autocmd! BufWinEnter *COMMIT_EDITMSG :setlocal spell spelllang=en_au
 "}}}
+"{{{ CreateProject()
+"call:  execute CreateProject
+function CreateProject()
+  let l:fpath=trim(system("pwd"))
+  let l:sfile=l:fpath . "/" . "start.vim"
+  if empty(glob(l:sfile))
+    execute "e " . l:sfile
+    execute "normal! a:packadd project\n:Project project.txt"
+    execute "w"
+  endif
+  :packadd project
+  let l:pfile=l:fpath . "/" . "project.txt"
+  if empty(glob(l:pfile))
+    execute "e " . l:pfile
+    let l:dir = expand('%:h:t')
+    "let l:fpath = expand('%:h')
+    execute "normal! 0a".l:dir."=".l:fpath." {\n}"
+    execute "w"
+    execute "Project project.txt"
+    execute "normal \\R"
+    execute "normal Gk"
+    execute "normal \\Csrc\<cr>src\<cr>\<cr>\<cr>"
+    execute "w"
+  else
+    execute "Project project.txt"
+  endif
+endfunction
+"}}}
 "alacritty {{{
 if $TERM =='alacritty'
   colo asu1dark
