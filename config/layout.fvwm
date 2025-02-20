@@ -1,0 +1,34 @@
+Style Project|Alacritty ResizeHintOverride
+Module FvwmEvent FE
+DestroyModuleConfig FE: *
+*FE: Cmd Function
+*FE: add_window FvwmLayout
+
+DestroyMenu LayoutMenu
+AddToMenu   LayoutMenu "Layouts" Title
++ "Rust Layout" FnRustLayout
++ "Term Layout" FnTermLayout
+
+DestroyFunc FvwmLayout
+AddToFunc   FvwmLayout
+#+ I ThisWindow ("Project") Move 0p 2p Resize 10c 10c
++ I ThisWindow ("BottomRust") Move 50 530p 
++ I ThisWindow ("Project Rust") Move 0p 2p
++ I ThisWindow ("Top Rust") Move 50 2p 
++ I ThisWindow ("TL Term") Move 0 0p 
++ I ThisWindow ("TR Term") Move shuffle ewmhiwak layers 0 0 Right Up
++ I ThisWindow ("BL Term") Move 50 2p 
++ I ThisWindow ("BR Term") Move 50 2p 
+
+DestroyFunc FnRustLayout
+AddToFunc   FnRustLayout
++ I Exec exec picom
++ I Exec exec alacritty -o window.title="Bottom" -o window.dimensions.columns=137 -o window.dimensions.lines=32
++ I Exec exec alacritty -o window.title="Project" -o window.dimensions.columns=137 -o window.dimensions.lines=63 -e /bin/bash -c "cd /opt/volatile/rust/bevy/shooter; vi -s start.vim"
++ I Exec exec alacritty -o window.title="Top" -o window.dimensions.columns=137 -o window.dimensions.lines=31
+
+DestroyFunc FnTermLayout
+AddToFunc   FnTermLayout
++ I Exec exec picom
++ I Exec exec alacritty -o window.title="TL Term" -o window.dimensions.columns=85 -o window.dimensions.lines=32
++ I Exec exec alacritty -o window.title="TR Term" -o window.dimensions.columns=85 -o window.dimensions.lines=32

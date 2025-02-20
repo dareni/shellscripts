@@ -13,7 +13,6 @@ SetEnv fvwm_home $[HOME]/.fvwm
 SetEnv fvwm_icon $[fvwm_home]/icons
 
 SetEnv fvwm_image_path $[fvwm_icon]:$[fvwm_icon];.png:$[fvwm_home]/images:$[FVWM_DATADIR]/default-config/images/icons:/usr/share/pixmaps/fvwm:+
-#Exec exec echo "fvwm_image_path $[fvwm_image_path]"
 ImagePath $[fvwm_image_path]
 PipeRead 'echo SetEnv LIBRARY_HOME ${LIBRARY_HOME:=/opt/library}'
 CursorStyle Default $[fvwm_icon]/cursor/crosshair.xcursor
@@ -23,15 +22,14 @@ Read $[fvwm_home]/init.fvwm
 Test (F $[fvwm_home]/gameMenu.fvwm) Read $[fvwm_home]/gameMenu.fvwm
 Test (!F $[fvwm_home]/gameMenu.fvwm) Test (F $[fvwm_home]/funstuffPiMenu.fvwm) Read $[fvwm_home]/funstuffPiMenu.fvwm
 Read $[fvwm_home]/progMenu.fvwm
-Test (F $[fvwm_home]/layout1.fvwm) Read $[fvwm_home]/layout1.fvwm
+Test (F $[fvwm_home]/layout.fvwm) Read $[fvwm_home]/layout.fvwm
 
 Style * Icon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
 
 Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
-Style xload WindowListSkip, Sticky, CirculateSkip, StaysOnTop, !Borders, !Title
-Style xclock Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
-Style trayer Sticky, WindowListSkip, !Borders,!Title,HandleWidth 0
+Style StatusPanel WindowListSkip, CirculateSkip, !Borders, !Title
+Style FvwmButtons ParentalRelativity
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
 Style Quake3-UrT !Borders, !Title, HandleWidth 0
 Style "Team Fortress 2*" !Borders, !Title, HandleWidth 0
@@ -45,14 +43,16 @@ TitleStyle Centered Height 10 -- Flat
 DestroyModuleConfig FvwmPager:*
 DestroyModuleConfig RightPanel:*
 
+#Use colorset 15 for the StatusPanel
+Colorset 15 Transparent,RootTransparent
+
 DestroyFunc StartFunction
 AddToFunc   StartFunction
 + I Test (Init, f $[FVWM_USERDIR]/.BGdefault) \
     Exec exec fvwm-root $[FVWM_USERDIR]/.BGdefault
-#+ I TestRc (NoMatch) Exec exec fvwm-root \
-    $[FVWM_DATADIR]/default-config/images/background/bg1.png
 + I TestRc (NoMatch) Exec exec $[HOME]/.fehbg
 + I Test (Init) Module FvwmBanner
++ I Module FvwmButtons StatusPanel
 + I Module FvwmEvent EventNewDesk
 + I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
 
@@ -61,7 +61,6 @@ DesktopSize 1x1
 
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
-Test (F $[fvwm_home]/layout1.fvwm) + "Do Layout1" FnDoLayout1
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
@@ -78,6 +77,8 @@ PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm
 PipeRead 'if [ -e $fvwm_home/progMenu.fvwm ]; then echo + \"Prog&Menu\" Popup ProgMenu; fi'
 Test (F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "" Nop
+
++ "&Status Panel" FnStatusPanel
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease, OnlyNormal
 + "&Window Ops" Menu FvwmWindowOpsMenu
@@ -114,6 +115,7 @@ Test (x libreoffice) + "Office Suite" Exec exec libreoffice
 + "GVim%menu/vim.png%" Exec exec gvim
 Test (x gimp) + "&Gimp%menu/gimp.png%" Exec exec gimp
 Test (x inkscape) + "&Inkscape" Exec exec inkscape
+Test (x dia) + "&Dia Diagram Editor" Exec exec dia
 Test (x scribus) + "&Scribus" Exec exec scribus
 Test (x display) + "ImageMagick" Exec exec display
 Test (x feh) + "Simple Image Viewer" Exec exec feh
@@ -135,18 +137,20 @@ Test (x openshot) + "Openshot (video editing)" Exec exec openshot
 Test (x istanbul) + "Istanbul (screen capture)" Exec exec istanbul
 Test (x simpelscreenrecorder) + "SimpleScreenRecorder(screen capture)" Exec exec simplescreenrecorder
 
-
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
-Test (x /usr/sbin/wpa_gui) + "Wireless Lan" Exec exec sudo /usr/sbin/wpa_gui
+Test (x /usr/sbin/wpa_gui) + "Wireless Lan" FnFvwmWpaGui
 + "System Load" Exec exec xload
+Test (F $[fvwm_home]/layout.fvwm) + "&Layouts" Popup LayoutMenu
 + "&Xterm" Exec exec xterm
-Test (x alacritty) + "&Alacritty" fnAlacritty
+Test (x alacritty) + "&Alacritty" FnAlacritty
+Test (x picom) + "Picom" FnPicom
 + "x&clipboard" Exec exec xclipboard
 Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
 + "&MouseConfig" Exec . ~/bin/shellscripts/config/mouse.env
 Test (x upower) + "&Battery Warning" Exec exec  ~/bin/shellscripts/config/funcPower.sh
+Test (x cbatticon) + "Battery Status" FnFvwmCbatticon
 Test (x xscreensaver-command) + "Screen &Lock" Exec exec xscreensaver-command -lock
 Test (x /usr/bin/raspi-config) + "ReadOnly Filesystem" Exec exec sudo mount -o remount,ro /
 Test (x /usr/bin/raspi-config) + "ReadWrite Filesystem" Exec exec sudo mount -o remount,rw /
@@ -184,10 +188,21 @@ AddToFunc   Wallpaper
 ######
 # Alacritty function
 ###########
-DestroyFunc fnAlacritty
-AddToFunc  fnAlacritty
-+ I Exec exec picom
+DestroyFunc FnAlacritty
+AddToFunc  FnAlacritty
++ I FnPicom
 + I Exec exec alacritty
+
+DestroyFunc FnPicom
+AddToFunc  FnPicom
++ I Echo starting picom
++ I PipeRead ' \
+if [ `pgrep -c picom` -eq 0 ]; then \
+  if [ -n "`which picom`" ]; then \
+    runcommand.sh picom /dev/null; \
+  fi; \
+  echo Nop; \
+fi'
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
@@ -218,7 +233,8 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "" Nop
 + "x&3" MoveToDesk 0 -1
 + "xg" GoToDesk 0 -1
-+ "Identify%menu/window-identify.xpm%"  Module FvwmIdent
++ "&Transparency Exec exec FvwmAlacrittyTransparency
++ "Identif&y%menu/window-identify.xpm%"  Module FvwmIdent
 
 Silent Key Super_L A A Menu QuickMenu
 Silent Key Super_R A A Menu QuickMenu
@@ -308,21 +324,22 @@ AddToFunc WindowListFunc
 
 DestroyFunc FuncPager
 AddToFunc FuncPager
-#+ I PipeRead 'if true; then echo "Module FvwmPager FvwmPager 0 2"; fi'
-+ I PipeRead 'if test "${FVWMPAGER:=0}" = "1"; then  echo "FuncDisablePager"; \
-            else  echo "FuncEnablePager";  fi'
++ I PipeRead ' \
+if [ `pgrep -c FvwmPager` -ne 0 ]; then  \
+  echo "FuncDisablePager"; \
+ else \
+  echo  "FuncEnablePager"; \
+fi'
 
 # Create the pager
 DestroyFunc FuncEnablePager
 AddToFunc FuncEnablePager
-+ I SetEnv FVWMPAGER 1
 + I Module FvwmPager FvwmPager 0 2
 
 # Destroy the pager
 DestroyFunc FuncDisablePager
 addToFunc FuncDisablePager
-+ I setenv FVWMPAGER 0
-+ I WindowId $[fvwmpagerid] Delete
++ I KillModule FvwmPager
 
 Style "FvwmPager" Title, !Handles, !Borders, Sticky, WindowListSkip, \
   CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
@@ -448,3 +465,76 @@ DestroyFunc FvwmDesktopScreenshot
 AddToFunc   FvwmDesktopScreenshot
 + I Exec sleep $0; import -window root -quality 100 -silent \
   "$[fvwm_home]/screenshot/screenshot-`date +%F[%R]`.jpg"
+
+DestroyFunc FnStatusPanel
+AddToFunc FnStatusPanel
++ I PipeRead ' \
+if [ `pgrep -a FvwmButtons| grep -c StatusPanel` -ne 0 ]; then  \
+  echo "FnDisableStatusPanel"; \
+else  \
+  echo "FnEnableStatusPanel";  \
+fi'
+
+#An fvwm Restart can leave StatusPanel in a random state. Sometimes swallowed items
+#are cleaned up, sometimes they are not. So start the enable of a panel with destroy.
+DestroyFunc FnEnableStatusPanel
+AddToFunc   FnEnableStatusPanel
++ I FnDisableStatusPanel
++ I Schedule 100 Module FvwmButtons StatusPanel
+#+ I Schedule 150 PipeRead 'runcommand.sh cbatticon /dev/null; echo Nop'
+#+ I Schedule 200 PipeRead 'runcommand.sh "sudo wpa_gui -t" /dev/null; echo Nop'
+
+DestroyFunc FnDisableStatusPanel
+AddToFunc   FnDisableStatusPanel
++ I KillModule FvwmButtons StatusPanel*
+# + I Schedule 150 PipeRead 'killall -9 cbatticon; echo Nop'
+# + I Schedule 200 PipeRead 'sudo killall -9 wpa_gui; echo Nop'
+
+DestroyFunc FnFvwmCbatticon
+AddToFunc FnFvwmCbatticon
++ I PipeRead 'killall -9 cbatticon; echo Nop'
++ I PipeRead 'runcommand.sh cbatticon /dev/null; echo Nop'
+
+DestroyFunc FnFvwmWpaGui
+AddToFunc FnFvwmWpaGui
++ I PipeRead 'sudo killall -9 wpa_gui; echo Nop'
++ I PipeRead 'runcommand.sh "sudo wpa_gui -t" /dev/null; echo Nop'
+
+#Note: use stalonetray over trayer because tray had issues being swallowed by FVWMButtons.
+DestroyModuleConfig StatusPanel:*
+*StatusPanel:  Geometry 370x25-0+0
+*StatusPanel:  Columns 370
+*StatusPanel:  Rows 25
+*StatusPanel:  Colorset 15
+*StatusPanel:  (50x5, Frame0)
+*StatusPanel:  (25x25, Frame0, Swallow FvwmXmem \
+  "Exec xmem -name FvwmXmem -nolabel -fg white -codecolor red -cachedcolor orange \
+  -buffercolor yellow -freecolor green -swapcolor blue -update 5")
+*StatusPanel:  (100x25, Frame0, Swallow FvwmXload \
+  "Exec xload -name FvwmXload -nolabel -fg white -bg black -update 5" )
+*StatusPanel:  (25x5, Frame0)
+*StatusPanel:  (170x5, Frame0)
+*StatusPanel:  (50x20, Frame0, Swallow stalonetray \
+  "Exec stalonetray -t -i 16" )
+*StatusPanel:  (25x20, Frame0, Swallow FvwmXeyes "Exec xeyes -name FvwmXeyes -fg black " )
+*StatusPanel: (170x20, Frame0, Swallow "FvwmXclock" \
+  `Exec xclock -name FvwmXclock -digital -strftime "%H:%M:%S %a %d %b %Y" -padding 0 \
+   -fg white -update 1 -face -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1`)
+
+#Example PipeRead scripting with read friendly layout and variable manipulation.
+#Need to remember the script is written as a single line command
+#so addition ';' are necessary where EOL normally does the job.
+#Note: If an infostore key does not exist it defaults to its literal string value.
+#Note: Use runcommand.sh to start a bg process ie can not embed '&'.
+DestroyFunc FnPipeReadExample
+AddToFunc FnPipeReadExample
++ I Echo $[infostore.SOMEVAR]
++ I SetEnv SOMEVAR $[infostore.SOMEVAR]
++ I PipeRead ' \
+if [ ${SOMEVAR:-\$[infostore.SOMEVAR]} = "\$[infostore.SOMEVAR]" ]; then \
+  SOMEVAR="default"; \
+fi; \
+echo "InfoStoreAdd SOMEVAR $SOMEVAR"; \
+'
++ I Echo $[infostore.SOMEVAR]
++ I UnsetEnv SOMEVAR

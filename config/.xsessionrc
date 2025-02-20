@@ -3,33 +3,29 @@
 
 #xdg-settings set default-web-browser luakit.desktop
 
-xhost +si:localuser:root
-. ~/bin/shellscripts/config/mouse.env >/tmp/xinitrc.log
-xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32
+xhost +si:localuser:root >/dev/null
+. ~/bin/shellscripts/config/mouse.env >/dev/null
+xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32 >/dev/null
 
 #xdg-desktop-portal-gtk requirement for steam.
 systemctl --user set-environment DISPLAY=$DISPLAY
 
-SYNCLIENT=`which synclient`
-if [ -n "$SYNCLIENT" ]; then
-  synclient TapButton1=1
-  synclient TapButton2=2
-  synclient TapButton3=3
-  synclient PalmDetect=1
-fi
-
-
 #install swh-plugins - Steve Harris's LADSPA plugins
-
-pactl load-module module-ladspa-sink sink_name=compressor \
-       plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
-pactl set-default-sink compressor
-
+if [ 1 -eq `dpkg -l |grep -c swh-plugins` ]; then
+  pactl load-module module-ladspa-sink sink_name=compressor \
+         plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
+  pactl set-default-sink compressor
+fi
 
 status=`pgrep -fl fvwm`
 if [ -z "${status}" ]; then
-  rm -f /tmp/fvwm${USER}.log
-  fvwm3 >> /tmp/fvwm${USER}.log 2>>/tmp/fvwm${USER}.log
+  PATH_XDG=/run/user/`id -u`
+  while [ ! -d "$PATH_XDG" ]
+  do
+    sleep 1
+    echo waiting for XDG_RUNTIME_DIR
+  done
+  fvwm3 -v -o $PATH_XDG/fvwm${USER}.log
 else
   echo fvwm already running! $status
 fi

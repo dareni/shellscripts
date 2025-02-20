@@ -27,14 +27,15 @@
 *color7: #DDEEDD
 *color15: #6C887A
 
-XClock*analog: false
-XClock*buffer: true
-XClock*update: 1
+!Now included in fvwm config
+!XClock*analog: false
+!XClock*buffer: true
+!XClock*update: 1
 !XClock*borderWidth: 0
 !XClock*font: -bitstream-*-bold-r-*-33-240-*
 !XClock*font: l-medium-r-normal--0-0-0-0-p-0-iso8859-2
 !XClock*font: -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso8859-2
-XClock*font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1
+!XClock*font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1
 !xlsfonts
 !xcolorsel
 !xrdb -merge .Xresources

@@ -9,6 +9,24 @@ if [ -z `which python` ]; then
     ln -s `which python3` $HOME/bin/python
   fi
 fi
+if [ `xlsfonts |grep -c -- \
+  "-misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1"` -eq 0 ]; then
+  echo "Font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1"
+  echo "      required for the date of the fvwm status bar."
+fi 
+if [ 0 -eq `dpkg -l |grep -c swh-plugins` ]; then
+  echo The swh-plugins package \(Steve Harris LADSPA plugins\)
+  echo  for sound equalization is not installed.
+  echo Used in .xsessionrc configuration.
+fi
+if [ -n "`which stalonetray`" ]; then
+  echo stalonetray not installed.
+  echo wpagui, cbatticon and steam tray icons will not be visible.
+fi
+if [ 0 -eq `xmem -help 2>&1 |grep -c usage:` ]; then
+  echo ~/bin/shellscripts/xmem may require recompilation.
+  echo see https://git.sdf.org/bch/xmem
+fi
 
 sudo chown root:root $HOME/bin/shellscripts/krunker.sh
 sudo chmod 655  $HOME/bin/shellscripts/krunker.sh
@@ -22,7 +40,12 @@ if [ -d $HOME/bin/shellscripts ]; then
   ln -s $HOME/bin/shellscripts/config/vim/_vimrc $HOME/_vimrc
   mkdir -p $HOME/.vim/colors $HOME/.vim/ftplugin
   mkdir -p  $HOME/.vim/pack/git-plugins/start
-
+  if [ -n "`which alacritty`" ]; then
+    mkdir -p $HOME/.config/alacritty
+    if [ ! -e $HOME/.config/alacritty/alacritty.yml ]; then
+      cp $HOME/bin/shellscripts/config/alacritty.yml $HOME/.config/alacritty
+    fi
+  fi
   if [ ! -d $HOME/.vim/pack/git-plugins/start/ale ]; then
     git clone --depth 1 https://github.com/dense-analysis/ale.git \
       $HOME/.vim/pack/git-plugins/start/ale
@@ -71,6 +94,9 @@ if [ -d $HOME/bin/shellscripts ]; then
   ln -s $HOME/bin/shellscripts/config/progMenu.fvwm $HOME/.fvwm/progMenu.fvwm
   ln -s $HOME/bin/shellscripts/config/icons $HOME/.fvwm
   ln -s $HOME/bin/shellscripts/config/images $HOME/.fvwm
+  if [ ! -e $HOME/.fvwm/layout.fvwm ]; then
+    cp $HOME/bin/shellscripts/config/layout.fvwm $HOME/.fvwm/layout.fvwm
+  fi
 
   PAVUCONTROL=`which pavucontrol`
   if [ -n "$PAVUCONTROL" ]; then
