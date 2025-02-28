@@ -1,34 +1,64 @@
-Style Project|Alacritty ResizeHintOverride
-Module FvwmEvent FE
-DestroyModuleConfig FE: *
-*FE: Cmd Function
-*FE: add_window FvwmLayout
-
 DestroyMenu LayoutMenu
 AddToMenu   LayoutMenu "Layouts" Title
 + "Rust Layout" FnRustLayout
-+ "Term Layout" FnTermLayout
-
-DestroyFunc FvwmLayout
-AddToFunc   FvwmLayout
-#+ I ThisWindow ("Project") Move 0p 2p Resize 10c 10c
-+ I ThisWindow ("BottomRust") Move 50 530p 
-+ I ThisWindow ("Project Rust") Move 0p 2p
-+ I ThisWindow ("Top Rust") Move 50 2p 
-+ I ThisWindow ("TL Term") Move 0 0p 
-+ I ThisWindow ("TR Term") Move shuffle ewmhiwak layers 0 0 Right Up
-+ I ThisWindow ("BL Term") Move 50 2p 
-+ I ThisWindow ("BR Term") Move 50 2p 
++ "Alacritty 4x4" FnAlacritty4x4
 
 DestroyFunc FnRustLayout
 AddToFunc   FnRustLayout
-+ I Exec exec picom
-+ I Exec exec alacritty -o window.title="Bottom" -o window.dimensions.columns=137 -o window.dimensions.lines=32
-+ I Exec exec alacritty -o window.title="Project" -o window.dimensions.columns=137 -o window.dimensions.lines=63 -e /bin/bash -c "cd /opt/volatile/rust/bevy/shooter; vi -s start.vim"
-+ I Exec exec alacritty -o window.title="Top" -o window.dimensions.columns=137 -o window.dimensions.lines=31
++ I FnPicom
++ I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
++ I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
++ I FnSetClassName
++ I Exec exec . ~/fvwm.env; \
+      alacritty -o window.class=$[infostore.classname] -o window.title=Project -e /bin/bash -c "cd /opt/rust; vi -s start.vim"
++ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 0  windowsize $[infostore.xsize] $[vp.height]
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopRight
++ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] 0 windowsize $[infostore.xsize] $[infostore.ysize]
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomRight
++ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] $[infostore.ysize] \
+      windowsize $[infostore.xsize] $[infostore.ysize]
 
-DestroyFunc FnTermLayout
-AddToFunc   FnTermLayout
-+ I Exec exec picom
-+ I Exec exec alacritty -o window.title="TL Term" -o window.dimensions.columns=85 -o window.dimensions.lines=32
-+ I Exec exec alacritty -o window.title="TR Term" -o window.dimensions.columns=85 -o window.dimensions.lines=32
+DestroyFunc FnAlacritty4x4
+AddToFunc   FnAlacritty4x4
++ I FnPicom
++ I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
++ I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopLeft
++ I Echo created $[infostore.classname]
++ I Wait $[infostore.classname]
++ I Echo finish waiting for $[infostore.classname]
++ I Echo move window $[infostore.classname]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 0 \
+      windowsize $[infostore.xsize] $[infostore.ysize]
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopRight
++ I Wait $[infostore.classname]
++ I Echo move window $[infostore.classname]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] 0 \
+      windowsize $[infostore.xsize] $[infostore.ysize]
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomLeft
++ I Wait $[infostore.classname]
++ I Echo move window $[infostore.classname]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 $[infostore.ysize] \
+      windowsize $[infostore.xsize] $[infostore.ysize]
++ I FnSetClassName
++ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomRight
++ I Wait $[infostore.classname]
++ I Echo move window $[infostore.classname]
++ I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] $[infostore.ysize] \
+      windowsize $[infostore.xsize] $[infostore.ysize]
++ I InfoStoreRemove xsize
++ I InfoStoreRemove ysize
+
+DestroyFunc FnSetClassName
+AddToFunc FnSetClassName
++ I PipeRead 'echo InfoStoreAdd classname T`date +"%s%N"`'
+
+# vim:syntax=fvwm

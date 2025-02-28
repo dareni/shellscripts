@@ -19,7 +19,7 @@ if [ 0 -eq `dpkg -l |grep -c swh-plugins` ]; then
   echo  for sound equalization is not installed.
   echo Used in .xsessionrc configuration.
 fi
-if [ -n "`which stalonetray`" ]; then
+if [ -z "`which stalonetray`" ]; then
   echo stalonetray not installed.
   echo wpagui, cbatticon and steam tray icons will not be visible.
 fi
