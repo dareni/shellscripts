@@ -1,25 +1,27 @@
+#Custom layout config.
+
 DestroyMenu LayoutMenu
 AddToMenu   LayoutMenu "Layouts" Title
 + "Rust Layout" FnRustLayout
 + "Alacritty 4x4" FnAlacritty4x4
 
+#Alacritty is very picky with quotes for parameter values.
 DestroyFunc FnRustLayout
 AddToFunc   FnRustLayout
 + I FnPicom
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
 + I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
 + I FnSetClassName
-+ I Exec exec . ~/fvwm.env; \
-      alacritty -o window.class=$[infostore.classname] -o window.title=Project -e /bin/bash -c "cd /opt/rust; vi -s start.vim"
-+ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title="Project" -e /bin/bash -c "cd /opt/volatile/rust/bevy/shooter; vi -s start.vim"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 0  windowsize $[infostore.xsize] $[vp.height]
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopRight
-+ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"TopRight\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] 0 windowsize $[infostore.xsize] $[infostore.ysize]
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomRight
-+ I FnResourceWait 1 $[infostore.classname] $[infostore.log]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"BottomRight\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] $[infostore.ysize] \
       windowsize $[infostore.xsize] $[infostore.ysize]
 
@@ -29,36 +31,63 @@ AddToFunc   FnAlacritty4x4
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
 + I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopLeft
-+ I Echo created $[infostore.classname]
-+ I Wait $[infostore.classname]
-+ I Echo finish waiting for $[infostore.classname]
-+ I Echo move window $[infostore.classname]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"TopLeft\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 0 \
       windowsize $[infostore.xsize] $[infostore.ysize]
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=TopRight
-+ I Wait $[infostore.classname]
-+ I Echo move window $[infostore.classname]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"TopRight\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] 0 \
       windowsize $[infostore.xsize] $[infostore.ysize]
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomLeft
-+ I Wait $[infostore.classname]
-+ I Echo move window $[infostore.classname]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"BottomLeft\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove 0 $[infostore.ysize] \
       windowsize $[infostore.xsize] $[infostore.ysize]
 + I FnSetClassName
-+ I Exec exec alacritty -o window.class=$[infostore.classname] -o window.title=BottomRight
-+ I Wait $[infostore.classname]
-+ I Echo move window $[infostore.classname]
++ I Exec exec alacritty -o window.class=\"$[infostore.classname]\" -o window.title=\"BottomRight\"
++ I FnWait 1 $[infostore.classname]
 + I Exec exec xdotool search --classname $[infostore.classname] windowmove $[infostore.xsize] $[infostore.ysize] \
       windowsize $[infostore.xsize] $[infostore.ysize]
 + I InfoStoreRemove xsize
 + I InfoStoreRemove ysize
 
+#Use FnWait because fvwm wait can cause weird behavior
+# depending where it hangs in a function. FnWait 
+# tries for the window and breaks the function when
+# the window does not exist.
+DestroyFunc FnWait
+AddToFunc FnWait
++ I PipeRead ' \
+  HITS='$0'; \
+  CNAME='$1'; \
+  LOG='$[infostore.log]'; \
+  WCOUNT=0; \
+  TRIES=0; \
+  while [ $WCOUNT -lt $HITS -a $TRIES -lt 3 ]; \
+  do \
+    WCOUNT=`xdotool search --classname $CNAME | wc -w`; \
+    TRIES=$((TRIES+1)); \
+    xdotool sleep .1; \
+  done; \
+  if [ $HITS -ne $WCOUNT ]; then \
+    MSG="Error! Found $WCOUNT $CNAME window(s) expected $HITS"; \
+    echo $MSG >> $LOG; \
+    runcommand.sh "yad --title=FVWMError --text check_fvwm_log --escape-ok \
+    --sticky --center --on-top --borders=15" $LOG; \
+    echo Break; \
+  fi; \
+'
 DestroyFunc FnSetClassName
 AddToFunc FnSetClassName
 + I PipeRead 'echo InfoStoreAdd classname T`date +"%s%N"`'
+
+# PID may be an option to track an application if it is not possible
+# to set the classname eg:
+# +I PipeRead '\
+#xclock & \
+#PID=$! \
+#echo InfoStoreAdd XID `xdotool search --all --pid ${PID}`
 
 # vim:syntax=fvwm

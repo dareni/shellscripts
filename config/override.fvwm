@@ -543,7 +543,8 @@ fi; \
 
 #Example PipeRead scripting with read friendly layout and variable manipulation.
 #Need to remember the script is written as a single line command
-#so addition ';' are necessary where EOL normally does the job.
+#so addition of ';' is necessary where EOL normally does the job.
+#Also no space after line continuation char '\' silently fails the script.
 #Note: If an infostore key does not exist it defaults to its literal string value.
 #Note: Use runcommand.sh to start a bg process ie can not embed '&'.
 #Note: PipeRead blocks unlike Exec.
