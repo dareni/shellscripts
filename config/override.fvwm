@@ -187,22 +187,94 @@ AddToFunc   Wallpaper
 + I Exec  exec feh -t /usr/share/fvwm3/default-config/images/background/* ~/.fvwm/images/background/
 + I Exec  exec yad --title="Select Wallpaper" --text "» Click a wallpaper tile.\n» Press (m)enu on the wallpaper image when it opens.\n» File\n» Background\n» Set Filled\n\n» Note: the image may open under this message window." --escape-ok --sticky --center --on-top --borders=20
 
+DestroyFunc FnAlacrittyPID
+AddToFunc  FnAlacrittyPID
++ I PipeRead " \
+if [ -n \"`which alacritty`\" ]; then \
+  COUNT=$(pgrep alacritty |wc -w); \
+  if [ $COUNT -eq 1 ]; then \
+    AlacrittyPID=$(pgrep alacritty); \
+    echo InfoStoreAdd AlacrittyPID $AlacrittyPID; \
+  elif [ $COUNT -eq 0 ]; then \
+    echo InfoStoreAdd AlacrittyPID 0; \
+  else \
+   MSG=\"Error! Alacritty process count: $COUNT\"; \
+   echo $MSG >> $[infostore.log]; \
+   . runcommand.env; \
+   runcommand \"yad --title=FVWMError --text check_fvwm_log --escape-ok \
+    --sticky --center --on-top --borders=15\" $LOG; \
+    echo Break; \
+  fi; \
+else \
+    echo Break; \
+fi; \
+"
+
+#Spawn alacritty deamon and wait for startup completion.
+DestroyFunc FnAlacrittyDaemon
+AddToFunc  FnAlacrittyDaemon
++ I FnPicom
++ I FnAlacrittyPID
++ I PipeRead " \
+PID=$[infostore.AlacrittyPID]; \
+if [ ${PID:=0} -eq 0 ]; then \
+  . runcommand.env; \
+  runcommand \"alacritty --daemon\" $[infostore.log]; \
+  if [ $(PID:=0) -eq 0 ]; then \
+    echo Error! Could not start alacritty daemon. No PID? >> $[infostore.log]; \
+    echo Break; \
+  else \
+    COUNT=0; \
+    FOUND=0; \
+    while [ $FOUND -eq 0 -a $COUNT -lt 3 ]; do \
+      xdotool sleep 0.1; \
+      FOUND=$(file  $(ls $XDG_RUNTIME_DIR/Alacritty*${PID}.sock) | grep -c socket\$) 2>/dev/null; \
+      COUNT=$((COUNT+1)); \
+    done; \
+    echo InfoStoreAdd AlacrittyPID ${PID}; \
+  fi; \
+fi; \
+"
+
 ######
 # Alacritty function
 ###########
+#
 DestroyFunc FnAlacritty
 AddToFunc  FnAlacritty
-+ I FnPicom
-+ I Exec exec alacritty
++ I FnAlacrittyDaemon
++ I Echo  aladeamon = $[infostore.AlacrittyPID];
++ I PipeRead " \
+LIST=$(xdotool search -any --pid $[infostore.AlacrittyPID]); \
+LIST=$(echo ${LIST:--}| sed -e 's/ /-/g' ); \
+echo InfoStoreAdd AlacrittyList ${LIST}; \
+"
++ I Echo listout $[infostore.AlacrittyList]
++ I Exec exec alacritty msg create-window $*
++ I PipeRead " \
+ILIST=$(echo $[infostore.AlacrittyList]|sed -e 's/-/ /g' |xargs); \
+TRIES=0; \
+LIST=$(xdotool search -any --pid $[infostore.AlacrittyPID]); \
+while [ $LIST = $ILIST -a $TRIES -lt 6 ]; do \
+  xdotool sleep .1; \
+  TRIES=$(TRIES+1); \
+  LIST=$(xdotool search -any --pid $[infostore.AlacrittyPID]); \
+done; \
+for item in $ILIST; do \
+  LIST=$(echo $LIST | sed -e 's/'$item'//g'); \
+done; \
+echo InfoStoreAdd AlacrittyWID $LIST; \
+"
 
 DestroyFunc FnPicom
 AddToFunc  FnPicom
 + I PipeRead ' \
 if [ `pgrep -c picom` -eq 0 ]; then \
   if [ -n "`which picom`" ]; then \
-    runcommand.sh picom /dev/null; \
+    echo Exec exec picom; \
+  else \
+    echo Nop; \
   fi; \
-  echo Nop; \
 fi'
 
 DestroyMenu FvwmWindowOpsMenu
@@ -490,12 +562,12 @@ AddToFunc FnHideStatusPanel
 DestroyFunc FnFvwmCbatticon
 AddToFunc FnFvwmCbatticon
 + I PipeRead 'killall -9 cbatticon; echo Nop'
-+ I PipeRead 'runcommand.sh cbatticon /dev/null; echo Nop'
++ I Exec exec cbatticon
 
 DestroyFunc FnFvwmWpaGui
 AddToFunc FnFvwmWpaGui
 + I PipeRead 'sudo killall -9 wpa_gui; echo Nop'
-+ I PipeRead 'runcommand.sh "sudo wpa_gui -t" /dev/null; echo Nop'
++ I Exec exec sudo wpa_gui -t
 
 #Note: use stalonetray over trayer because tray had issues being swallowed by FVWMButtons.
 DestroyModuleConfig StatusPanel:*
@@ -529,13 +601,13 @@ TINT_VAL='$[infostore.atty$[infostore.WID]]'; \
 if [ $TINT_VAL = \$[infostore.atty\$[infostore.WID]] ]; then \
   TINT_VAL=0; \
 fi; \
+ALACRITTY_WINDOW_ID='$[infostore.WID]'; \
+export ALACRITTY_WINDOW_ID; \
 if [ $TINT_VAL -eq 0 ]; then \
-   echo "alacritty msg config -w '$[infostore.WID]' window.opacity=1">>'$[infostore.log]'; \
-   alacritty msg config -w '$[infostore.WID]' window.opacity=1; \
+   alacritty msg config window.opacity=1; \
    echo "InfoStoreAdd atty'$[infostore.WID]' 1"; \
 else \
-   echo "alacritty msg config -w '$[infostore.WID]' window.opacity=0">>'$[infostore.log]'; \
-   alacritty msg config -w '$[infostore.WID]' window.opacity=0; \
+   alacritty msg config  window.opacity=0.6; \
    echo "InfoStoreAdd atty'$[infostore.WID]' 0"; \
 fi; \
 '
@@ -546,7 +618,7 @@ fi; \
 #so addition of ';' is necessary where EOL normally does the job.
 #Also no space after line continuation char '\' silently fails the script.
 #Note: If an infostore key does not exist it defaults to its literal string value.
-#Note: Use runcommand.sh to start a bg process ie can not embed '&'.
+#Note: Use runcommand (runcommand.env) to start a bg process ie can not embed '&'.
 #Note: PipeRead blocks unlike Exec.
 DestroyFunc FnPipeReadExample
 AddToFunc FnPipeReadExample

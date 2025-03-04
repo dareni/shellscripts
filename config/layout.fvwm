@@ -54,7 +54,7 @@ AddToFunc   FnAlacritty4x4
 + I InfoStoreRemove ysize
 
 #Use FnWait because fvwm wait can cause weird behavior
-# depending where it hangs in a function. FnWait 
+# depending where it hangs in a function. FnWait
 # tries for the window and breaks the function when
 # the window does not exist.
 DestroyFunc FnWait
@@ -74,7 +74,8 @@ AddToFunc FnWait
   if [ $HITS -ne $WCOUNT ]; then \
     MSG="Error! Found $WCOUNT $CNAME window(s) expected $HITS"; \
     echo $MSG >> $LOG; \
-    runcommand.sh "yad --title=FVWMError --text check_fvwm_log --escape-ok \
+    . runcommand.env
+    runcommand "yad --title=FVWMError --text check_fvwm_log --escape-ok \
     --sticky --center --on-top --borders=15" $LOG; \
     echo Break; \
   fi; \

@@ -13,12 +13,16 @@ if [ `xlsfonts |grep -c -- \
   "-misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1"` -eq 0 ]; then
   echo "Font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1"
   echo "      required for the date of the fvwm status bar."
-fi 
+fi
 if [ 0 -eq `dpkg -l |grep -c swh-plugins` ]; then
   echo The swh-plugins package \(Steve Harris LADSPA plugins\)
   echo  for sound equalization is not installed.
   echo Used in .xsessionrc configuration.
 fi
+if [ 0 -eq `dpkg -l |grep -c findutils` ]; then
+  echo findutils not installed for xargs.
+fi
+
 if [ -z "`which stalonetray`" ]; then
   echo stalonetray not installed.
   echo wpagui, cbatticon and steam tray icons will not be visible.
