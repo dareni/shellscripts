@@ -243,13 +243,11 @@ fi; \
 DestroyFunc FnAlacritty
 AddToFunc  FnAlacritty
 + I FnAlacrittyDaemon
-+ I Echo  aladeamon = $[infostore.AlacrittyPID];
 + I PipeRead " \
 LIST=$(xdotool search -any --pid $[infostore.AlacrittyPID]); \
 LIST=$(echo ${LIST:--}| sed -e 's/ /-/g' ); \
 echo InfoStoreAdd AlacrittyList ${LIST}; \
 "
-+ I Echo listout $[infostore.AlacrittyList]
 + I Exec exec alacritty msg create-window $*
 + I PipeRead " \
 ILIST=$(echo $[infostore.AlacrittyList]|sed -e 's/-/ /g' |xargs); \
@@ -265,6 +263,7 @@ for item in $ILIST; do \
 done; \
 echo InfoStoreAdd AlacrittyWID $LIST; \
 "
++ I Echo AlacrittyWID: $[infostore.AlacrittyWID]
 
 DestroyFunc FnPicom
 AddToFunc  FnPicom
