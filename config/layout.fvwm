@@ -2,8 +2,10 @@
 
 DestroyMenu LayoutMenu
 AddToMenu   LayoutMenu "Layouts" Title
-+ "Rust Layout" FnRustLayout
-+ "Alacritty 4x4" FnAlacritty4x4
++ "Alacritty &2x2" FnAlacritty2x2
++ "Alacritty &4x4" FnAlacritty4x4
++ "&Rust Layout" FnRustLayout
++ "Rust&lings" FnRustlings
 
 #Alacritty is very picky with quotes for parameter values.
 DestroyFunc FnRustLayout
@@ -12,13 +14,38 @@ AddToFunc   FnRustLayout
 + I PipeRead "echo InfoStoreAdd xsize $(($[vp.width]/2))"
 + I PipeRead "echo InfoStoreAdd ysize $(($[vp.height]/2))"
 + I FnAlacritty  -e /bin/bash -c "cd /opt/volatile/rust/bevy/shooter; vi -s start.vim"
++ I Wait Alacritty
 + I PipeRead "xdotool  windowmove $[infostore.AlacrittyWID] 0 0  windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[vp.height]"
 + I FnAlacritty -T TopRight
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] 0 windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I FnAlacritty -T BottomRight
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize] \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I Schedule 100 FnStatusPanel
+
+DestroyFunc FnRustlings
+AddToFunc   FnRustlings
++ I FnStatusPanel
++ I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
++ I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
++ I FnAlacritty --working-directory /opt/volatile/rust/rustlings --hold -e rustlings
++ I Wait Alacritty
++ I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 0 \
+      windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
++ I FnAlacritty --working-directory /opt/volatile/rust/rustlings/solutions
++ I Wait Alacritty
++ I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 $[infostore.ysize] \
+      windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
++ I FnAlacritty --working-directory /opt/volatile/rust/rustlings/exercises
++ I Wait Alacritty
++ I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] 0 \
+      windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[vp.height]"
++ I InfoStoreRemove xsize
++ I InfoStoreRemove ysize
++ I Schedule 100 FnStatusPanel
+
 
 DestroyFunc FnAlacritty4x4
 AddToFunc   FnAlacritty4x4
@@ -26,16 +53,37 @@ AddToFunc   FnAlacritty4x4
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
 + I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
 + I FnAlacritty -T TopLeft
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 0 \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I FnAlacritty -T TopRight
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] 0 \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I FnAlacritty -T BottomLeft
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 $[infostore.ysize] \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I FnAlacritty -T BottomRight
++ I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize] \
+      windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
++ I InfoStoreRemove xsize
++ I InfoStoreRemove ysize
++ I Schedule 100 FnStatusPanel
+
+DestroyFunc FnAlacritty2x2
+AddToFunc   FnAlacritty2x2
++ I FnStatusPanel
++ I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
++ I PipeRead 'echo InfoStoreAdd ysize $[vp.height]
++ I FnAlacritty -T TopLeft
++ I Wait Alacritty
++ I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 0 \
+      windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
++ I FnAlacritty -T TopRight
++ I Wait Alacritty
++ I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] 0 \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I InfoStoreRemove xsize
 + I InfoStoreRemove ysize
