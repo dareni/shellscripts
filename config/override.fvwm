@@ -137,6 +137,7 @@ Test (x lingot) + "Lingot tuner" Exec exit lingot
 Test (x openshot) + "Openshot (video editing)" Exec exec openshot
 Test (x istanbul) + "Istanbul (screen capture)" Exec exec istanbul
 Test (x simpelscreenrecorder) + "SimpleScreenRecorder(screen capture)" Exec exec simplescreenrecorder
++ "Play &Youtube URL" Exec exec ytp.sh
 
 DestroyMenu SystemMenu
 AddToMenu   SystemMenu  "System Menu" Title
@@ -146,6 +147,8 @@ Test (F $[fvwm_home]/layout.fvwm) + "&Layouts" Popup LayoutMenu
 + "&Xterm" Exec exec xterm
 Test (x alacritty) + "&Alacritty" FnAlacritty
 Test (x picom) + "Picom" FnPicom
+
+Test (x xclip) + "&Clipboard to X11 Selection" Exec exec xclip -selection c -o |xclip
 + "x&clipboard" Exec exec xclipboard
 Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
