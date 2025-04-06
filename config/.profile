@@ -41,7 +41,6 @@ export WINEPREFIX
 #JDK_JAVA_OPTIONS="-Djava.io.tmpdir=/opt/volatile/tmp"
 JDK_JAVA_OPTIONS="-Djava.io.tmpdir=/opt/volatile/tmp --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"
 
-
 export JDK_JAVA_OPTIONS
 
 if [ -d "/opt/dev/apache-maven/bin" ]; then
@@ -64,3 +63,6 @@ if [ -n `which virsh` ]; then
   # Default system vm's.
   export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 fi
+
+#Turn off X11 bell.
+xset b off
