@@ -1,6 +1,9 @@
 source $VIMRUNTIME/defaults.vim
 set modeline
 
+"enable relative line numbers
+set nu
+set rnu
 set belloff=all
 set directory=~/.cache
 set backupdir=~/.cache
@@ -21,6 +24,10 @@ set hlsearch
 
 "vim network read/write bookmark/history disable.
 :let g:netrw_dirhistmax=0
+
+"permanent undo
+set undodir=~/.cache"
+set undofile
 
 nnoremap \ ,
 let mapleader=','
@@ -165,7 +172,7 @@ nnoremap tl :tabl<CR>
 "{{{crude debug function.
 function Ikky(buf)
 	"eg call Ikky(['blah'])
-	call writefile(a:buf,glob('/opt/volatile/tmp/vibuf.out', 'ba'))
+	call writefile(a:buf,'/tmp/vibuf.out', 'a')
 endfunction
 "}}}
 
