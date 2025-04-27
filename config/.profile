@@ -63,6 +63,3 @@ if [ -n `which virsh` ]; then
   # Default system vm's.
   export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 fi
-
-#Turn off X11 bell.
-xset b off

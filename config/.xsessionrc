@@ -6,6 +6,8 @@
 xhost +si:localuser:root >/dev/null
 . ~/bin/shellscripts/config/mouse.env >/dev/null
 xsetroot -xcf ~/bin/shellscripts/resource/crosshair.xcursor 32 >/dev/null
+#Turn off X11 bell.
+xset b off
 
 #xdg-desktop-portal-gtk requirement for steam.
 systemctl --user set-environment DISPLAY=$DISPLAY
