@@ -25,11 +25,13 @@ let g:ale_list_window_size = 5
 let g:ale_open_list = 1
 
 colo rusty
-if $TERM =='alacritty'
+if $TERM == 'alacritty' || $TERM == 'tmux-256color'
    hi Normal guibg=NONE ctermbg=NONE
    hi EndOfBuffer guibg=NONE ctermbg=NONE
    hi Folded guibg=NONE ctermbg=NONE
    hi MatchParen ctermfg=200 ctermbg=NONE
+   hi Comment ctermfg=223
+   hi Special ctermfg=223
 endif
 
 "setup program counter and breakpoint colours.
