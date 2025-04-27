@@ -38,6 +38,40 @@ sudo chown root:root $HOME/bin/shellscripts/pw
 sudo chmod 755  $HOME/bin/shellscripts/pw
 sudo chmod 755  $HOME/bin/shellscripts/config/fvwmQuit.sh
 
+if [ ! -f $HOME/.fvwm/cfg/main_menu_button.cfg ]; then
+  read -p "Configure FVWM MainMenuButton(for touch screens) (y/N) : " CONF_TOUCH
+  if [ y = "$CONF_TOUCH" ]; then
+    mkdir -p $HOME/.fvwm/cfg
+    echo creating: $HOME/.fvwm/cfg/main_menu_button.cfg
+    cat <<HEREDOC > $HOME/.fvwm/cfg/main_menu_button.cfg
+*MainMenuButton: Geometry 24x24-370-0
+*MainMenuButton: (Id mainMenu, Icon 24/next.png, ActionOnPress, Action Menu QuickMenu)
+HEREDOC
+  fi
+fi
+
+if [ ! -f $HOME/.fvwm/cfg/status_panel.cfg ]; then
+  read -p "Configure FVWM StatuspPanel (for touch screens) (y/N) : " CONF_TOUCH
+  if [ y = "$CONF_TOUCH" ]; then
+    mkdir -p $HOME/.fvwm/cfg
+    echo creating: $HOME/.fvwm/cfg/status_panel.cfg
+    cat <<HEREDOC > $HOME/.fvwm/cfg/status_panel.cfg
+*StatusPanel: Geometry 370x25-0-0
+HEREDOC
+  fi
+fi
+
+if [ ! -f $HOME/.fvwm/cfg/xvkbd.cfg ]; then
+  read -p "Configure FVWM xv keyboard (for touch screens) (y/N) : " CONF_TOUCH
+  if [ y = "$CONF_TOUCH" ]; then
+    mkdir -p $HOME/.fvwm/cfg
+    echo creating: $HOME/.fvwm/cfg/xvkbd.cfg
+    cat <<HEREDOC > $HOME/.fvwm/cfg/xvkbd.cfg
+Exec exec xvkbd -minimizable -compact -geometry 1000x300+0-0
+HEREDOC
+  fi
+fi
+
 mkdir -p $HOME/.fvwm/screenshot
 
 if [ -d $HOME/bin/shellscripts ]; then

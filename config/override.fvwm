@@ -28,7 +28,7 @@ Test (F $[fvwm_home]/layout.fvwm) Read $[fvwm_home]/layout.fvwm
 Style * Icon
 Style * IconBox screen w 15 15 -165 -15, IconGrid 3 3, IconFill right top
 
-Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, !Borders, !Title
+Style xvkbd WindowListSkip, CirculateSkip, StaysOnTop, HandleWidth 5, !Title
 Style StatusPanel WindowListSkip, CirculateSkip, !Borders, !Title, NoIcon, Sticky
 Style FvwmButtons ParentalRelativity
 Style com-mycompany-mousey-App  Sticky, StaysOnTop, WindowListSkip, !Borders,!Title,HandleWidth 0
@@ -53,15 +53,17 @@ AddToFunc   StartFunction
     Exec exec fvwm-root $[FVWM_USERDIR]/.BGdefault
 + I TestRc (NoMatch) Exec exec $[HOME]/.fehbg
 + I Test (Init) Module FvwmBanner
-+ I Module FvwmButtons StatusPanel
++ I FnStatusPanel
++ I FnMainMenuButton
++ I Test (F $[fvwm_home]/cfg/xvkbd.cfg) FnXvkbd
 + I Module FvwmEvent EventNewDesk
-+ I Test (F /usr/bin/raspi-config) Module FvwmButtons MainMenuButton
 
 EwmhBaseStruts 0 0 0 0
 DesktopSize 1x1
 
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
++ Test FnToggleArtifacts
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
@@ -78,7 +80,6 @@ PipeRead 'if [ -e $fvwm_home/gameMenu.fvwm ]; then echo + \"&Game%mini.xsnow.xpm
 PipeRead 'if [ -e $fvwm_home/progMenu.fvwm ]; then echo + \"Prog&Menu\" Popup ProgMenu; fi'
 Test (F progMenu.fvwm) + "Prog&Menu" Menu ProgMenu
 + "" Nop
-
 + "&Status Panel" FnStatusPanel
 + "&Pager" FuncPager
 + "&Icons" WindowList Root c c CurrentAtEnd, CurrentDesk, OnlyIcons, NoDeskSort, SelectOnRelease, OnlyNormal
@@ -150,7 +151,7 @@ Test (x picom) + "Picom" FnPicom
 
 Test (x xclip) + "&Clipboard to X11 Selection" Exec exec xclip -selection c -o |xclip
 + "x&clipboard" Exec exec xclipboard
-Test (x xvkbd) + "Virutal Keyboard" Exec exec xvkbd -minimizable -compact -geometry 485x150+0-0
+Test (x xvkbd) + "Virutal Keyboard" FnXvkbd
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
 + "&MouseConfig" Exec . ~/bin/shellscripts/config/mouse.env
 Test (x upower) + "&Battery Warning" Exec exec  ~/bin/shellscripts/config/funcPower.sh
@@ -246,13 +247,14 @@ fi; \
 #
 DestroyFunc FnAlacritty
 AddToFunc  FnAlacritty
-+ I FnAlacrittyDaemon
++ I PipeRead 'echo FnToggleArtifacts'
++ I PipeRead 'echo FnAlacrittyDaemon'
 + I PipeRead " \
 LIST=$(xdotool search -any --pid $[infostore.AlacrittyPID]); \
 LIST=$(echo ${LIST:--}| sed -e 's/ /-/g' ); \
 echo InfoStoreAdd AlacrittyList ${LIST}; \
+alacritty msg create-window $*; \
 "
-+ I Exec exec alacritty msg create-window $*
 #+ I Wait Alacritty #does not seem to work here?
 # Because alacritty pops an initial window to calculate font sizes?
 + I PipeRead " \
@@ -270,6 +272,7 @@ done; \
 echo InfoStoreAdd AlacrittyWID $LIST; \
 "
 + I Echo AlacrittyWID: $[infostore.AlacrittyWID]
++ I Schedule 100 FnToggleArtifacts
 
 DestroyFunc FnPicom
 AddToFunc  FnPicom
@@ -284,7 +287,7 @@ fi'
 
 DestroyMenu FvwmWindowOpsMenu
 AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
-+ "M&ove%menu/window-move.xpm%"  Move
++ "M&ove%menu/window-move.xpm%"  FnMoveWindow
 + "&Resize%menu/window-resize.xpm%"  Resize
 + "(De)&Iconify%menu/window-iconify.xpm%"  Iconify
 + "(Un)&Maximize%menu/window-maximize.xpm%"  Maximize
@@ -298,7 +301,7 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "" Nop
 + "&Close%menu/window-close.xpm%"  Close
 + "D&elete%menu/window-delete.xpm%"  Delete
-+ "&Destroy%menu/window-destroy.xpm%"  Destroy
++ "&Destroy%menu/window-destroy.xpm%"  FnDestroyWindow
 + "" Nop
 + "StaysOnTop%menu/window-raise.xpm%"  Pick (CirculateHit) Layer 0 6
 + "Layer +1%menu/window-raise.xpm%"  Pick (CirculateHit) Layer +1
@@ -313,6 +316,22 @@ AddToMenu   FvwmWindowOpsMenu "Window Operations" Title
 + "xg" GoToDesk 0 -1
 + "&Transparency Exec exec FvwmAlacrittyTransparency
 + "Identif&y%menu/window-identify.xpm%"  Module FvwmIdent
+
+DestroyFunc FnMoveWindow
+AddToFunc FnMoveWindow
++ I Move
+
+DestroyFunc FnCloseWindow
+AddToFunc FnCloseWindow
++ C Close
+
+DestroyFunc FnDeleteWindow
+AddToFunc FnDeleteWindow
++ C Delete
+
+DestroyFunc FnDestroyWindow
+AddToFunc FnDestroyWindow
++ C Destroy
 
 Silent Key Super_L A A Menu QuickMenu
 Silent Key Super_R A A Menu QuickMenu
@@ -460,16 +479,35 @@ DestroyModuleConfig Brightness/Volume:*
 Style "Brightness/Volume" Title, Handles, Borders, Sticky, \
   StaysOnTop, !Iconifiable
 
+DestroyFunc FnToggleArtifacts
+AddToFunc FnToggleArtifacts
++ I PipeRead 'echo FnMainMenuButton'
++ I PipeRead 'echo FnStatusPanel'
++ I PipeRead 'sleep .1; echo Nop'
+
+DestroyFunc FnMainMenuButton
+AddToFunc FnMainMenuButton
++ I Test (F $[fvwm_home]/cfg/main_menu_button.cfg) PipeRead ' \
+if [ `pgrep -a FvwmButtons| grep -c MainMenuButton` -ne 0 ]; then  \
+  echo "All (\"MainMenuButton\") Iconify"; \
+else  \
+  echo "Module FvwmButtons MainMenuButton"; \
+fi'
+
+#$[fvwm_home]/main_menu_button.cfg is configured
+#  by shellscript/scriptSetup.sh
 DestroyModuleConfig MainMenuButton:*
-*MainMenuButton: Geometry -305+0
+#PipeRead geometry eg: *MainMenuButton: Geometry 24x24-300-0
+PipeRead 'more +1 '$[fvwm_home]'/cfg/main_menu_button.cfg |head -1'
 *MainMenuButton: Back black
 *MainMenuButton: Frame 0
 *MainMenuButton: Padding 0 0
-*MainMenuButton: (Id mainMenu, Icon 12/next.png, ActionOnPress, \
-    Action Menu QuickMenu)
+#PipeRead button icon eg: *MainMenuButton:
+#(Id mainMenu, Icon 12/next.png, ActionOnPress, Action Menu QuickMenu)
+PipeRead 'more +2 '$[fvwm_home]'/cfg/main_menu_button.cfg |head -1'
 
 Style "MainMenuButton" !Title, !Handles, !Borders, Sticky, WindowListSkip, \
-  CirculateSkip, StaysOnTop, FixedPosition, FixedSize, !Iconifiable
+  CirculateSkip, StaysOnTop, FixedPosition, FixedSize, NoIcon
 
 #This button allows thesaurus lookup on the rpi of a highlighted word.
 #TODO allow dynamic positioning.
@@ -576,7 +614,8 @@ AddToFunc FnFvwmWpaGui
 
 #Note: use stalonetray over trayer because tray had issues being swallowed by FVWMButtons.
 DestroyModuleConfig StatusPanel:*
-*StatusPanel:  Geometry 370x25-0+0
+Test (F $[fvwm_home]/cfg/status_panel.cfg) PipeRead 'more +1 '$[fvwm_home]'/cfg/status_panel.cfg |head -1'
+Test (!F $[fvwm_home]/cfg/status_panel.cfg) PipeRead 'echo "*StatusPanel:  Geometry 370x25-0+0"'
 *StatusPanel:  Columns 370
 *StatusPanel:  Rows 25
 *StatusPanel:  Colorset 15
@@ -594,6 +633,11 @@ DestroyModuleConfig StatusPanel:*
 *StatusPanel: (170x20, Frame0, Swallow "FvwmXclock" \
   `Exec xclock -name FvwmXclock -digital -strftime "%H:%M:%S %a %d %b %Y" -padding 0 \
    -fg white -update 1 -face -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1`)
+
+DestroyFunc FnXvkbd
+AddToFunc FnXvkbd
++ I Test (F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead 'more +1 '$[fvwm_home]'/cfg/xvkbd.cfg |head -1'
++ I Test (!F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead 'echo "Exec exec xvkbd -minimizable -compact -geometry 1000x300+0-0"'
 
 DestroyFunc FnAlacrittyTint
 AddToFunc FnAlacrittyTint

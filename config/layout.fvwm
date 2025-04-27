@@ -10,7 +10,6 @@ AddToMenu   LayoutMenu "Layouts" Title
 #Alacritty is very picky with quotes for parameter values.
 DestroyFunc FnRustLayout
 AddToFunc   FnRustLayout
-+ I FnStatusPanel
 + I PipeRead "echo InfoStoreAdd xsize $(($[vp.width]/2))"
 + I PipeRead "echo InfoStoreAdd ysize $(($[vp.height]/2))"
 + I FnAlacritty  -e /bin/bash -c "cd /opt/volatile/rust/bevy/shooter; vi -s start.vim"
@@ -23,11 +22,9 @@ AddToFunc   FnRustLayout
 + I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize] \
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
-+ I Schedule 100 FnStatusPanel
 
 DestroyFunc FnRustlings
 AddToFunc   FnRustlings
-+ I FnStatusPanel
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
 + I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
 + I FnAlacritty --working-directory /opt/volatile/rust/rustlings --hold -e rustlings
@@ -44,12 +41,9 @@ AddToFunc   FnRustlings
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[vp.height]"
 + I InfoStoreRemove xsize
 + I InfoStoreRemove ysize
-+ I Schedule 100 FnStatusPanel
-
 
 DestroyFunc FnAlacritty4x4
 AddToFunc   FnAlacritty4x4
-+ I FnStatusPanel
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
 + I PipeRead 'echo InfoStoreAdd ysize $(('$[vp.height]'/2))'
 + I FnAlacritty -T TopLeft
@@ -70,13 +64,11 @@ AddToFunc   FnAlacritty4x4
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I InfoStoreRemove xsize
 + I InfoStoreRemove ysize
-+ I Schedule 100 FnStatusPanel
 
 DestroyFunc FnAlacritty2x2
 AddToFunc   FnAlacritty2x2
-+ I FnStatusPanel
 + I PipeRead 'echo InfoStoreAdd xsize $(('$[vp.width]'/2))'
-+ I PipeRead 'echo InfoStoreAdd ysize $[vp.height]
++ I PipeRead 'echo InfoStoreAdd ysize $[vp.height]'
 + I FnAlacritty -T TopLeft
 + I Wait Alacritty
 + I PipeRead "xdotool windowmove $[infostore.AlacrittyWID] 0 0 \
@@ -87,7 +79,6 @@ AddToFunc   FnAlacritty2x2
       windowsize $[infostore.AlacrittyWID] $[infostore.xsize] $[infostore.ysize]"
 + I InfoStoreRemove xsize
 + I InfoStoreRemove ysize
-+ I Schedule 100 FnStatusPanel
 
 #Use FnWait because fvwm wait can cause weird behavior
 # depending where it hangs in a function. FnWait
