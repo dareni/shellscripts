@@ -125,6 +125,6 @@ if ! shopt -oq posix; then
   fi
 fi
 
-if [ -f /usr/share/autojump/autojump.sh ]; then
-  . /usr/share/autojump/autojump.sh
+if [ -n "`type -p zoxide`" ]; then
+  eval "$(zoxide init posix --hook prompt)"
 fi
