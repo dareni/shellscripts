@@ -67,7 +67,7 @@ AddToMenu   QuickMenu "Menu" Title
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
-Test (x firefox) + "&Firefox%icons/menu/firefox.png%" Exec exec firefox
+Test (x firefox) + "&Firefox%icons/menu/firefox.png%" FnFirefox
 Test (x google-chrome) + "Google-&Chrome" Exec exec google-chrome
 Test (x luakit) + "&Luakit" Exec exec luakit
 + "" Nop
@@ -190,6 +190,12 @@ DestroyFunc Wallpaper
 AddToFunc   Wallpaper
 + I Exec  exec feh -t /usr/share/fvwm3/default-config/images/background/* ~/.fvwm/images/background/
 + I Exec  exec yad --title="Select Wallpaper" --text "» Click a wallpaper tile.\n» Press (m)enu on the wallpaper image when it opens.\n» File\n» Background\n» Set Filled\n\n» Note: the image may open under this message window." --escape-ok --sticky --center --on-top --borders=20
+
+DestroyFunc FnFirefox
+AddToFunc  FnFirefox
++ I Exec exec firefox
++ I Wait firefox-esr
++ I PipeRead 'xdotool search --onlyvisible --class "firefox-esr" windowsize %1 100% 100% windowmove %1 0 0'
 
 DestroyFunc FnAlacrittyPID
 AddToFunc  FnAlacrittyPID
@@ -636,8 +642,18 @@ Test (!F $[fvwm_home]/cfg/status_panel.cfg) PipeRead 'echo "*StatusPanel:  Geome
 
 DestroyFunc FnXvkbd
 AddToFunc FnXvkbd
-+ I Test (F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead 'more +1 '$[fvwm_home]'/cfg/xvkbd.cfg |head -1'
-+ I Test (!F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead 'echo "Exec exec xvkbd -minimizable -compact -geometry 1000x300+0-0"'
++ I Test (F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead '\
+if [ `pgrep xvkbd` ]; then\
+  echo Nop;\
+else\
+  more +1 '$[fvwm_home]'/cfg/xvkbd.cfg |head -1;\
+fi; '
++ I Test (!F $[fvwm_home]/cfg/xvkbd.cfg) PipeRead '\
+if [ `pgrep xvkbd` ]; then\
+  echo Nop;\
+else\
+  echo "Exec exec xvkbd -minimizable -compact -geometry 1000x300+0-0";\
+fi;'
 
 DestroyFunc FnAlacrittyTint
 AddToFunc FnAlacrittyTint
