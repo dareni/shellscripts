@@ -29,7 +29,7 @@ fi
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
 
 PATH=$HOME/bin/shellscripts:/sbin:~/bin:$PATH
-JDK_NO=17
+JDK_NO=24
 . jdkenv
 export PATH
 
