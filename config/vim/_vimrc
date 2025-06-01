@@ -1,12 +1,16 @@
-source $VIMRUNTIME/defaults.vim
-set modeline
+if !has('nvim')
+  source $VIMRUNTIME/defaults.vim
+endif
 
+set modeline
 "enable relative line numbers
 set nu
 set rnu
 set belloff=all
-set directory=~/.cache
-set backupdir=~/.cache
+if !has('nvim')
+  set directory=~/.cache/
+  set backupdir=~/.cache
+endif
 set tabstop=2
 set shiftwidth=2
 set expandtab
@@ -14,11 +18,15 @@ set noic
 set fdm=marker
 "set mouse mode for xterm use
 "use "*p to paste clipboard
-behave xterm
+if !has('nvim')
+  behave xterm
+endif
 set mouse=a
 
 set bs=indent,eol,start	" allow backspacing over everything in insert mode
-set viminfo='20,<50,s10,h,n~/.cache/viminfo
+if !has('nvim')
+  set viminfo='20,<50,s10,h,n~/.cache/viminfo
+endif
 set history=20
 set hlsearch
 
@@ -26,7 +34,9 @@ set hlsearch
 :let g:netrw_dirhistmax=0
 
 "permanent undo
-set undodir=~/.cache"
+if !has('nvim')
+  set undodir=~/.cache"
+endif
 set undofile
 
 nnoremap \ ,
@@ -35,6 +45,8 @@ let mapleader=','
 nnoremap <leader>2 :@"<CR>
 "switch between the last 2 buffers
 nnoremap <leader>3 :e#<CR>
+"move count previous lines end.
+nnoremap _ -$
 
 "spelling {{{
 "jump to spelling errors: [s ]s
@@ -111,10 +123,13 @@ if &diff
   call DoDiff()
 endif
 
+if has('fugitive')
 :command Gdiff {
   Gvdiffsplit
   call DoDiff()
 }
+endif
+
 "}}}
 "{{{ buffers
 "select from hidden buffer
