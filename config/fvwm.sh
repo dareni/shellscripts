@@ -27,6 +27,9 @@ do_init() {
     if [ -n "${TOUCH_ID:=`xinput list --id-only "ALP0017:00 044E:121C Touchpad"`}" ]; then
       xinput set-prop $TOUCH_ID 345 1 #Tapping Enabled
       xinput set-prop $TOUCH_ID 358 1 #Middle button emulation enabled
+    #Configure Touch pad on Dell Latitude 5290
+    elif [ -n "${TOUCH_ID:=`xinput list --id-only "Wacom HID 484D Finger touch"`}" ]; then
+      xinput set-prop $TOUCH_ID 324 1 #Enable 2 finger scroll.
     #Configure Touch pad on Dell Latitude E5440
     #TOUCH_ID=`xinput list --id-only "AlpsPS/2 ALPS GlidePoint"`
     elif [ -n "${TOUCH_ID:=`xinput list --id-only "AlpsPS/2 ALPS GlidePoint"`}" ]; then
