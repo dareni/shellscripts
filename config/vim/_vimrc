@@ -1,3 +1,4 @@
+
 if !has('nvim')
   source $VIMRUNTIME/defaults.vim
 endif
@@ -37,7 +38,8 @@ set hlsearch
 if !has('nvim')
   set undodir=~/.cache"
 endif
-set undofile
+"Permanent undo not so good.
+"set undofile
 
 nnoremap \ ,
 let mapleader=','

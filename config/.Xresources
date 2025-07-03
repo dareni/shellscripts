@@ -40,16 +40,33 @@
 !xcolorsel
 !xrdb -merge .Xresources
 !xfd -fn fname
-!xfd -fa fname
+!xfd -fa faceName
 !fc-match mono
 !fc-list
-
+!!appres xterm
+!!fontmatrix
+!xterm -report-fonts
+!fc-list :scalable=true:spacing=mono: family
+!!xterm -fa "faceName the font you want"
 
 !xterm -u8
 !only xterm and urxvt support unicode
 xterm*utf8: 1
 XTerm*termName: xterm-256color
 xterm*pointerShape: crosshair
+xterm*faceName: Anonymous Pro
+!xterm*faceName: JetBrainsMono
+xterm*font: -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+! -fa faceName (family) -fn font resource name defaults to 'fixed'.
+!xterm*packedFont: true
+!xterm*renderFont: false
+!xterm*initialFont: JetBrainsMonoNLNerdFontMono-Regular
+xterm*scaleHeight: 1.1
+
+!xterm*faceName: DejaVuSansCondensed
+!xterm*faceName: DejaVuSerifCondensed
+xterm*faceSize: 8.0
+!xterm*boldFont: JetBrainsMonoNLNerdFontMono-SemiBold
 Xcursor.theme: default
 !xvkbd.NormalKeys: \
 !  F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 Delete \n\

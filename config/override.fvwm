@@ -63,7 +63,6 @@ DesktopSize 1x1
 
 DestroyMenu QuickMenu
 AddToMenu   QuickMenu "Menu" Title
-+ Test FnToggleArtifacts
 Test (x brave-browser) + "&Brave" Exec exec brave-browser
 Test (x chromium) + "&Chromium" Exec exec chromium
 Test (x chromium-browser) + "&Chromium" Exec exec /bin/bash -c 'if [ -d ~/.config/chromium_ln ]; then cp -a ~/.config/chromium_ln /tmp; fi; chromium-browser'
@@ -111,6 +110,7 @@ Test (x calibre) + "Calibre-ebook" Exec exec calibre
 Test (x fbreader) + "&FbReader epub" Exec exec fbreader
 Test (x mcomix) + "&Comix" Exec exec mcomix
 Test (x mupdf) + "&Pdf (mupdf)" Exec exec mupdf
+Test (x zathura) + "&Pdf (zathura)" Exec exec zathura
 Test (x libreoffice) + "Office Suite" Exec exec libreoffice
 + "G&numeric Spreadsheet" Exec exec gnumeric
 + "&Abiword Document" Exec exec abiword
@@ -212,7 +212,7 @@ if [ -n \"`which alacritty`\" ]; then \
    echo $MSG >> $[infostore.log]; \
    . runcommand.env; \
    runcommand \"yad --title=FVWMError --text check_fvwm_log --escape-ok \
-    --sticky --center --on-top --borders=15\" $LOG; \
+    --sticky --center --on-top --borders=15\"; \
     echo Break; \
   fi; \
 else \
@@ -370,6 +370,8 @@ Key XF86Explorer A A FvwmNautilus
 Key XF86MyComputer A A FvwmNautilus
 Key XF86Calculator A A FvwmCalculator
 Key XF86Sleep A A Exec exec sudo pm-suspend
+Key XF86WLAN A A FnToggleWLan
+Key F10 A A FnToggleWLan
 Key Delete A S Exec exec sudo pm-suspend
 Key Print A A FvwmDesktopScreenshot
 
@@ -677,6 +679,22 @@ else \
 fi; \
 '
 + I PrintInfo infostore
+
+#Note: all interfaces are taken up/down because sole
+# wlan ops are not reliable.
+DestroyFunc FnToggleWLan
+AddToFunc FnToggleWLan
++ I PipeRead ' \
+INTERFACE=`ifquery --list|grep ^w`; \
+STATE=`ip link show $INTERFACE|cut -d" " -f9`; \
+. runcommand.env; \
+if [ "$STATE" = "UP" ]; then \
+  runcommand \"sudo ifdown -a\"; \
+else \
+  runcommand \"sudo ifup -a"; \
+fi; \
+echo "NOP"; \
+'
 
 #Example PipeRead scripting with read friendly layout and variable manipulation.
 #Need to remember the script is written as a single line command
