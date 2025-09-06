@@ -130,6 +130,10 @@ if [ -f /usr/share/autojump/autojump.sh ]; then
   . /usr/share/autojump/autojump.sh
 fi
 
-if [ -n "`type -p zoxide`" ]; then
+if [ -d /opt/dev/nvim-linux-x86_64 ]; then
+  PATH=$PATH:/opt/dev/nvim-linux-x86_64/bin
+fi
+
+if [ -n "$(type -p zoxide)" ]; then
   eval "$(zoxide init posix --hook prompt)"
 fi
