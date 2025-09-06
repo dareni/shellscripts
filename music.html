@@ -5,9 +5,12 @@
     python -m http.server.
 
   Provide play/pause and skip button.
+  If a .txt file exists it is used in a picklist for playlist
+  of songs. Each line in the file is the filename of a song.
   -->
 
   <body>
+    <select id="playlistSelector" style="display:none;padding:1%"></select>
     <span id="songName"></span>
     <div>
     <audio id="my-audio" controls width="100%"></audio>
@@ -23,59 +26,182 @@
     #my-audio {width:100%; font-size: 200%; }
     #playButton {width:100%; height:20%; font-size: 200%; }
     #skipButton {width:100%; height:20%; font-size: 200%; }
+    #playlistSelector {width:100% height:20%; font-size: 100%;
+      display: none
+      padding: 1% 1% 1% 1%; font-size: 200%}
     #songName {width:100% height:20%; font-size: 100%;
       display: flex; flex-wrap: wrap;
       align-content: center; align:center;
-      padding: 5% 5% 5% 5%; font-size: 200%}
+      padding: 1% 1% 1% 1%; font-size: 200%}
   </style>
 
-
   <script>
-    var fileDir = document.URL;
-    var endURL=fileDir.lastIndexOf("/");
-    var URL=fileDir.substr(0,endURL);
-    var xmlHttp = new XMLHttpRequest();
-
-    xmlHttp.addEventListener("load", transferComplete);
-    xmlHttp.open('GET', URL, true);
-    xmlHttp.setRequestHeader('Content-Type', 'text/xml');
-    xmlHttp.overrideMimeType('application/xml');
-    xmlHttp.send();
-
+    console.log("v1.0")
+    const baseURL = getBaseUrl();
     const myAudio = document.getElementById('my-audio');
     const playButton = document.getElementById('playButton');
     const skipButton = document.getElementById('skipButton');
+    const playlistSelector = document.getElementById('playlistSelector');
 
     songList=[];
+    songUnplayedPool=[];
 
-    function transferComplete(event) {
+    requestRootXml();
+
+    function getBaseUrl() {
+      var fileDir = document.URL;
+      var endURL=fileDir.lastIndexOf("/");
+      var baseURL=fileDir.substr(0,endURL);
+      return baseURL;
+    }
+
+    function requestRootXml() {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.addEventListener("load", processRootXml);
+      xmlHttp.open('GET', baseURL, true);
+      xmlHttp.setRequestHeader('Content-Type', 'text/xml');
+      xmlHttp.overrideMimeType('application/xml');
+      xmlHttp.send();
+    }
+
+    function processRootXml(event) {
       var songStartMarker='<li><a href=\"';
       var markerLength=songStartMarker.length;
-      var songXML = event.target.responseText;
+
       if (event.target.status == 200) {
-        var songEnd = 0;
-        var songNo=0;
-        do {
-          var songStart = songXML.indexOf('<li><a href=\"', songEnd);
-          if (songStart > 0) {
-            songStart = songStart + markerLength;
-            var songEnd = songXML.indexOf('"', songStart);
-            if (songEnd > 0) {
-              song=songXML.substr(songStart, songEnd-songStart);
-              var isSong = song.indexOf('.webm');
-              if (isSong > 0) {
-                songList[songNo]=song;
-                songNo=songNo+1;
-                //alert(songStart+"."+songEnd + ":"+song+"\n");
-              }
-            } else {
-              songStart = -1;
-            }
+        var songXML = event.target.responseText;
+        var files = getFileList(songXML)
+        // console.log("filelist no:"+files.length)
+            // for (i=0; i< files.length; i++) {
+              // console.log(i + ": " + files[i])
+            // }
+        var playLists = findPlayList(files)
+        if (playLists.length > 0) {
+          for(i=0; i < playLists.length; i++) {
+            const playOption = document.createElement('option')
+            playOption.value = playLists[i];
+            playOption.text= playLists[i];
+            playlistSelector.appendChild(playOption)
           }
-        } while (songStart != -1)
-        if (songList.length > 0) {
-          setSong();
+          playlistSelector.style.display='block'
+          playlistSelector.addEventListener('change', doPlaylistChange)
+          requestPlayListFile(playLists[0])
+        } else  {
+          songList = extractSongListFromFileList(files)
+          if (songList.length>0) {
+            populateUnplayedPool()
+            setSong()
+          }
         }
+      }
+    }
+
+    function getFileList(pageXml) {
+      var fileEnd = 0;
+      var fileNo=0;
+      var fileList=[];
+      var fileStartMarker='<li><a href=\"';
+      var fileMarkerLength=fileStartMarker.length;
+
+      do {
+        var fileStart = pageXml.indexOf(fileStartMarker, fileEnd);
+        if (fileStart > 0) {
+          fileStart = fileStart + fileMarkerLength;
+          fileEnd = pageXml.indexOf('">', fileStart);
+          var lineEnd = pageXml.indexOf('\n', fileStart);
+
+          if (fileEnd > 0 && fileEnd < lineEnd) {
+            filename=pageXml.substr(fileStart, fileEnd-fileStart);
+            fileList[fileNo]=filename;
+            fileNo=fileNo+1;
+          } else {
+            fileStart = -1;
+          }
+        }
+      } while (fileStart != -1)
+      return fileList;
+    }
+
+    function findPlayList(fileList) {
+      var playLists = []
+      // console.log("file count:"+fileList.length)
+      for (i=0; i< fileList.length; i++) {
+        var filename = fileList[i];
+        if (filename.length > 4) {
+          var suffix = filename.substr(filename.length-3, 3)
+          if (suffix === "txt") {
+            playLists.push(filename)
+          }
+        }
+      }[]
+      return playLists
+    }
+
+    function extractSongListFromFileList(fileList) {
+      var songList = []
+      var songNo = 0;
+      for (i=0; i< fileList.length; i++) {
+        var filename = fileList[i];
+        if (filename.length > 4) {
+          var suffix = filename.substr(filename.length-3, 3)
+          if (suffix==="mp3" || suffix === "mp4") {
+            songList[songNo]=filename;
+            songNo+=1;
+          }
+        }
+      }
+      return songList
+    }
+
+    function doPlaylistChange(event) {
+      requestPlayListFile(event.target.value)
+    }
+
+    // function processPlayLists(file) {
+    //   var playList = file[0];
+    //   requestPlayListFile(playList)
+    // }
+
+    function requestPlayListFile(filename) {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.addEventListener("load", processPlayListFile);
+      // xmlHttp.open('GET', baseURL+"/"+filename, true);
+      var url = baseURL+"/"+filename
+      console.log("pl url:"+url)
+      xmlHttp.open('GET', url, true);
+      xmlHttp.setRequestHeader('Content-Type', 'text/plain');
+      // xmlHttp.overrideMimeType('application/xml');
+      xmlHttp.send();
+
+    }
+
+    function processPlayListFile(event) {
+      if (event.target.status == 200) {
+        var playlistText = event.target.responseText;
+        console.log(playlistText)
+        var endOfLine = 0;
+        var songNameStart=0;
+        var endOfLineMarker="\n";
+        var songNo=0
+        songList=[]
+        songUnplayedPool=[]
+        do {
+          var endOfLine = playlistText.indexOf(endOfLineMarker, endOfLine+1);
+          if (endOfLine> 0) {
+              var songName=playlistText.substr(songNameStart, endOfLine-songNameStart);
+              songList[songNo]=songName;
+              songNo=songNo+1;
+          }
+          songNameStart = endOfLine + endOfLineMarker;
+
+        } while (endOfLine != -1)
+          if (songList.length>0) {
+            populateUnplayedPool()
+            setSong()
+            myAudio.play()
+          }
+      } else {
+        console.log("Error obtainn playlistfile: "+ event.target.status)
       }
     }
 
@@ -104,13 +230,35 @@
       myAudio.play();
     });
 
+    function populateUnplayedPool() {
+      for (i=0; i< songList.length; i++) {
+        songUnplayedPool[i]=i
+      }
+    }
+
+    function getRandomUnplayedSong() {
+      if (songUnplayedPool.length < 1) {
+        populateUnplayedPool()
+      }
+      songPrint=""
+      for (i=0; i< songUnplayedPool.length; i++) {
+        songPrint+=i+", "
+      }
+      var newSong = Math.floor(Math.random() * songUnplayedPool.length);
+      songPrint+=" - song:"+songUnplayedPool[newSong] + " index:"+newSong
+      // get the index to the song list before we remove it from unplayed.
+      var songListIndex =songUnplayedPool[newSong];
+      songUnplayedPool.splice(newSong, 1)
+      return songListIndex
+    }
+
     function getRandomSong() {
       var newSong = Math.floor(Math.random() * songList.length);
       return newSong;
     }
 
     function setSong() {
-      var newSong = getRandomSong()
+      var newSong = getRandomUnplayedSong()
       var songName = songList[newSong];
       myAudio.setAttribute('src', songName);
       var songNameDiv = document.getElementById('songName');
@@ -118,8 +266,8 @@
       songNameDiv.innerHTML=decodeURI(songName);
     }
 
-  </script>
 
+  </script>
   </body>
 </html>
 
