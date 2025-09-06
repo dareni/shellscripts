@@ -10,20 +10,20 @@
 
 # if running bash
 if [ -n "$BASH_VERSION" ]; then
-    # include .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-	. "$HOME/.bashrc"
-    fi
+  # include .bashrc if it exists
+  if [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+  fi
 fi
 
 # set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
+if [ -d "$HOME/bin" ]; then
+  PATH="$HOME/bin:$PATH"
 fi
 
 # set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/.local/bin" ] ; then
-    PATH="$HOME/.local/bin:$PATH"
+if [ -d "$HOME/.local/bin" ]; then
+  PATH="$HOME/.local/bin:$PATH"
 fi
 
 #[ "$(tty)" = "/dev/tty1" ] && exec startx
@@ -52,14 +52,21 @@ if [ -d "/opt/dev/apache-ant/bin" ]; then
   export PATH="$PATH:$ANT_HOME/bin"
 fi
 
-
 if [ -d "$HOME/.cargo" ]; then
   #Rust config
   . "$HOME/.cargo/env"
-  export RUST_SRC_PATH=`rustc --print sysroot`/lib/rustlib/src/rust/library
+  export RUST_SRC_PATH=$(rustc --print sysroot)/lib/rustlib/src/rust/library
+  #A command to set the build target to the ram drive.
+  if [ -d $XDG_RUNTIME_DIR ]; then
+    run_cargo() {
+      echo cargo $@ --target-dir $XDG_RUNTIME_DIR/cargo/$(basename $(pwd))
+      env cargo $@ --target-dir $XDG_RUNTIME_DIR/cargo/$(basename $(pwd))
+    }
+    alias cargo=run_cargo
+  fi
 fi
 
-if [ -n `which virsh` ]; then
+if [ -n $(which virsh) ]; then
   # Default system vm's.
   export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 fi
