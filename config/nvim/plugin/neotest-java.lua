@@ -1,13 +1,14 @@
 -- Copy to ~/.config/nvim/lua/plugins
--- In lazyvim extras enable lang.java, dap.core and test.core.
+-- Start nvim no parameters wait for config 'q' to the main menu.
+-- Under Lazy Extras 'x' enable lang.java, dap.core and test.core.
+-- Restart nvim and edit a java source file, wait for downloads to complete.
+-- Check in top downloads are complete and Run :NeotestJava setup.
+-- Restart nvim when download is complete.
+-- Java installation is complete.
 return {
   {
-    "neovim/nvim-lspconfig",
-    ft = "java",
-    enabled = true,
-  },
-  {
-    "rcasia/neotest-java",
+    "dareni/neotest-java",
+    branch = "dev",
     ft = "java",
     dependencies = {
       "mfussenegger/nvim-jdtls",
@@ -37,7 +38,7 @@ return {
       }
       -- debug test file
       keys[#keys + 1] = {
-        "<leader>tD",
+        "<leader>td",
         function()
           require("neotest").run.run({ strategy = "dap" })
         end,
@@ -46,7 +47,7 @@ return {
       }
       -- debug nearest test
       keys[#keys + 1] = {
-        "<leader>td",
+        "<leader>tD",
         function()
           require("neotest").run.run({ vim.fn.expand("%"), strategy = "dap" })
         end,
@@ -70,16 +71,5 @@ return {
         },
       },
     },
-  },
-  {
-    "mfussenegger/nvim-jdtls",
-    ft = "java",
-    opts = function(_, opts)
-      local root_dir = function(fname)
-        -- Prioritize a the marker file like pom.xml over .git. 
-        return require("jdtls.setup").find_root({ "pom.xml", ".git", ".project_root", "build.gradle" }, fname)
-      end
-      opts["root_dir"] = root_dir
-    end,
   },
 }

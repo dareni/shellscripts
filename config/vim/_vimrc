@@ -1,4 +1,3 @@
-
 if !has('nvim')
   source $VIMRUNTIME/defaults.vim
 endif
@@ -193,3 +192,6 @@ function Ikky(buf)
 endfunction
 "}}}
 
+if !has('nvim')
+ :packadd nerd-commenter
+endif

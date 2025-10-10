@@ -27,9 +27,8 @@ if Ilog == nil then
 			Ilog.file = nil
 		end
 		function Ilog.log() end
-		function Ilog.print_trace() end
+		function Ilog.log_trace() end
 		function Ilog.output() end
-		function Ilog.init() end
 		return Ilog
 	end
 
@@ -69,7 +68,7 @@ if Ilog == nil then
 			Ilog.calls = Ilog.calls + 1
 		end
 
-		function Ilog.print_trace()
+		function Ilog.log_trace()
 			local msg_str = Ilog.calls .. ": " .. Ilog.timestamp() .. ": " .. debug.traceback() .. "\n"
 			Ilog.output(msg_str)
 			Ilog.calls = Ilog.calls + 1
@@ -83,19 +82,6 @@ if Ilog == nil then
 				handle:close()
 			end
 		end
-
-		function Ilog.init()
-			Ilog.print("Ilog init")
-			local handle = io.open(Ilog.file, "w")
-			if handle ~= nil then
-				handle:write(Ilog.timestamp() .. ": Log for " .. Ilog.data)
-				handle:flush()
-				handle:close()
-			end
-		end
-
-		--Ilog.init()
-		--return Ilog
 	end
 	Ilog.print("Ilog create complete.")
 	Ilog.disable()

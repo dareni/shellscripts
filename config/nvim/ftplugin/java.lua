@@ -1,4 +1,5 @@
 -- No longer requred. This is configured by lazyvim.
+-- Also not a good example of how to do this. Under lazy vim it should be configured into the lazyvim nvim-jdtls plugin configuration opts and config attributes. See LazyVim/lua/lazyvim/plugins/extras/lang/java.lua.
 -- Copy to ~/.config/nvim/ftplugin
 -- from https://github.com/mfussenegger/nvim-jdtls?tab=readme-ov-file#configuration-verbose
 -- See `:help vim.lsp.start_client` for an overview of the supported `config` options.
