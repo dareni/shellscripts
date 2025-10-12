@@ -128,6 +128,7 @@ DestroyMenu SoundMenu
 AddToMenu   SoundMenu  "Sound/Video" Title
 Test (x arandr) + "&Screen Layout" Exec exec arandr
 + "&Brightness/Volume Control" Module FvwmButtons Brightness/Volume
++ "Po&wersave screen" Exec exec xset dpms force off
 Test (x pavucontrol) + "&PulseAudio" Exec exec pavucontrol
 + "&SmTube (youtube)" Exec exec smtube
 Test (x guvcview) + "Guvcview" Exec exec guvcview
