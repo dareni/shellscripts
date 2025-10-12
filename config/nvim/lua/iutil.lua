@@ -177,7 +177,7 @@ end
 -------------------------------------------------------------------------------
 function M.get_app_name()
 	local app_name = vim.env.NVIM_APPNAME
-	if app_name == nil or #app_name > 1 then
+	if app_name == nil then
 		app_name = "nvim"
 	end
 	return app_name
@@ -190,6 +190,18 @@ function M.get_nvim_directories(home)
 		state = home .. "/.local/state",
 		cache = home .. "/.cache",
 	}
+end
+
+--Create dirs for .cache and .local/state
+function M.refresh_cache()
+	local vim_tmp_dir = M.get_run_dir() .. "/" .. M.get_app_name()
+	if not M.is_directory(vim_tmp_dir) then
+		vim.notify("create dirs in " .. vim_tmp_dir, vim.log.levels.INFO)
+		vim.fn.mkdir(vim_tmp_dir .. "/state", "p")
+		vim.fn.mkdir(vim_tmp_dir .. "/cache", "p")
+	else
+		vim.notify("dir " .. vim_tmp_dir .. " exists!", vim.log.levels.INFO)
+	end
 end
 
 --Create nvim java.
@@ -265,6 +277,7 @@ function M.reset_nvim_config_java(store, target, app_name)
 		.. 'require("icustom")'
 	if nvim_init_buffer ~= nil then
 		table.insert(nvim_init_buffer, 1, nvim_mod_path_config)
+		table.insert(nvim_init_buffer, 2, 'require("iutil").refresh_cache()')
 		M.write_buffer_to_file(init_file, nvim_init_buffer)
 	end
 end
