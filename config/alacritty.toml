@@ -1,0 +1,26 @@
+[[keyboard.bindings]]
+action = "SpawnNewInstance"
+key = "N"
+mods = "Alt"
+
+[debug]
+log_level = "Error"
+print_events = false
+
+[env]
+TERM = "alacritty"
+
+[font]
+normal = { family = "JetBrainsMonoNLNerdFont", style= "Regular" }
+bold = { family = "JetBrainsMonoNLNerdFont", style= "Bold" }
+size = 8.0
+
+[window]
+dynamic_title = true
+opacity = 0.6
+
+[window.dimensions]
+columns = 0
+lines = 0
+
+[keyboard]

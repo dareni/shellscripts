@@ -54,9 +54,9 @@
 xterm*utf8: 1
 XTerm*termName: xterm-256color
 xterm*pointerShape: crosshair
-xterm*faceName: Anonymous Pro
-!xterm*faceName: JetBrainsMono
-xterm*font: -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+!xterm*faceName: Anonymous Pro
+xterm*faceName: JetBrainsMonoNerdFont
+!xterm*font: -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
 ! -fa faceName (family) -fn font resource name defaults to 'fixed'.
 !xterm*packedFont: true
 !xterm*renderFont: false

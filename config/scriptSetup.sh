@@ -80,8 +80,8 @@ if [ -d $HOME/bin/shellscripts ]; then
   mkdir -p  $HOME/.vim/pack/git-plugins/start
   if [ -n "`which alacritty`" ]; then
     mkdir -p $HOME/.config/alacritty
-    if [ ! -e $HOME/.config/alacritty/alacritty.yml ]; then
-      cp $HOME/bin/shellscripts/config/alacritty.yml $HOME/.config/alacritty
+    if [ ! -e $HOME/.config/alacritty/alacritty.toml ]; then
+      ln -s $HOME/bin/shellscripts/config/alacritty.toml $HOME/.config/alacritty
     fi
   fi
   if [ ! -d $HOME/.vim/pack/git-plugins/start/ale ]; then
