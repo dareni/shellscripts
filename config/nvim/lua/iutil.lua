@@ -381,12 +381,16 @@ function M.run_async_command(cmd, options, callback)
 
 	local on_read_stdout = function(err, chunk)
 		if stdout == nil then
-			vim.notify("Pipe does not exist?", vim.log.levels.ERROR)
+			vim.schedule(function()
+				vim.notify("Pipe does not exist?", vim.log.levels.ERROR)
+			end)
 			return
 		end
 		if err then
 			-- Handle read errors
-			vim.notify("Error reading stdout :" .. err, vim.log.levels.ERROR)
+			vim.schedule(function()
+				vim.notify("Error reading stdout :" .. err, vim.log.levels.ERROR)
+			end)
 			return
 		end
 
@@ -401,12 +405,16 @@ function M.run_async_command(cmd, options, callback)
 
 	local on_read_stderr = function(err, chunk)
 		if stderr == nil then
-			vim.notify("Pipe does not exist?", vim.log.levels.ERROR)
+			vim.schedule(function()
+				vim.notify("Pipe does not exist?", vim.log.levels.ERROR)
+			end)
 			return
 		end
 		if err then
 			-- Handle read errors
-			vim.notify("Error reading stderr :" .. err, vim.log.levels.ERROR)
+			vim.schedule(function()
+				vim.notify("Error reading stderr :" .. err, vim.log.levels.ERROR)
+			end)
 			return
 		end
 
@@ -430,35 +438,45 @@ function M.run_async_command(cmd, options, callback)
 		end
 
 		if next(stdout_output_chunks) ~= nil then
-			vim.notify(
-				"Process '" .. cmd .. "' stdout output: " .. table.concat(stdout_output_chunks),
-				vim.log.levels.INFO
-			)
+			vim.schedule(function()
+				vim.notify(
+					"Process '" .. cmd .. "' stdout output: " .. table.concat(stdout_output_chunks),
+					vim.log.levels.INFO
+				)
+			end)
 		end
 		if next(stderr_output_chunks) ~= nil then
-			vim.notify(
-				"Process '" .. cmd .. "' stderr output(may not be an error): " .. table.concat(stderr_output_chunks),
-				vim.log.levels.ERROR
-			)
+			vim.schedule(function()
+				vim.notify(
+					"Process '" .. cmd .. "' stderr output(may not be an error): " .. table.concat(stderr_output_chunks),
+					vim.log.levels.ERROR
+				)
+			end)
 		end
 
 		if exit_code ~= 0 or signal ~= 0 then
-			vim.notify(
-				"Command '" .. cmd .. "' failed exit code:" .. exit_code .. " signal:" .. signal,
-				vim.log.levels.ERROR
-			)
+			vim.schedule(function()
+				vim.notify(
+					"Command '" .. cmd .. "' failed exit code:" .. exit_code .. " signal:" .. signal,
+					vim.log.levels.ERROR
+				)
+			end)
 		else
-			vim.notify(
-				"Command '" .. cmd .. "' successful exit code:" .. exit_code .. " signal:" .. signal,
-				vim.log.levels.INFO
-			)
+			vim.schedule(function()
+				vim.notify(
+					"Command '" .. cmd .. "' successful exit code:" .. exit_code .. " signal:" .. signal,
+					vim.log.levels.INFO
+				)
+			end)
 			if callback ~= nil then
 				callback()
 			end
 		end
 	end
 
-	vim.notify("Spawn '" .. cmd .. "' options:" .. vim.inspect(options), vim.log.levels.DEBUG)
+	vim.schedule(function()
+		vim.notify("Spawn '" .. cmd .. "' options:" .. vim.inspect(options), vim.log.levels.DEBUG)
+	end)
 	local process = uv.spawn(cmd, options, on_exit)
 
 	-- attach callbacks to pipes before the process ends to process any pipe data.
@@ -469,7 +487,9 @@ function M.run_async_command(cmd, options, callback)
 		stderr:read_start(on_read_stderr)
 	end
 	if process == nil then
-		vim.notify(cmd .. " process failed: " .. vim.inspect(options), vim.log.levels.ERROR)
+		vim.schedule(function()
+			vim.notify(cmd .. " process failed: " .. vim.inspect(options), vim.log.levels.ERROR)
+		end)
 	end
 end
 
