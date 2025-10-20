@@ -14,6 +14,15 @@ if [ `xlsfonts |grep -c -- \
   echo "Font: -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1"
   echo "      required for the date of the fvwm status bar."
 fi
+if [ `fc-list |grep -c -- \
+  "JetBrainsMono"` -eq 0 ]; then
+  echo "Installing Font: JetBrainsMono required for lazyvim."
+  sudo mkdir -p /usr/local/share/fonts/JetBrains
+  sudo curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.tar.xz |\
+  sudo tar -xvJ -C /usr/local/share/fonts/JetBrains
+  fc-cache -fv
+fi
+
 if [ 0 -eq `dpkg -l |grep -c swh-plugins` ]; then
   echo The swh-plugins package \(Steve Harris LADSPA plugins\)
   echo  for sound equalization is not installed.
