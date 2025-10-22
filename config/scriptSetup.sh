@@ -16,6 +16,7 @@ if [ `xlsfonts |grep -c -- \
 fi
 if [ `fc-list |grep -c -- \
   "JetBrainsMono"` -eq 0 ]; then
+  #https://github.com/adobe-fonts/source-code-pro/releases/download/2.042R-u%2F1.062R-i%2F1.026R-vf/OTF-source-code-pro-2.042R-u_1.062R-i.zip
   echo "Installing Font: JetBrainsMono required for lazyvim."
   sudo mkdir -p /usr/local/share/fonts/JetBrains
   sudo curl -L https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.tar.xz |\
