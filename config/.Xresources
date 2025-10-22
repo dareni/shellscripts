@@ -1,31 +1,53 @@
 !# Maintained at: git@github.com:dareni/shellscripts.git
-*foreground: #DDEEDD
-*background: #1C1C1C
+
+!for i in {0..255}; do printf "\e[48;5;%dm%3d\e[0m " "$i" "$i"; if (( i == 15 )) || (( i > 15 )) && (( (i-15) % 6 == 0 )); then printf "\n"; fi; done
+
+*background: black
+*foreground: white
+*VT100*background: black
+*VT100*foreground: white
 
 !black
-*color0: #1C1C1C
-*color8: #4d4d4d
+*color0: black
+*color8: gray10
+*VT100*color0: black
+*VT100*color8: gray10
 !red
-*color1: #D81860
-*color9: #F00060
+*color1: red
+*color9: firebrick
+*VT100*color1: red
+*VT100*color9: firebrick
 !green
-*color2: #B7CE42
-*color10: #BDE077
+*color2: SpringGreen3
+*color10: LightGreen
+*VT100*color2: SpringGreen3
+*VT100*color10: LightGreen
 !yellow
-*color3: #FEA63C
-*color11: #FFE863
+*color3: gold1
+*color11: DarkOrange3
+*VT100*color3: gold1
+*VT100*color11: DarkOrange3
 !blue
-*color4: DeepSkyBlue
+*color4: blue3
 *color12: RoyalBlue
+*VT100*color4: blue3
+*VT100*color12: RoyalBlue
 !magenta
-*color5: #B7416E
-*color13: OrangeRed
+*color5: maroon
+*color13: purple
+*VT100*color5: maroon
+*VT100*color13: purple
 !cyan
 *color6: cyan3
 *color14: cyan4
+*VT100*color6: cyan3
+*VT100*color14: cyan4
 !white
-*color7: #DDEEDD
-*color15: #6C887A
+*color7: grey80
+*color15: white
+*VT100*color7: grey80
+*VT100*color15: white
+
 
 !Now included in fvwm config
 !XClock*analog: false
@@ -39,6 +61,7 @@
 !xlsfonts
 !xcolorsel
 !xrdb -merge .Xresources
+!xfontsel
 !xfd -fn fname
 !xfd -fa faceName
 !fc-match mono
@@ -51,21 +74,32 @@
 
 !xterm -u8
 !only xterm and urxvt support unicode
+!xterm -report-fonts is the most accurate display of font info.
+!*faceName specifies the modern truetype font and overrides *font
+!*font specifies the older XLFD bitmap font
+!To remove *faceName setting and use *font,
+!  run xrdb without the -merge option.
 xterm*utf8: 1
 XTerm*termName: xterm-256color
 xterm*pointerShape: crosshair
 !xterm*faceName: Anonymous Pro
-xterm*faceName: JetBrainsMonoNerdFont
-!xterm*font: -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+!See shelscripts/scriptSetup.sh for font installs.
+!xterm*faceName: SourceCodePro
+!xterm*faceName: JetBrainsMonoNerdFont
+!use iso10646(universal char set) because 8859 is legacy.
+!Nullify *faceName to use *font
+xterm*faceName:
+!this font is by far the cleanest!
+xterm*font: -misc-fixed-medium-r-semicondensed-*-13-120-75-75-c-60-iso10646-*
 ! -fa faceName (family) -fn font resource name defaults to 'fixed'.
 !xterm*packedFont: true
 !xterm*renderFont: false
 !xterm*initialFont: JetBrainsMonoNLNerdFontMono-Regular
-xterm*scaleHeight: 1.1
+!xterm*scaleHeight: 1.1
 
 !xterm*faceName: DejaVuSansCondensed
 !xterm*faceName: DejaVuSerifCondensed
-xterm*faceSize: 8.0
+!xterm*faceSize: 8.0
 !xterm*boldFont: JetBrainsMonoNLNerdFontMono-SemiBold
 Xcursor.theme: default
 !xvkbd.NormalKeys: \
