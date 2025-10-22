@@ -151,6 +151,7 @@ Test (x alacritty) + "&Alacritty" FnAlacritty
 Test (x picom) + "Picom" FnPicom
 
 Test (x xclip) + "&Clipboard to X11 Selection" Exec exec xclip -selection c -o |xclip
+Test (x xclip) + "X11 Selection to &Clipboard" Exec exec xclip -selection p -o |xclip -i -selection c
 + "x&clipboard" Exec exec xclipboard
 Test (x xvkbd) + "Virutal Keyboard" FnXvkbd
 + "&Wallpapers%icons/wallpaper.png%" Popup BGMenu
