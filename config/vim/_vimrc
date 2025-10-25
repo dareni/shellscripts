@@ -132,6 +132,13 @@ if has('fugitive')
 endif
 
 "}}}
+"{{{ InsertDate()
+function InsertDate()
+  execute "r !date '+\\%y\\%m\\%d \\%H:\\%M:\\%S'"
+  execute "normal 15l"
+endfunction
+nnoremap <leader>id :call InsertDate()<CR>
+"}}}
 "{{{ buffers
 "select from hidden buffer
 nnoremap <leader>bh :ls!<CR>:b<Space>
