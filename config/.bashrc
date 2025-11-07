@@ -136,3 +136,34 @@ fi
 if [ -n "$(type -p zoxide)" ]; then
   eval "$(zoxide init posix --hook prompt)"
 fi
+
+ssh_start_agent() {
+  local SSH_ENV="$1"
+  echo "$(ssh-agent -s)" >"$SSH_ENV"
+  . "$SSH_ENV" >/dev/null
+  MSG=$(ssh-add ~/.ssh/id_rsa 2>&1)
+  if [ $? -ne 0 ]; then
+    echo $MSG
+  fi
+}
+
+ssh_config_agent() {
+  local SSH_ENV=""
+  if [ -d "/run/user/$(id -u)" ]; then
+    SSH_ENV="/run/user/$(id -u)/ssh_env"
+  else
+    SSH_ENV="/tmp/$(id -u)_ssh_env"
+  fi
+
+  if [ -f "$SSH_ENV" ]; then
+    . "$SSH_ENV" >/dev/null
+    # Check for the agent's existence
+    ps -fp "$SSH_AGENT_PID" | grep -q "$SSH_AGENT_PID" || {
+      ssh_start_agent "$SSH_ENV"
+    }
+  else
+    ssh_start_agent "$SSH_ENV"
+  fi
+}
+
+ssh_config_agent
