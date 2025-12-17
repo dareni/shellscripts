@@ -1,5 +1,5 @@
 # !/bin/env sh
-# Clean mpeg files.
+# Clean mpeg audio files. Double the voulume if the average is below 19dB.
 # Use opus over mp3 or mp4 because of the superiour bandwidth efficiency.
 #
 # Bulk convert:
@@ -20,11 +20,21 @@ if [ -n "$ERROR" ]; then
   return
 fi
 if [ -z "$BITRATE" ]; then
-  echo -e "\n\nCould not determine bitrate??"
   return
 fi
 
-ffmpeg -i "$NAME" -b:a ${BITRATE}k "$OUTPUT_NAME"
+#Get the averate volume:
+volume=$(ffmpeg -i "$NAME" -af "volumedetect" -vn -sn -dn -f null - 2>&1 | grep mean_volume: | awk '{ print $(NF-1)}')
+
+echo "volume = $volume"
+VOL_ADJUST=""
+if [ $(echo "$volume < -19" | bc) -eq 1 ]; then
+  #Double the volume
+  VOL_ADJUST='-af volume=6dB'
+  echo adj vol: $VOL_ADJUST
+fi
+
+ffmpeg -i "$NAME" $VOL_ADJUST -b:a ${BITRATE}k "$OUTPUT_NAME"
 OUTPUT_SIZE=$(du -b "$OUTPUT_NAME" | cut -f 1)
 
 if [ $OUTPUT_SIZE -gt $INPUT_SIZE ]; then
