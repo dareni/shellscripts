@@ -1,5 +1,5 @@
 #!/bin/bash
-#Beep when the processor usage drops to zero.
+#Beep when the processor usage drops below a given level.
 
 PID="$1"
 LEVEL="$2"

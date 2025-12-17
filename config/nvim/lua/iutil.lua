@@ -20,7 +20,7 @@ function M.install_neovim(version, nightly)
 	local stable_url = "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
 	local nightly_url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz"
 	local url = stable_url
-	if nightly ~= nil then
+	if nightly then
 		url = nightly_url
 	end
 	local root_filename = vim.fn.fnamemodify(url, ":t:r:r")

@@ -13,17 +13,16 @@ xset b off
 systemctl --user set-environment DISPLAY=$DISPLAY
 
 #install swh-plugins - Steve Harris's LADSPA plugins
-if [ 1 -eq `dpkg -l |grep -c swh-plugins` ]; then
+if [ 1 -eq $(dpkg -l | grep -c swh-plugins) ]; then
   pactl load-module module-ladspa-sink sink_name=compressor \
-         plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
+    plugin=sc4m_1916 label=sc4m control=1,1.5,401,-30,20,5,12
   pactl set-default-sink compressor
 fi
 
-status=`pgrep -fl fvwm`
+status=$(pgrep -fl fvwm)
 if [ -z "${status}" ]; then
-  PATH_XDG=/run/user/`id -u`
-  while [ ! -d "$PATH_XDG" ]
-  do
+  PATH_XDG=/run/user/$(id -u)
+  while [ ! -d "$PATH_XDG" ]; do
     sleep 1
     echo waiting for XDG_RUNTIME_DIR
   done
