@@ -14,7 +14,9 @@ function M.t1()
 	Ilog.log("bundles:", bundles)
 end
 
+-------------------------------------------------------------------------------
 ---Install latest neovim
+-------------------------------------------------------------------------------
 function M.install_neovim(version, nightly)
 	local output_dir = M.get_run_dir()
 	local stable_url = "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
@@ -55,6 +57,18 @@ function M.install_neovim(version, nightly)
 	M.run_async_command("curl", options, tar_callback)
 end
 
+-- config keymaps
+function M.install_key_maps()
+	local keymap_source = M.home .. "/bin/shellscripts/config/nvim/lua/keymaps.lua"
+	local keymap_file = M.get_nvim_directories(M.home).config .. "/" .. M.get_app_name() .. "/lua/config/keymaps.lua"
+	if M.is_symlink(keymap_file) then
+		print(keymap_file .. " is already symlinked.")
+	else
+		print("Installing symlink " .. keymap_source .. " to " .. keymap_file)
+		M.mv(keymap_file, keymap_file .. "_old")
+		M.ln(keymap_source, keymap_file)
+	end
+end
 -------------------------------------------------------------------------------
 -- string functions -----------------------------------------------------------
 -------------------------------------------------------------------------------
