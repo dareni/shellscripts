@@ -1,0 +1,5 @@
+[Icon Theme]
+Name=cross_hair
+Comment=Minimal Crosshair
+Inherits=default
+DirectName=cross_hair

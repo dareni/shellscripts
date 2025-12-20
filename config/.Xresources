@@ -81,7 +81,6 @@
 !  run xrdb without the -merge option.
 xterm*utf8: 1
 XTerm*termName: xterm-256color
-xterm*pointerShape: crosshair
 !xterm*faceName: Anonymous Pro
 !See shelscripts/scriptSetup.sh for font installs.
 !xterm*faceName: SourceCodePro
@@ -101,7 +100,10 @@ xterm*font: -misc-fixed-medium-r-semicondensed-*-13-120-75-75-c-60-iso10646-*
 !xterm*faceName: DejaVuSerifCondensed
 !xterm*faceSize: 8.0
 !xterm*boldFont: JetBrainsMonoNLNerdFontMono-SemiBold
-Xcursor.theme: default
+*cursorTheme: cross_hair
+*pointerShape: cross_hair
+*pointerColor: black
+*pointerColorBackground: white
 !xvkbd.NormalKeys: \
 !  F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 Delete \n\
 !  Escape 1 2 3 4 5 6 7 8 9 0 - = \134 ` \n\
