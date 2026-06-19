@@ -165,8 +165,9 @@
     function requestPlayListFile(filename) {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.addEventListener("load", processPlayListFile);
-      // xmlHttp.open('GET', baseURL+"/"+filename, true);
-      var url = baseURL+"/"+filename
+       // Trick the browser into reload the file with a changing parameter.
+      var cacheBuster = Date.now();
+      var url = baseURL+"/"+filename+"?v="+cacheBuster;
       console.log("pl url:"+url)
       xmlHttp.open('GET', url, true);
       xmlHttp.setRequestHeader('Content-Type', 'text/plain');
