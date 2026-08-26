@@ -13,9 +13,8 @@
 # sudo cryptsetup resize blah
 # sudo resize2fs /dev/mapper/blah
 
-
-if [[  $1 == '-h' ]]; then
-   echo crypt.sh [./file.crypt] [mountNo [rw]]
+if [[ $1 == '-h' ]]; then
+  echo crypt.sh [./file.crypt] [mountNo [rw]]
 else
   #Store mount No option
   if [[ ${#1} -eq 1 ]]; then
@@ -45,8 +44,6 @@ if [[ -z "$FILENAME" ]]; then
   sudo losetup -D
 else
   sudo losetup /dev/loop${MNT} $FILENAME
-  sudo cryptsetup open /dev/loop${MNT} blah${MNT} --type plain -c aes
+  sudo cryptsetup open /dev/loop${MNT} blah${MNT} --type plain --cipher aes-cbc-plain --key-size=256 --hash ripemd160 -s 256 --sector-size 512
   sudo mount $OPT /dev/mapper/blah${MNT} /media/media${MNT}
 fi
-
-
