@@ -7,7 +7,8 @@ set wrap
 "indent by 2 spaces the broken line
 set showbreak=\ \
 set foldmethod=marker
-colo asu1dark
+"colo asu1dark
+colo bclear
 
 if $TERM == 'alacritty' || $TERM == 'tmux-256color'
    hi Normal guibg=NONE ctermbg=NONE

@@ -93,7 +93,8 @@ if $TERM =='alacritty'
 else
   "colo koehler
   "colo blackbeauty
-  colo asu1dark
+  "colo asu1dark
+  colo bclear
 endif
 "{{{ ToggleTransparency()
 function ToggleTransparency()
