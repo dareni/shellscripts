@@ -1,4 +1,10 @@
+-- Run
+-- :lua local mod = dofile(vim.fn.expand("~/bin/shellscripts/config/nvim/lua/iutil.lua")) mod.install_lazy()
+-- to install lazyvim.
+
 local M = {}
+
+M.path_command = 'package.path = package.path .. ";" .. vim.env.HOME .. "/bin/shellscripts/config/nvim/lua/?.lua"'
 
 M.home = vim.env.HOME
 
@@ -56,6 +62,65 @@ function M.install_neovim(version, nightly)
 	local options = { args = { "-L", "-s", "-o", curl_output_file, url } }
 	M.run_async_command("curl", options, tar_callback)
 end
+-------------------------------------------------------------------------------
+---Install LazyVim
+-------------------------------------------------------------------------------
+function M.install_lazy()
+	local app_name = vim.env.NVIM_APPNAME
+	local nvim_config_dir = M.home .. "/.config/" .. app_name
+	vim.notify("Installing lazy at '" .. nvim_config_dir .. "'.", vim.log.levels.DEBUG)
+
+	if M.is_directory(nvim_config_dir) then
+		-- vim.notify("Error: Config directory '" .. nvim_config_dir .. "' already exists!", vim.log.levels.ERROR)
+		-- return
+	else
+		vim.fn.mkdir(nvim_config_dir, "p")
+	end
+
+	local vim_init_path = nvim_config_dir .. "/init.lua"
+
+	M.insert_buffer_into_file(vim_init_path, M.path_command, 1)
+	if 1 == 1 then
+		return
+	end
+
+	local callback = function()
+		M.install_sym_links(nvim_config_dir)
+	end
+	M.git_clone("https://github.com/LazyVim/starter", nvim_config_dir, callback)
+	local options = { args = {} }
+
+	M.run_async_command("ls", options, callback)
+end
+
+function M.install_sym_links(nvim_config_dir)
+	local file_pairs = {
+		{ filename = "/bin/shellscripts/config/nvim/lua/autocmds.lua", destination = "/lua/config/autocmds.lua" },
+		{ filename = "/bin/shellscripts/config/nvim/lua/keymaps.lua", destination = "/lua/config/keymaps.lua" },
+		{ filename = "/bin/shellscripts/config/nvim/lua/options.lua", destination = "/lua/config/options.lua" },
+		{
+			filename = "/bin/shellscripts/config/nvim/plugin/colorscheme.lua",
+			destination = "/lua/plugins/colorscheme.lua",
+		},
+		{ filename = "/bin/shellscripts/config/nvim/plugin/neogit.lua", destination = "/lua/plugins/neogit.lua" },
+		{ filename = "/bin/shellscripts/config/nvim/plugin/rust.lua", destination = "/lua/plugins/rust.lua" },
+	}
+
+	for _, pair in ipairs(file_pairs) do
+		local dest = nvim_config_dir .. pair.destination
+		local is_sym = false
+		if vim.fn.filereadable(dest) == 1 then
+			is_sym = M.is_symlink(dest)
+			if not is_sym then
+				M.mv(dest, dest .. "_old")
+			end
+		end
+		if not is_sym then
+			local source = M.home .. pair.filename
+			M.ln(source, dest)
+		end
+	end
+end
 
 -- config keymaps
 function M.install_key_maps()
@@ -92,8 +157,8 @@ end
 -- file handling functions ----------------------------------------------------
 -------------------------------------------------------------------------------
 function M.is_symlink(path)
-	local ret = tonumber(vim.fn.system(string.format("file %q |cut -d\\  -f 2|grep -c symbolic", path)))
-	return ret == 1
+	local ftype = vim.fn.getftype(path)
+	return "link" == ftype
 end
 
 function M.is_symlink_valid(path)
@@ -113,30 +178,18 @@ function M.get_run_dir()
 end
 
 function M.ln(source_path, link_path)
-	-- The `ln -s` command is used to create a symbolic link
-	local command = string.format("ln -s %q %q", source_path, link_path)
-
-	-- Execute the command
-	local output = vim.fn.system(command)
-
-	-- Check for any errors
-	if vim.v.shell_error ~= 0 then
-		print("Error creating symbolic link:")
-		print(output)
+	local success, err = vim.uv.fs_symlink(source_path, link_path)
+	if not success then
+		print("Failed to create link: " .. tostring(err))
 	end
 end
 
 function M.mv(source_path, target_path)
-	-- The `mv``command is used to move a file
-	local command = string.format("mv %q %q", source_path, target_path)
-
-	-- Execute the command
-	local output = vim.fn.system(command)
-
-	-- Check for any errors
-	if vim.v.shell_error ~= 0 then
-		print("Error moving file:")
-		print(output)
+	local success, err = vim.uv.fs_rename(source_path, target_path)
+	if not success then
+		print(
+			"Failed to move the file source:" .. source_path .. "  target:" .. target_path .. " error:" .. tostring(err)
+		)
 	end
 end
 -------------------------------------------------------------------------------
@@ -169,7 +222,7 @@ function M.write_buffer_to_file(filepath, buffer)
 		file_out:close()
 	end
 end
--- search buffer_for_text-------------------------------------------------------------
+-- search buffer_for_text-----------------------------------------------------
 function M.search_buffer_for_text(buffer, search_text)
 	local found = 0
 
@@ -186,6 +239,31 @@ function M.search_buffer_for_text(buffer, search_text)
 	end
 	return found
 end
+-- insert text into a file-----------------------------------------------------
+function M.insert_buffer_into_file(file_path, text, line_no)
+	local path = vim.fn.expand(file_path)
+
+	-- Read the existing file contents
+	local file = io.open(path, "r")
+	if not file then
+		print("Could not open file.")
+		return
+	end
+	local content = file:read("*a")
+	file:close()
+
+	-- Split the content into a table of lines and insert the text
+	local lines = vim.split(content, "\n", { trimempty = false })
+	table.insert(lines, line_no, text)
+
+	-- Write the updated lines back to the file
+	local write_file = io.open(path, "w")
+	if write_file then
+		write_file:write(table.concat(lines, "\n"))
+		write_file:close()
+	end
+end
+
 -------------------------------------------------------------------------------
 -- vim specific functions------------------------------------------------------
 -------------------------------------------------------------------------------
