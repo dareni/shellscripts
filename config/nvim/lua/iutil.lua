@@ -70,27 +70,20 @@ function M.install_lazy()
 	local nvim_config_dir = M.home .. "/.config/" .. app_name
 	vim.notify("Installing lazy at '" .. nvim_config_dir .. "'.", vim.log.levels.DEBUG)
 
+	local vim_init_path = vim.fn.expand(nvim_config_dir .. "/init.lua")
+
 	if M.is_directory(nvim_config_dir) then
-		-- vim.notify("Error: Config directory '" .. nvim_config_dir .. "' already exists!", vim.log.levels.ERROR)
-		-- return
+		vim.notify("Error: Config directory '" .. nvim_config_dir .. "' already exists!", vim.log.levels.ERROR)
+		return
 	else
 		vim.fn.mkdir(nvim_config_dir, "p")
 	end
 
-	local vim_init_path = nvim_config_dir .. "/init.lua"
-
-	M.insert_buffer_into_file(vim_init_path, M.path_command, 1)
-	if 1 == 1 then
-		return
-	end
-
 	local callback = function()
 		M.install_sym_links(nvim_config_dir)
+		M.insert_buffer_into_file(vim_init_path, M.path_command, 1)
 	end
 	M.git_clone("https://github.com/LazyVim/starter", nvim_config_dir, callback)
-	local options = { args = {} }
-
-	M.run_async_command("ls", options, callback)
 end
 
 function M.install_sym_links(nvim_config_dir)
@@ -241,10 +234,8 @@ function M.search_buffer_for_text(buffer, search_text)
 end
 -- insert text into a file-----------------------------------------------------
 function M.insert_buffer_into_file(file_path, text, line_no)
-	local path = vim.fn.expand(file_path)
-
 	-- Read the existing file contents
-	local file = io.open(path, "r")
+	local file = io.open(file_path, "r")
 	if not file then
 		print("Could not open file.")
 		return
@@ -257,7 +248,7 @@ function M.insert_buffer_into_file(file_path, text, line_no)
 	table.insert(lines, line_no, text)
 
 	-- Write the updated lines back to the file
-	local write_file = io.open(path, "w")
+	local write_file = io.open(file_path, "w")
 	if write_file then
 		write_file:write(table.concat(lines, "\n"))
 		write_file:close()
