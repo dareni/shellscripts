@@ -2,6 +2,14 @@
 -- :lua local mod = dofile(vim.fn.expand("~/bin/shellscripts/config/nvim/lua/iutil.lua")) mod.install_lazy()
 -- to install lazyvim.
 
+-- Forjava add to init.lua for temporary file config:
+-- package.path = package.path .. ";" .. vim.env.HOME ..
+--    "/bin/shellscripts/config/nvim/lua/?.lua"
+-- require("iutil").refresh_cache()
+-- Also create symlinks from the nvim directory in .cache and .local/state to the /run/user file (jdtls seems to
+--    constantly churn ~/.cache/nvim and ~/.local/state/nvim so let it hammer ramdisk instead)s.
+--Note: The default lazyvim provides all necessary java functions for debug and test so neotest-java is not necessary.
+
 local M = {}
 
 M.path_command = 'package.path = package.path .. ";" .. vim.env.HOME .. "/bin/shellscripts/config/nvim/lua/?.lua"'
@@ -287,7 +295,11 @@ function M.refresh_cache()
 	end
 end
 
+--TODO: Update the script to only relocate the .cache and .local/state nvim directories to ramdisk.
 --Create nvim java.
+--1. Remove default config directories (~/.config/nvim, ~/.local/share/nvim, ~/.local/state/nvim, "/.cache/nvim)
+--   and replace with symlinks to the store location (ram disk because of the disk churn running java LSP).
+--2. Install lazyvim.
 --eg require('iutil').reset_nvim_config_java("/run/user/1000","/home/daren", "jvim")
 ---@param store string the containing directory for the config storage.
 ---@param target string  typically a user home eg /home/bob
@@ -338,22 +350,7 @@ function M.reset_nvim_config_java(store, target, app_name)
 		-- M.git_clone("https://github.com/LazyVim/starter", nvim_config_dir, callback)
 		M.git_clone("https://github.com/LazyVim/starter", nvim_config_dir, nil)
 	end
-	--Link neotest-java plugin configuration.
-	local neotestjava_plugin_file = M.home .. "/" .. "bin/shellscripts/config/nvim/plugin/neotest-java.lua"
-	local neogit_plugin_file = M.home .. "/" .. "bin/shellscripts/config/nvim/plugin/neogit.lua"
-	local plugin_config_dest = nvim_config_dir .. "/lua/plugins"
-	local tries = 0
-	while not M.is_directory(plugin_config_dest) and tries < 10 do
-		M.sleep(0.2)
-		tries = tries + 1
-	end
-	if vim.fn.filereadable(neotestjava_plugin_file) and M.is_directory(plugin_config_dest) then
-		M.ln(neotestjava_plugin_file, plugin_config_dest)
-		M.ln(neogit_plugin_file, plugin_config_dest)
-	else
-		vim.notify("Could not install :" .. neotestjava_plugin_file(" ") .. "to " .. plugin_config_dest .. ".")
-	end
-	--Cinfig init.lua for custom settings
+	--Config init.lua for custom settings
 	local init_file = nvim_config_dir .. "/init.lua"
 	local nvim_init_buffer = M.read_file_to_buffer(init_file)
 	local nvim_mod_path_config = 'package.path = package.path .. ";" .. vim.env.HOME .. "/bin/shellscripts/config/nvim/lua/?.lua"\n'
