@@ -1,6 +1,13 @@
--- Run
+-- To install lazyvim and symlink custom shellscript config run:
 -- :lua local mod = dofile(vim.fn.expand("~/bin/shellscripts/config/nvim/lua/iutil.lua")) mod.install_lazy()
--- to install lazyvim.
+--
+-- Note lazyvim requires:
+-- tree-sitter (cargo install treesitter-cli)
+-- make (apt install make)
+-- luarocks  (apt install luarocks)
+--
+-- To install latest neovim in /opt/dev run:
+-- :lua local mod = dofile(vim.fn.expand("~/bin/shellscripts/config/nvim/lua/iutil.lua")) mod.install_neovim(false)
 
 -- Forjava add to init.lua for temporary file config:
 -- package.path = package.path .. ";" .. vim.env.HOME ..
@@ -16,10 +23,6 @@ M.path_command = 'package.path = package.path .. ";" .. vim.env.HOME .. "/bin/sh
 
 M.home = vim.env.HOME
 
-function M.sleep(sec)
-	os.execute(string.format("sleep %s", sec))
-end
-
 function M.t1()
 	local bundles = vim.fn.glob("$MASON/share/java-debug-adapter/com.microsoft.java.debug.plugin-*jar", false, true)
 	vim.list_extend(bundles, vim.fn.glob("$MASON/share/java-test/*.jar", false, true))
@@ -31,14 +34,40 @@ end
 -------------------------------------------------------------------------------
 ---Install latest neovim
 -------------------------------------------------------------------------------
-function M.install_neovim(version, nightly)
+---@param  nightly boolean false for the latest release, true for nightly.
+function M.install_neovim(nightly)
 	local output_dir = M.get_run_dir()
 	local stable_url = "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz"
 	local nightly_url = "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz"
 	local url = stable_url
+	local version = ""
 	if nightly then
 		url = nightly_url
+	else
+		-- 1. Fetch latest release JSON from GitHub API
+		url = "https://api.github.com/repos/neovim/neovim/releases/latest"
+		local json, err = M.shell_capture(string.format('curl -fsSL -H "User-Agent: lua-downloader" %q', url))
+		if not json then
+			error("Failed to fetch release info: " .. tostring(err))
+		end
+
+		-- 2. Extract version tag (e.g., "v0.11.x" or "v0.12.x")
+		version = json:match('"tag_name"%s*:%s*"([^"]+)"')
+		version = string.sub(version, 2)
+		if not version then
+			error("Could not parse tag_name from release metadata")
+		end
+
+		-- 3. Find a matching asset download URL (adjust pattern for your OS/arch, e.g. linux-x86_64 or macos-arm64)
+		local asset_url = json:match('"browser_download_url"%s*:%s*"(https://[^"]*linux%-x86_64%.tar%.gz)"')
+		if not asset_url then
+			error("Could not find matching release asset URL for " .. version)
+		end
+
+		print("Latest Neovim version:", version)
+		print("Downloading:", asset_url)
 	end
+
 	local root_filename = vim.fn.fnamemodify(url, ":t:r:r")
 	local extension = vim.fn.fnamemodify(url, ":e:e")
 	local download_file = root_filename .. "-" .. version .. "." .. extension
@@ -75,6 +104,9 @@ end
 -------------------------------------------------------------------------------
 function M.install_lazy()
 	local app_name = vim.env.NVIM_APPNAME
+	if app_name == nil or app_name.is_empty_string then
+		app_name = "nvim"
+	end
 	local nvim_config_dir = M.home .. "/.config/" .. app_name
 	vim.notify("Installing lazy at '" .. nvim_config_dir .. "'.", vim.log.levels.DEBUG)
 
@@ -114,25 +146,14 @@ function M.install_sym_links(nvim_config_dir)
 			is_sym = M.is_symlink(dest)
 			if not is_sym then
 				M.mv(dest, dest .. "_old")
+			else
+				print(dest .. " is already symlinked.")
 			end
 		end
 		if not is_sym then
 			local source = M.home .. pair.filename
 			M.ln(source, dest)
 		end
-	end
-end
-
--- config keymaps
-function M.install_key_maps()
-	local keymap_source = M.home .. "/bin/shellscripts/config/nvim/lua/keymaps.lua"
-	local keymap_file = M.get_nvim_directories(M.home).config .. "/" .. M.get_app_name() .. "/lua/config/keymaps.lua"
-	if M.is_symlink(keymap_file) then
-		print(keymap_file .. " is already symlinked.")
-	else
-		print("Installing symlink " .. keymap_source .. " to " .. keymap_file)
-		M.mv(keymap_file, keymap_file .. "_old")
-		M.ln(keymap_source, keymap_file)
 	end
 end
 -------------------------------------------------------------------------------
@@ -262,7 +283,6 @@ function M.insert_buffer_into_file(file_path, text, line_no)
 		write_file:close()
 	end
 end
-
 -------------------------------------------------------------------------------
 -- vim specific functions------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -411,7 +431,6 @@ function M.adj_nvim_config_java(nvim_config_dir)
 		end
 	end
 end
-
 -------------------------------------------------------------------------------
 -- git clone ------------------------------------------------------------------
 -------------------------------------------------------------------------------
@@ -603,7 +622,33 @@ function M.download_file_async(url, output_dir, callback)
 	}
 	M.run_async_command(cmd, options, callback)
 end
+-------------------------------------------------------------------------------
+-- Utilities ------------------------------------------------------------------
+-------------------------------------------------------------------------------
+function M.reload()
+	package.loaded["iutil"] = nil
+	return require("iutil")
+end
 
+function M.sleep(sec)
+	os.execute(string.format("sleep %s", sec))
+end
+
+function M.shell_capture(cmd)
+	local handle = io.popen(cmd)
+	if not handle then
+		return nil, "failed to run command"
+	end
+	local output = handle:read("*a")
+	local ok = handle:close()
+	if not ok then
+		return nil, "command exited with error"
+	end
+	return output
+end
+-------------------------------------------------------------------------------
+-- Self Test ------------------------------------------------------------------
+-------------------------------------------------------------------------------
 function M.test()
 	require("ilog").enable()
 
@@ -643,11 +688,6 @@ function M.test()
 	end
 	M.reset_nvim_config_java(store, target, app_name)
 	-- vim.fn.mkdir(testdir .. "/a") require("ilog").disable()
-end
-
-function M.reload()
-	package.loaded["iutil"] = nil
-	return require("iutil")
 end
 
 return M
